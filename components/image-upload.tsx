@@ -4,8 +4,6 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-// import { uploadImage, deleteImage } from '@/lib/supabase';
-// Supabase temporalmente deshabilitado para despliegue
 import { X, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -51,19 +49,18 @@ export function ImageUpload({
           continue;
         }
 
-        // const imageUrl = await uploadImage(file); // Supabase temporalmente deshabilitado
-        // newImages.push(imageUrl);
-        // Supabase temporalmente deshabilitado para despliegue
-        toast.info('Subida de imágenes deshabilitada temporalmente.');
+        // Crear URL temporal para la imagen
+        const imageUrl = URL.createObjectURL(file);
+        newImages.push(imageUrl);
       }
 
       if (newImages.length > 0) {
         onImagesChange([...images, ...newImages]);
-        toast.success(`${newImages.length} imagen(es) subida(s) exitosamente`);
+        toast.success(`${newImages.length} imagen(es) agregada(s) exitosamente`);
       }
     } catch (error) {
-      console.error('Error uploading images:', error);
-      toast.error('Error al subir las imágenes');
+      console.error('Error processing images:', error);
+      toast.error('Error al procesar las imágenes');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -72,26 +69,10 @@ export function ImageUpload({
     }
   };
 
-  const handleRemoveImage = async (index: number) => {
-    const imageUrl = images[index];
-    
-    try {
-      // Intentar eliminar de Supabase (solo si es una URL de Supabase)
-      if (imageUrl.includes('supabase')) {
-        // await deleteImage(imageUrl); // Supabase temporalmente deshabilitado
-        toast.info('Eliminación de imágenes deshabilitada temporalmente.');
-      }
-      
-      const newImages = images.filter((_, i) => i !== index);
-      onImagesChange(newImages);
-      toast.success('Imagen eliminada');
-    } catch (error) {
-      console.error('Error removing image:', error);
-      // Aún así remover de la lista local
-      const newImages = images.filter((_, i) => i !== index);
-      onImagesChange(newImages);
-      toast.warning('Imagen removida de la lista (puede que no se haya eliminado del servidor)');
-    }
+  const handleRemoveImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    onImagesChange(newImages);
+    toast.success('Imagen eliminada');
   };
 
   return (
@@ -111,12 +92,12 @@ export function ImageUpload({
               {uploading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Subiendo...
+                  Procesando...
                 </>
               ) : (
                 <>
                   <Upload className="h-4 w-4" />
-                  Subir Imágenes
+                  Agregar Imágenes
                 </>
               )}
             </Button>
@@ -145,7 +126,7 @@ export function ImageUpload({
                       alt={`Imagen ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.src = '/placeholder-image.png';
+                        e.currentTarget.src = '/images/placeholder-image.svg';
                       }}
                     />
                   </div>
@@ -170,9 +151,9 @@ export function ImageUpload({
           {images.length === 0 && (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 mb-2">No hay imágenes subidas</p>
+              <p className="text-gray-500 mb-2">No hay imágenes agregadas</p>
               <p className="text-sm text-gray-400">
-                Haz clic en "Subir Imágenes" para agregar fotos del producto
+                Haz clic en "Agregar Imágenes" para incluir fotos del producto
               </p>
             </div>
           )}
