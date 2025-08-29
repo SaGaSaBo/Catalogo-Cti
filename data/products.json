@@ -20,8 +20,8 @@
       "21"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756241898602-i962xark27.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756241915178-6qawr7yug88.jpg"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 1,
@@ -48,8 +48,8 @@
       "21"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250703800-v6xeht70p8.webp",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251436342-sxt1tpkeiv.webp"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 2,
@@ -76,8 +76,8 @@
       "21"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251111207-i9t6khsergf.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251118383-kux4hnakv6.jpg"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 3,
@@ -104,9 +104,9 @@
       "21"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250843922-cn6in38o3ug.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250845320-m71q0tkl0gn.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250846179-o7keag7ilo.jpg"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 4,
@@ -132,9 +132,9 @@
       "21"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250922654-11ob0y29gv9.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250932838-ucg3ky83p0r.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250939103-2m9fmdgyk9o.png"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 5,
@@ -159,8 +159,8 @@
       "21"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250988893-pb641nnwoi.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250989933-awlu9ozajbe.jpg"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 6,
@@ -184,8 +184,8 @@
       "19M"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251029470-nzcrtqsdktf.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251030351-su42g6gho28.jpg"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 7,
@@ -205,9 +205,9 @@
       "2XL"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251212908-twhzhzlei6.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251214235-p6rnssa4g.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251215255-tvhrio18ml.jpg"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 8,
@@ -227,9 +227,9 @@
       "3XL"
     ],
     "imageUrls": [
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251265820-1hl4t213lc2.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251266638-xo5467250kk.jpg",
-      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251267449-00cp9a781k78.jpg"
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg",
+      "/images/placeholder-image.svg"
     ],
     "active": true,
     "sortIndex": 9,
