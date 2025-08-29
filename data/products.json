@@ -1,0 +1,444 @@
+[
+  {
+    "id": "1",
+    "brand": "Florenzi",
+    "title": "Camisa Basic Blanca",
+    "description": "Modelo: Basic\nColor: Blanco\nComposición: Poliéster – Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCL5248BL00S",
+    "price": 12490,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "18M",
+      "19",
+      "19M",
+      "20",
+      "20M",
+      "21"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756241898602-i962xark27.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756241915178-6qawr7yug88.jpg"
+    ],
+    "active": true,
+    "sortIndex": 1,
+    "categoryId": "camisas"
+  },
+  {
+    "id": "2",
+    "brand": "Florenzi",
+    "title": "Camisa Basic Azul",
+    "description": "Modelo: Basic\nColor: Azul\nComposición: Poliéster – Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCL5248AZ00L",
+    "price": 12490,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "18M",
+      "19",
+      "19M",
+      "20",
+      "20M",
+      "21"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250703800-v6xeht70p8.webp",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251436342-sxt1tpkeiv.webp"
+    ],
+    "active": true,
+    "sortIndex": 2,
+    "categoryId": "camisas"
+  },
+  {
+    "id": "246bb7c4-501f-445d-9e2e-3b5d0765c9e7",
+    "brand": "Florenzi",
+    "title": "Camisa Basic Celeste",
+    "description": "Modelo: Basic\nColor: Celeste\nComposición: Poliéster – Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCL5248CE00L",
+    "price": 12490,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "18M",
+      "19",
+      "19M",
+      "20",
+      "20M",
+      "21"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251111207-i9t6khsergf.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251118383-kux4hnakv6.jpg"
+    ],
+    "active": true,
+    "sortIndex": 3,
+    "categoryId": "camisas"
+  },
+  {
+    "id": "9d036357-0544-4bf0-b5b3-41a4c147dd43",
+    "brand": "Florenzi",
+    "title": "Camisa Basic Gris",
+    "description": "Modelo: Basic\nColor: Gris\nComposición: Poliéster – Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCL6535RG00L",
+    "price": 12490,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "18M",
+      "19",
+      "19M",
+      "20",
+      "20M",
+      "21"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250843922-cn6in38o3ug.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250845320-m71q0tkl0gn.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250846179-o7keag7ilo.jpg"
+    ],
+    "active": true,
+    "sortIndex": 4,
+    "categoryId": "camisas"
+  },
+  {
+    "id": "d12f40c1-9fbf-4eed-9745-2aa93f41a7d3",
+    "brand": "Florenzi",
+    "title": "Camisa Basic Celeste Raya",
+    "description": "Modelo: Basic\nColor: Raya celeste\nComposición: Poliéster – Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCL5248RC00L",
+    "price": 12490,
+    "sizes": [
+      "XS",
+      "S",
+      "L",
+      "XL",
+      "18M",
+      "19",
+      "19M",
+      "20",
+      "20M",
+      "21"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250922654-11ob0y29gv9.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250932838-ucg3ky83p0r.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250939103-2m9fmdgyk9o.png"
+    ],
+    "active": true,
+    "sortIndex": 5,
+    "categoryId": "camisas"
+  },
+  {
+    "id": "36e2777b-bb42-4b73-a454-78e36325142d",
+    "brand": "Florenzi",
+    "title": "Camisa Basic Negra",
+    "description": "Modelo: Basic\nColor: Negra\nComposición: Poliéster – Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCL5248NE00L",
+    "price": 12490,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "18M",
+      "19",
+      "20",
+      "21"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250988893-pb641nnwoi.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756250989933-awlu9ozajbe.jpg"
+    ],
+    "active": true,
+    "sortIndex": 6,
+    "categoryId": "camisas"
+  },
+  {
+    "id": "4ea6a2e4-2ef3-4748-aba1-c174fe04a0da",
+    "brand": "Florenzi",
+    "title": "Camisa Basic Lila",
+    "description": "Modelo: Basic\nColor: Lila\nComposición: Poliéster – Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCL5248LI00L",
+    "price": 12490,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "18M",
+      "19",
+      "19M"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251029470-nzcrtqsdktf.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251030351-su42g6gho28.jpg"
+    ],
+    "active": true,
+    "sortIndex": 7,
+    "categoryId": "camisas"
+  },
+  {
+    "id": "db1a221d-ea05-4b8c-a8ad-961158888fce",
+    "brand": "Florenzi",
+    "title": "CAMISA COTTON BLEND SF052 GRIS",
+    "description": "Modelo: SF052\nCalce: Slim Fit\nColor: Gris\nComposición: Algodón - Poliéster\nMarca: Florenzi",
+    "sku": "FCMAPCSF052SU00L",
+    "price": 14990,
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251212908-twhzhzlei6.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251214235-p6rnssa4g.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251215255-tvhrio18ml.jpg"
+    ],
+    "active": true,
+    "sortIndex": 8,
+    "categoryId": "34587382-5e92-43bb-9917-7fb392d7031c"
+  },
+  {
+    "id": "fb61ed58-797f-42fc-a0ca-8cb4e97df47c",
+    "brand": "Florenzi",
+    "title": "CAMISA COTTON BLEND SF042 ROSADO",
+    "description": "Modelo: SF042\nCalce: Slim Fit\nColor: Rosado\nComposición: Algodón - Poliéster\nMarca: Florenzi",
+    "sku": "FCMAPCSF042SU00L",
+    "price": 14990,
+    "sizes": [
+      "S",
+      "L",
+      "XL",
+      "3XL"
+    ],
+    "imageUrls": [
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251265820-1hl4t213lc2.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251266638-xo5467250kk.jpg",
+      "https://iykfzxochppbxdcjtjsf.supabase.co/storage/v1/object/public/product-images/1756251267449-00cp9a781k78.jpg"
+    ],
+    "active": true,
+    "sortIndex": 9,
+    "categoryId": "34587382-5e92-43bb-9917-7fb392d7031c"
+  },
+  {
+    "id": "f07c8f14-6c26-42ad-bdeb-25f4dabe954b",
+    "brand": "Florenzi",
+    "title": "CAMISA COTTON BLEND SF050 LILA RAYAS",
+    "description": "Modelo: SF050\nCalce: Slim Fit\nColor: Lila\nComposición: Algodón - Poliéster\nMarca: Florenzi",
+    "sku": "FCMAPCSF050SU00L",
+    "price": 14990,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "imageUrls": [
+      "/images/camisa-cotton-blend-sf050-lila-rayas-1.jpg",
+      "/images/camisa-cotton-blend-sf050-lila-rayas-2.jpg",
+      "/images/camisa-cotton-blend-sf050-lila-rayas-3.jpg"
+    ],
+    "active": true,
+    "sortIndex": 10,
+    "categoryId": "34587382-5e92-43bb-9917-7fb392d7031c"
+  },
+  {
+    "id": "a043da26-bb03-4ae6-b224-09ed567b1671",
+    "brand": "Florenzi",
+    "title": "CAMISA COTTON BLEND SF039 CELESTE",
+    "description": "Modelo: SF039\nCalce: Slim Fit\nColor: Celeste\nComposición: Algodón - Poliéster\nMarca: Florenzi",
+    "sku": "FCMAPCSF039SU00L",
+    "price": 14990,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "imageUrls": [
+      "/images/camisa-cotton-blend-sf039-celeste-1.jpg",
+      "/images/camisa-cotton-blend-sf039-celeste-2.jpg",
+      "/images/camisa-cotton-blend-sf039-celeste-3.jpg"
+    ],
+    "active": true,
+    "sortIndex": 11,
+    "categoryId": "34587382-5e92-43bb-9917-7fb392d7031c"
+  },
+  {
+    "id": "8fcbd543-58bb-43ca-a0c4-271daed3a7cf",
+    "brand": "Florenzi",
+    "title": "SALE-0% CAMISA COTTON BLEND SF049 AZUL RAYAS",
+    "description": "Modelo: SF049\nCalce: Slim Fit\nColor: Azul\nComposición: Algodón - Poliéster\nMarca: Florenzi",
+    "sku": "FCMAPCSF049SU00L",
+    "price": 14990,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "imageUrls": [
+      "/images/camisa-cotton-blend-sf049-azul-rayas-1.jpg",
+      "/images/camisa-cotton-blend-sf049-azul-rayas-2.jpg",
+      "/images/camisa-cotton-blend-sf049-azul-rayas-3.jpg"
+    ],
+    "active": true,
+    "sortIndex": 12,
+    "categoryId": "34587382-5e92-43bb-9917-7fb392d7031c"
+  },
+  {
+    "id": "cdc72812-35e2-4d67-8298-1f3a4b391bec",
+    "brand": "Florenzi",
+    "title": "CAMISA COTTON BLEND SF040 GRIS",
+    "description": "Modelo: SF040\nCalce: Slim Fit\nColor: Gris\nComposición: Algodón - Poliéster\nMarca: Florenzi",
+    "sku": "FCMAPCSF040SU00L",
+    "price": 14990,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
+    ],
+    "imageUrls": [
+      "/images/camisa-cotton-blend-sf040-gris-1.jpg",
+      "/images/camisa-cotton-blend-sf040-gris-2.jpg",
+      "/images/camisa-cotton-blend-sf040-gris-3.jpg"
+    ],
+    "active": true,
+    "sortIndex": 13,
+    "categoryId": "34587382-5e92-43bb-9917-7fb392d7031c"
+  },
+  {
+    "id": "dae2e6b1-7d67-4de9-b617-77577168ce54",
+    "brand": "Florenzi",
+    "title": "CAMISA VESTIR PUÑO DOBLE NEGRA",
+    "description": "Modelo: Puño doble cuello italiano\nColor: Negro\nCalce: slim fit\nComposición: Poliéster-Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCCOLLENE00L",
+    "price": 14990,
+    "sizes": [
+      "s",
+      "m",
+      "l",
+      "xl",
+      "2xl"
+    ],
+    "imageUrls": [
+      "/images/camisa-vestir-puno-doble-negra-1.jpg",
+      "/images/camisa-vestir-puno-doble-negra-2.jpg",
+      "/images/camisa-vestir-puno-doble-negra-3.jpg"
+    ],
+    "active": true,
+    "sortIndex": 14,
+    "categoryId": "057be22d-693c-4bc4-9609-2b074fea7c94"
+  },
+  {
+    "id": "f852dbd3-8aec-4922-b9a7-876b00d076e5",
+    "brand": "Florenzi",
+    "title": "CAMISA VESTIR PUÑO DOBLE BLANCA",
+    "description": "Modelo: Puño doble cuello italiano\nColor: Blanco\nCalce: slim fit\nComposición: Poliéster-Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCCOLLEBL00M",
+    "price": 14990,
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "imageUrls": [
+      "/images/camisa-vestir-puno-doble-blanca-1.jpg",
+      "/images/camisa-vestir-puno-doble-blanca-2.jpg",
+      "/images/camisa-vestir-puno-doble-blanca-3.jpg"
+    ],
+    "active": true,
+    "sortIndex": 15,
+    "categoryId": "057be22d-693c-4bc4-9609-2b074fea7c94"
+  },
+  {
+    "id": "0db7b85d-840c-4155-b227-37f0fa3eabf1",
+    "brand": "Florenzi",
+    "title": "CAMISA C. PALOMA NEGRO",
+    "description": "Modelo: Puño doble cuello paloma\nColor: Negro\nCalce: slim fit\nComposición: Poliéster-Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCPALOMNE00L",
+    "price": 14990,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "imageUrls": [
+      "/images/camisa-c-paloma-negro-1.jpg",
+      "/images/camisa-c-paloma-negro-2.jpg"
+    ],
+    "active": true,
+    "sortIndex": 16,
+    "categoryId": "057be22d-693c-4bc4-9609-2b074fea7c94"
+  },
+  {
+    "id": "e7942ab9-deda-4370-ab39-89c534fdf426",
+    "brand": "Florenzi",
+    "title": "CAMISA C. PALOMA ROSADO",
+    "description": "Modelo: Puño doble cuello paloma\nColor: Rosado\nCalce: Slim fit\nComposición: Poliéster-Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCPALOMRD00L",
+    "price": 14990,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "imageUrls": [
+      "/images/camisa-c-paloma-rosado-1.jpg",
+      "/images/camisa-c-paloma-rosado-2.jpg",
+      "/images/camisa-c-paloma-rosado-3.jpg"
+    ],
+    "active": true,
+    "sortIndex": 17,
+    "categoryId": "057be22d-693c-4bc4-9609-2b074fea7c94"
+  },
+  {
+    "id": "2e2704ce-1a7a-4c04-a896-f0995bd02f2b",
+    "brand": "Florenzi",
+    "title": "CAMISA CUELLO PALOMA",
+    "description": "Modelo: Puño doble cuello paloma\nColor: Blanco\nCalce: slim fit\nComposición: Poliéster-Algodón\nMarca: Florenzi",
+    "sku": "FCMAPCPALOMBL00L",
+    "price": 14990,
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL"
+    ],
+    "imageUrls": [
+      "/images/camisa-cuello-paloma-1.jpg",
+      "/images/camisa-cuello-paloma-2.jpg",
+      "/images/camisa-cuello-paloma-3.jpg"
+    ],
+    "active": true,
+    "sortIndex": 18,
+    "categoryId": "057be22d-693c-4bc4-9609-2b074fea7c94"
+  }
+]

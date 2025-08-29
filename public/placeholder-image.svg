@@ -1,0 +1,19 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f3f4f6"/>
+  <rect x="1" y="1" width="398" height="298" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="8,8"/>
+  
+  <!-- Image icon -->
+  <g transform="translate(175, 125)">
+    <rect width="50" height="40" rx="4" fill="#9ca3af"/>
+    <circle cx="15" cy="15" r="5" fill="#6b7280"/>
+    <path d="M5 30 L20 20 L30 25 L45 15 L45 35 L5 35 Z" fill="#6b7280"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="200" y="190" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="14" font-weight="500">
+    Imagen no disponible
+  </text>
+  <text x="200" y="210" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="12">
+    Placeholder
+  </text>
+</svg>
