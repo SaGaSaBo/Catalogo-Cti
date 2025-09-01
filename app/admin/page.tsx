@@ -41,12 +41,15 @@ export default function AdminPage() {
     categoryId: undefined as string | undefined
   });
 
-  const adminKey = searchParams.get('key') || 'admin123';
+  const adminKey = searchParams.get('key') || process.env.ADMIN_KEY;
 
   useEffect(() => {
-    if (adminKey) {
+    if (adminKey === 'admin123') {
       setIsAuthenticated(true);
       fetchData();
+    } else if (adminKey) {
+      // Si hay una clave pero no es válida, mostrar error
+      toast.error('Clave de administrador inválida');
     }
   }, [adminKey]);
 

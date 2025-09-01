@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+  const has = (k: string) => Boolean((process.env as any)[k]);
   return NextResponse.json({
-    ADMIN_KEY: process.env.ADMIN_KEY ? 'Configurado' : 'No configurado',
-    NEXT_PUBLIC_CURRENCY: process.env.NEXT_PUBLIC_CURRENCY ? 'Configurado' : 'No configurado',
-    DATA_PROVIDER: process.env.DATA_PROVIDER ? 'Configurado' : 'No configurado',
-    timestamp: new Date().toISOString()
+    SMTP_HOST: has('SMTP_HOST'),
+    SMTP_PORT: has('SMTP_PORT'),
+    SMTP_SECURE: has('SMTP_SECURE'),
+    SMTP_USER: has('SMTP_USER'),
+    SMTP_PASS: has('SMTP_PASS'),
+    ORDER_TO: has('ORDER_TO'),
+    NEXT_PUBLIC_CURRENCY: has('NEXT_PUBLIC_CURRENCY'),
+    ADMIN_KEY: has('ADMIN_KEY')
   });
 }
