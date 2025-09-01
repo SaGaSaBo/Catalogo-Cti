@@ -23,6 +23,7 @@ import { Save, X, Settings } from 'lucide-react';
 export default function AdminPage() {
   const searchParams = useSearchParams();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,6 +52,7 @@ export default function AdminPage() {
       // Si hay una clave pero no es válida, mostrar error
       toast.error('Clave de administrador inválida');
     }
+    setIsInitializing(false);
   }, [adminKey]);
 
   const fetchData = async () => {
@@ -195,6 +197,17 @@ export default function AdminPage() {
     setCurrentSortIndex(null);
     resetForm();
   };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Verificando acceso...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
