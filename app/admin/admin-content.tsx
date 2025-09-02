@@ -163,7 +163,10 @@ export function AdminPageContent() {
 
     try {
       await fetchJson(`/api/products/${productId}`, {
-        method: 'DELETE',n        headers: {n          'Authorization': `Bearer ${adminKey}`n        }
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${adminKey}`
+        }
       });
       toast.success('Producto eliminado correctamente');
       await fetchData();
@@ -177,6 +180,10 @@ export function AdminPageContent() {
     try {
       await fetchJson(`/api/products/${product.id}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminKey}`
+        },
         body: JSON.stringify({ ...product, active: !product.active })
       });
       toast.success(`Producto ${!product.active ? 'activado' : 'desactivado'} correctamente`);
