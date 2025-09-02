@@ -14,6 +14,21 @@ export function useCart() {
     isEmpty
   } = useCartContext();
 
+  // Add to cart function
+  const addToCart = (item: {
+    id: string;
+    productId: string;
+    title: string;
+    brand: string;
+    price: number;
+    size: string;
+    quantity: number;
+    imageUrl: string;
+  }) => {
+    const currentQuantity = getQuantity(item.productId, item.size);
+    updateQuantity(item.productId, item.size, currentQuantity + item.quantity);
+  };
+
   // These functions still need the 'products' array, so they remain here
   const getCartItems = (products: Product[]): OrderItem[] => {
     return products
@@ -43,6 +58,7 @@ export function useCart() {
   };
 
   return {
+    addToCart,
     updateQuantity,
     getQuantity,
     getProductQuantities,
