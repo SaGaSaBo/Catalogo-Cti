@@ -10,9 +10,7 @@ const nextConfig = {
     unoptimized: true,
     domains: ['localhost'],
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@react-pdf/renderer'],
-  },
+  serverExternalPackages: ['@react-pdf/renderer'],
   output: 'standalone',
 };
 
