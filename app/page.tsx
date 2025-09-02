@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useCart } from '@/hooks/use-cart';
+import { toast } from 'sonner';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -8,6 +10,10 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedProduct, setExpandedProduct] = useState(null);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,14 +55,47 @@ export default function HomePage() {
     }).format(price);
   };
 
+  const handleExpandProduct = (product: any) => {
+    setExpandedProduct(product);
+    setSelectedSize('');
+    setQuantity(1);
+  };
+
+  const handleCloseExpanded = () => {
+    setExpandedProduct(null);
+    setSelectedSize('');
+    setQuantity(1);
+  };
+
+  const handleAddToCart = () => {
+    if (!expandedProduct || !selectedSize) {
+      toast.error('Por favor selecciona una talla');
+      return;
+    }
+
+    addToCart({
+      id: `${expandedProduct.id}-${selectedSize}`,
+      productId: expandedProduct.id,
+      title: expandedProduct.title,
+      brand: expandedProduct.brand,
+      price: expandedProduct.price,
+      size: selectedSize,
+      quantity,
+      imageUrl: expandedProduct.imageUrls[0] || '/images/placeholder-image.svg'
+    });
+
+    toast.success(`${quantity} ${quantity === 1 ? 'unidad' : 'unidades'} agregada${quantity === 1 ? '' : 's'} al carrito`);
+    handleCloseExpanded();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
+            <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p>Cargando catálogo...</p>
         </div>
-      </div>
+                  </div>
     );
   }
 
@@ -196,7 +235,7 @@ export default function HomePage() {
 
                 {/* Botón de acción */}
                 <button 
-                  onClick={() => window.location.href = `/products/${product.id}`}
+                  onClick={() => handleExpandProduct(product)}
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   Ver Detalles
@@ -205,6 +244,149 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+
+        {/* Modal expandido del producto */}
+        {expandedProduct && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                {/* Header del modal */}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Seleccionar Producto</h2>
+                  <button
+                    onClick={handleCloseExpanded}
+                    className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Imagen del producto */}
+                  <div className="space-y-4">
+                    <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
+                      {expandedProduct.imageUrls && expandedProduct.imageUrls.length > 0 ? (
+                        <img
+                          src={expandedProduct.imageUrls[0]}
+                          alt={expandedProduct.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/placeholder-image.svg';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                          <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Información del producto */}
+                  <div className="space-y-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          {expandedProduct.brand}
+                        </span>
+                        <span className="text-sm text-gray-600">SKU: {expandedProduct.sku}</span>
+                      </div>
+                      
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                        {expandedProduct.title}
+                      </h3>
+                      
+                      <div className="text-3xl font-bold text-green-600 mb-6">
+                        {formatPrice(expandedProduct.price)}
+                      </div>
+                    </div>
+
+                    {/* Descripción */}
+                    {expandedProduct.description && (
+                      <div>
+                        <h4 className="text-lg font-semibold mb-2">Descripción</h4>
+                        <p className="text-gray-600 leading-relaxed">
+                          {expandedProduct.description}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Selección de talla */}
+                    <div>
+                      <h4 className="text-lg font-semibold mb-3">Selecciona tu talla</h4>
+                      <div className="grid grid-cols-6 gap-2 mb-4">
+                        {expandedProduct.sizes.map((size: string) => (
+                          <button
+                            key={size}
+                            onClick={() => setSelectedSize(size)}
+                            className={`h-12 px-3 rounded-lg border-2 font-medium transition-colors ${
+                              selectedSize === size
+                                ? 'border-blue-600 bg-blue-600 text-white'
+                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                      {!selectedSize && (
+                        <p className="text-sm text-red-600">Por favor selecciona una talla</p>
+                      )}
+                    </div>
+
+                    {/* Cantidad */}
+                    <div>
+                      <h4 className="text-lg font-semibold mb-3">Cantidad</h4>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center border rounded-lg">
+                          <button
+                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            disabled={quantity <= 1}
+                            className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            -
+                          </button>
+                          <span className="px-4 py-2 min-w-[3rem] text-center border-x">
+                            {quantity}
+                          </span>
+                          <button
+                            onClick={() => setQuantity(quantity + 1)}
+                            className="px-3 py-2 hover:bg-gray-100"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          {quantity} {quantity === 1 ? 'unidad' : 'unidades'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Total y botón */}
+                    <div className="space-y-4 pt-4 border-t">
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">Total:</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {formatPrice(expandedProduct.price * quantity)}
+                        </p>
+                      </div>
+                      
+                      <button 
+                        onClick={handleAddToCart}
+                        disabled={!selectedSize}
+                        className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Agregar al Carrito
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mensaje si no hay productos */}
         {filteredProducts.length === 0 && (
