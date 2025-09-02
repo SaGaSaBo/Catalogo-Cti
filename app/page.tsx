@@ -216,15 +216,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Enlace al admin */}
-        <div className="mt-12 text-center">
-          <a 
-            href="/admin?key=admin123" 
-            className="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            Panel de Administración
-          </a>
-        </div>
+
       </div>
     </div>
   );
