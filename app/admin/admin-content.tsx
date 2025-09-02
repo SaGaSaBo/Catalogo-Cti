@@ -355,8 +355,8 @@ export function AdminPageContent() {
             <div>
               <Label>Imágenes</Label>
               <ImageUpload
-                imageUrls={formData.imageUrls}
-                onImageUrlsChange={(urls) => setFormData({ ...formData, imageUrls: urls })}
+                images={formData.imageUrls}
+                onImagesChange={(urls) => setFormData({ ...formData, imageUrls: urls })}
               />
             </div>
 
