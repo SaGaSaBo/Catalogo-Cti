@@ -8,10 +8,15 @@ const nextConfig = {
   },
   images: { 
     unoptimized: true,
-    domains: ['localhost'],
+    domains: ['localhost', 'vercel.app'],
   },
   serverExternalPackages: ['@react-pdf/renderer'],
   output: 'standalone',
+  trailingSlash: false,
+  skipTrailingSlashRedirect: true,
+  experimental: {
+    outputFileTracingRoot: undefined,
+  },
 };
 
 module.exports = nextConfig;
