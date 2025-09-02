@@ -250,7 +250,8 @@ export function AdminPageContent() {
           <TabsContent value="categories">
             <AdminCategoryManager
               categories={categories}
-              onUpdate={fetchData}
+              onCategoriesChange={fetchData}
+              adminKey={adminKey}
             />
           </TabsContent>
         </Tabs>
