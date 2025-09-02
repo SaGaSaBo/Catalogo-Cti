@@ -86,7 +86,7 @@ export function ImageUpload({
               type="button"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploading || images.length >= maxImages}
+              disabled={uploading || images.filter(img => img && img.trim()).length >= maxImages}
               className="flex items-center gap-2"
             >
               {uploading ? (
@@ -102,7 +102,7 @@ export function ImageUpload({
               )}
             </Button>
             <span className="text-sm text-gray-500">
-              {images.length} / {maxImages} imágenes
+              {images.filter(img => img && img.trim()).length} / {maxImages} imágenes
             </span>
           </div>
 
@@ -116,14 +116,17 @@ export function ImageUpload({
           />
 
           {/* Image Preview Grid */}
-          {images.length > 0 && (
+          {images.filter(img => img && img.trim()).length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {images.map((imageUrl, index) => (
-                <div key={index} className="relative group">
+              {images
+                .map((imageUrl, index) => ({ imageUrl, originalIndex: index }))
+                .filter(({ imageUrl }) => imageUrl && imageUrl.trim())
+                .map(({ imageUrl, originalIndex }, displayIndex) => (
+                <div key={originalIndex} className="relative group">
                   <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
                     <img
                       src={imageUrl}
-                      alt={`Imagen ${index + 1}`}
+                      alt={`Imagen ${displayIndex + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.src = '/images/placeholder-image.svg';
@@ -135,12 +138,12 @@ export function ImageUpload({
                     variant="destructive"
                     size="sm"
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleRemoveImage(index)}
+                    onClick={() => handleRemoveImage(originalIndex)}
                   >
                     <X className="h-3 w-3" />
                   </Button>
                   <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                    {index + 1}
+                    {displayIndex + 1}
                   </div>
                 </div>
               ))}
@@ -148,7 +151,7 @@ export function ImageUpload({
           )}
 
           {/* Empty State */}
-          {images.length === 0 && (
+          {images.filter(img => img && img.trim()).length === 0 && (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 mb-2">No hay imágenes agregadas</p>
