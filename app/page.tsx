@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -36,6 +37,18 @@ export default function HomePage() {
     fetchData();
   }, []);
 
+  const filteredProducts = selectedCategory === 'all' 
+    ? products 
+    : products.filter((product: any) => product.categoryId === selectedCategory);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -66,6 +79,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="text-center">
@@ -80,57 +94,135 @@ export default function HomePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Productos</h2>
-              <p className="text-2xl font-bold text-blue-600 mb-4">
-                {products.length} productos disponibles
-              </p>
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Estado:</strong> Datos cargados correctamente
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Categorías</h2>
-              <p className="text-2xl font-bold text-green-600 mb-4">
-                {categories.length} categorías disponibles
-              </p>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-green-800">
-                  <strong>Estado:</strong> Datos cargados correctamente
-                </p>
-              </div>
-            </div>
+        {/* Filtros de Categorías */}
+        <div className="mb-8">
+          <div className="flex flex-wrap justify-center gap-4">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                selectedCategory === 'all'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+              }`}
+            >
+              Todos los productos ({products.length})
+            </button>
+            {categories.map((category: any) => {
+              const categoryCount = products.filter((p: any) => p.categoryId === category.id).length;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                    selectedCategory === category.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  {category.name} ({categoryCount})
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Primeros 3 Productos</h2>
-            <div className="space-y-4">
-              {products.slice(0, 3).map((product: any) => (
-                <div key={product.id} className="border-b pb-4 last:border-b-0">
-                  <h3 className="font-semibold">{product.title}</h3>
-                  <p className="text-gray-600">SKU: {product.sku}</p>
-                  <p className="text-green-600 font-bold">${product.price}</p>
+        {/* Grid de Productos */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProducts.map((product: any) => (
+            <div key={product.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow">
+              {/* Imagen del producto */}
+              <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                {product.imageUrls && product.imageUrls.length > 0 ? (
+                  <img
+                    src={product.imageUrls[0]}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/placeholder-image.svg';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              {/* Información del producto */}
+              <div className="p-6">
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                    {product.brand}
+                  </span>
                 </div>
-              ))}
+                
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                  {product.title}
+                </h3>
+                
+                <p className="text-sm text-gray-600 mb-3">
+                  SKU: {product.sku}
+                </p>
+
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-2xl font-bold text-green-600">
+                    {formatPrice(product.price)}
+                  </span>
+                </div>
+
+                {/* Tallas disponibles */}
+                {product.sizes && product.sizes.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Tallas disponibles:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {product.sizes.slice(0, 6).map((size: string) => (
+                        <span
+                          key={size}
+                          className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                        >
+                          {size}
+                        </span>
+                      ))}
+                      {product.sizes.length > 6 && (
+                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                          +{product.sizes.length - 6}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Botón de acción */}
+                <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                  Ver Detalles
+                </button>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
-        <div className="mt-8 text-center">
+        {/* Mensaje si no hay productos */}
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay productos en esta categoría</h3>
+            <p className="text-gray-600">Intenta seleccionar otra categoría o ver todos los productos.</p>
+          </div>
+        )}
+
+        {/* Enlace al admin */}
+        <div className="mt-12 text-center">
           <a 
             href="/admin?key=admin123" 
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
           >
-            Ir al Panel de Administración
+            Panel de Administración
           </a>
         </div>
       </div>
