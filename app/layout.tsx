@@ -1,9 +1,7 @@
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Test Vercel',
-  description: 'Testing Vercel deployment',
-};
+import './globals.css';
+import { CartProvider } from '@/context/cart-context';
+import { Toaster } from '@/components/ui/toaster';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export default function RootLayout({
   children,
@@ -13,7 +11,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        {children}
+        <CartProvider>
+          {children}
+          <Toaster />
+          <SpeedInsights />
+        </CartProvider>
       </body>
     </html>
   );
