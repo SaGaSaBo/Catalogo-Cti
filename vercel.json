@@ -16,6 +16,14 @@
   },
   "rewrites": [
     {
+      "source": "/admin",
+      "destination": "/admin"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }
@@ -38,5 +46,7 @@
         }
       ]
     }
-  ]
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
