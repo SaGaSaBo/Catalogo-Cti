@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!isAdmin(req)) {
@@ -33,7 +33,7 @@ export async function PUT(
       );
     }
 
-    const categoryId = params.id;
+    const { id: categoryId } = await params;
     
     // Check if category exists
     const existingCategory = await getCategory(categoryId);
@@ -63,14 +63,14 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!isAdmin(req)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const categoryId = params.id;
+    const { id: categoryId } = await params;
     
     // Check if category exists
     const existingCategory = await getCategory(categoryId);

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!isAdmin(req)) {
@@ -33,7 +33,7 @@ export async function PUT(
       );
     }
 
-    const productId = params.id;
+    const { id: productId } = await params;
     
     // Check if product exists
     const existingProduct = await getProduct(productId);
@@ -70,14 +70,14 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!isAdmin(req)) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const productId = params.id;
+    const { id: productId } = await params;
     
     // Check if product exists
     const existingProduct = await getProduct(productId);
