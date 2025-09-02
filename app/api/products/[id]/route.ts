@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllProducts, saveProducts } from '@/lib/fs-products';
+import { getProduct, updateProduct, deleteProduct } from '@/lib/data-provider';
 import { validateProduct } from '@/lib/validation';
 import { isAdmin } from '@/lib/auth';
 
@@ -34,27 +34,18 @@ export async function PUT(
     }
 
     const productId = params.id;
-    const products = getAllProducts();
-    const productIndex = products.findIndex(p => p.id === productId);
-
-    if (productIndex === -1) {
+    
+    // Check if product exists
+    const existingProduct = await getProduct(productId);
+    if (!existingProduct) {
       return NextResponse.json(
         { error: 'Producto no encontrado' },
         { status: 404 }
       );
     }
 
-    // Check unique SKU (excluding current product)
-    if (products.some(p => p.sku === body.sku && p.id !== productId)) {
-      return NextResponse.json(
-        { error: 'El SKU ya existe' },
-        { status: 400 }
-      );
-    }
-
     // Update product
-    const updatedProduct = {
-      ...products[productIndex],
+    const updatedProduct = await updateProduct(productId, {
       brand: body.brand.trim(),
       title: body.title.trim(),
       description: body.description?.trim() || undefined,
@@ -63,12 +54,9 @@ export async function PUT(
       sizes: body.sizes.map((s: string) => s.trim()),
       imageUrls: body.imageUrls || [],
       active: body.active,
-      sortIndex: body.sortIndex || products[productIndex].sortIndex,
+      sortIndex: body.sortIndex || existingProduct.sortIndex,
       categoryId: body.categoryId?.trim() || undefined
-    };
-
-    products[productIndex] = updatedProduct;
-    saveProducts(products);
+    });
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
@@ -90,19 +78,18 @@ export async function DELETE(
     }
 
     const productId = params.id;
-    const products = getAllProducts();
-    const productExists = products.some(p => p.id === productId);
-
-    if (!productExists) {
+    
+    // Check if product exists
+    const existingProduct = await getProduct(productId);
+    if (!existingProduct) {
       return NextResponse.json(
         { error: 'Producto no encontrado' },
         { status: 404 }
       );
     }
 
-    // Filter out the product
-    const filteredProducts = products.filter(p => p.id !== productId);
-    saveProducts(filteredProducts);
+    // Delete product
+    await deleteProduct(productId);
 
     return NextResponse.json({ message: 'Producto eliminado' });
   } catch (error) {

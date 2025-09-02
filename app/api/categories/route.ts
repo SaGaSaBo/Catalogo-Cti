@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllCategories, saveCategories } from '@/lib/fs-categories';
+import { getCategories, createCategory } from '@/lib/data-provider';
 import { validateCategory } from '@/lib/validation';
 import { Category } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const categories = getAllCategories();
+    const categories = await getCategories();
     return NextResponse.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -45,26 +45,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get existing categories
-    const categories = getAllCategories();
-    
-    // Check unique name
-    if (categories.some(c => c.name.toLowerCase() === body.name.toLowerCase())) {
-      return NextResponse.json(
-        { error: 'Ya existe una categoría con ese nombre' },
-        { status: 400 }
-      );
-    }
-
     // Create new category
-    const newCategory: Category = {
-      id: uuidv4(),
-      name: body.name.trim()
-    };
-
-    // Add and save
-    categories.push(newCategory);
-    saveCategories(categories);
+    const newCategory = await createCategory({
+      name: body.name.trim(),
+      description: body.description?.trim() || '',
+      sortIndex: body.sortIndex || 1
+    });
 
     return NextResponse.json(newCategory, { status: 201 });
   } catch (error) {

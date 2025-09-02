@@ -63,3 +63,43 @@ export function saveCategories(categories: Category[]): void {
     throw new Error('Failed to save categories');
   }
 }
+
+export function getCategories(): Category[] {
+  return getAllCategories();
+}
+
+export function getCategory(id: string): Category | null {
+  const categories = getAllCategories();
+  return categories.find(c => c.id === id) || null;
+}
+
+export function createCategory(category: Omit<Category, 'id'>): Category {
+  const categories = getAllCategories();
+  const newCategory: Category = {
+    id: crypto.randomUUID(),
+    ...category
+  };
+  categories.push(newCategory);
+  saveCategories(categories);
+  return newCategory;
+}
+
+export function updateCategory(id: string, category: Partial<Category>): Category {
+  const categories = getAllCategories();
+  const index = categories.findIndex(c => c.id === id);
+  if (index === -1) {
+    throw new Error('Category not found');
+  }
+  categories[index] = { ...categories[index], ...category };
+  saveCategories(categories);
+  return categories[index];
+}
+
+export function deleteCategory(id: string): void {
+  const categories = getAllCategories();
+  const filteredCategories = categories.filter(c => c.id !== id);
+  if (filteredCategories.length === categories.length) {
+    throw new Error('Category not found');
+  }
+  saveCategories(filteredCategories);
+}

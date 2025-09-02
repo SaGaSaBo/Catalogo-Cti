@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllProducts, saveProducts } from '@/lib/fs-products';
+import { getProducts, createProduct } from '@/lib/data-provider';
 import { validateProduct } from '@/lib/validation';
 import { Product } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    const products = getAllProducts();
+    const products = await getProducts();
     
     // Si hay Authorization header, devolver todos los productos (admin)
     // Si no, solo los activos (público)
@@ -56,20 +56,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get existing products
-    const products = getAllProducts();
-    
-    // Check unique SKU
-    if (products.some(p => p.sku === body.sku)) {
-      return NextResponse.json(
-        { error: 'El SKU ya existe' },
-        { status: 400 }
-      );
-    }
-
     // Create new product
-    const newProduct: Product = {
-      id: uuidv4(),
+    const newProduct = await createProduct({
       brand: body.brand.trim(),
       title: body.title.trim(),
       description: body.description?.trim() || undefined,
@@ -78,13 +66,9 @@ export async function POST(req: Request) {
       sizes: body.sizes.map((s: string) => s.trim()),
       imageUrls: body.imageUrls || [],
       active: body.active,
-      sortIndex: body.sortIndex || products.length + 1,
+      sortIndex: body.sortIndex || 1,
       categoryId: body.categoryId?.trim() || undefined
-    };
-
-    // Add and save
-    products.push(newProduct);
-    saveProducts(products);
+    });
 
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error) {

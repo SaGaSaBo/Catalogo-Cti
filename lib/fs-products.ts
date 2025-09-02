@@ -63,3 +63,43 @@ export function saveProducts(products: Product[]): void {
     throw new Error('Failed to save products');
   }
 }
+
+export function getProducts(): Product[] {
+  return getAllProducts();
+}
+
+export function getProduct(id: string): Product | null {
+  const products = getAllProducts();
+  return products.find(p => p.id === id) || null;
+}
+
+export function createProduct(product: Omit<Product, 'id'>): Product {
+  const products = getAllProducts();
+  const newProduct: Product = {
+    id: crypto.randomUUID(),
+    ...product
+  };
+  products.push(newProduct);
+  saveProducts(products);
+  return newProduct;
+}
+
+export function updateProduct(id: string, product: Partial<Product>): Product {
+  const products = getAllProducts();
+  const index = products.findIndex(p => p.id === id);
+  if (index === -1) {
+    throw new Error('Product not found');
+  }
+  products[index] = { ...products[index], ...product };
+  saveProducts(products);
+  return products[index];
+}
+
+export function deleteProduct(id: string): void {
+  const products = getAllProducts();
+  const filteredProducts = products.filter(p => p.id !== id);
+  if (filteredProducts.length === products.length) {
+    throw new Error('Product not found');
+  }
+  saveProducts(filteredProducts);
+}

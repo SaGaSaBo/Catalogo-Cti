@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllCategories, saveCategories } from '@/lib/fs-categories';
-import { getAllProducts, saveProducts } from '@/lib/fs-products';
+import { getCategory, updateCategory, deleteCategory } from '@/lib/data-provider';
 import { validateCategory } from '@/lib/validation';
 import { isAdmin } from '@/lib/auth';
 
@@ -35,32 +34,22 @@ export async function PUT(
     }
 
     const categoryId = params.id;
-    const categories = getAllCategories();
-    const categoryIndex = categories.findIndex(c => c.id === categoryId);
-
-    if (categoryIndex === -1) {
+    
+    // Check if category exists
+    const existingCategory = await getCategory(categoryId);
+    if (!existingCategory) {
       return NextResponse.json(
         { error: 'Categoría no encontrada' },
         { status: 404 }
       );
     }
 
-    // Check unique name (excluding current category)
-    if (categories.some(c => c.name.toLowerCase() === body.name.toLowerCase() && c.id !== categoryId)) {
-      return NextResponse.json(
-        { error: 'Ya existe una categoría con ese nombre' },
-        { status: 400 }
-      );
-    }
-
     // Update category
-    const updatedCategory = {
-      ...categories[categoryIndex],
-      name: body.name.trim()
-    };
-
-    categories[categoryIndex] = updatedCategory;
-    saveCategories(categories);
+    const updatedCategory = await updateCategory(categoryId, {
+      name: body.name.trim(),
+      description: body.description?.trim() || existingCategory.description,
+      sortIndex: body.sortIndex || existingCategory.sortIndex
+    });
 
     return NextResponse.json(updatedCategory);
   } catch (error) {
@@ -82,34 +71,18 @@ export async function DELETE(
     }
 
     const categoryId = params.id;
-    const categories = getAllCategories();
-    const categoryExists = categories.some(c => c.id === categoryId);
-
-    if (!categoryExists) {
+    
+    // Check if category exists
+    const existingCategory = await getCategory(categoryId);
+    if (!existingCategory) {
       return NextResponse.json(
         { error: 'Categoría no encontrada' },
         { status: 404 }
       );
     }
 
-    // Remove category from products
-    const products = getAllProducts();
-    const updatedProducts = products.map(product => {
-      if (product.categoryId === categoryId) {
-        const { categoryId, ...productWithoutCategory } = product;
-        return productWithoutCategory;
-      }
-      return product;
-    });
-    
-    // Save updated products
-    if (updatedProducts.some((p, i) => p !== products[i])) {
-      saveProducts(updatedProducts);
-    }
-
-    // Filter out the category
-    const filteredCategories = categories.filter(c => c.id !== categoryId);
-    saveCategories(filteredCategories);
+    // Delete category
+    await deleteCategory(categoryId);
 
     return NextResponse.json({ message: 'Categoría eliminada' });
   } catch (error) {
