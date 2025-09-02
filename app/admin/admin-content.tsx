@@ -128,13 +128,13 @@ export function AdminPageContent() {
 
       if (editingProduct) {
         await fetchJson(`/api/products/${editingProduct.id}`, {
-          method: 'PUT',
+          method: 'PUT',n          headers: {n            'Content-Type': 'application/json',n            'Authorization': `Bearer ${adminKey}`n          },
           body: JSON.stringify(productData)
         });
         toast.success('Producto actualizado correctamente');
       } else {
         await fetchJson('/api/products', {
-          method: 'POST',
+          method: 'POST',n          headers: {n            'Content-Type': 'application/json',n            'Authorization': `Bearer ${adminKey}`n          },
           body: JSON.stringify(productData)
         });
         toast.success('Producto creado correctamente');
@@ -155,7 +155,7 @@ export function AdminPageContent() {
 
     try {
       await fetchJson(`/api/products/${productId}`, {
-        method: 'DELETE'
+        method: 'DELETE',n        headers: {n          'Authorization': `Bearer ${adminKey}`n        }
       });
       toast.success('Producto eliminado correctamente');
       await fetchData();
