@@ -128,13 +128,21 @@ export function AdminPageContent() {
 
       if (editingProduct) {
         await fetchJson(`/api/products/${editingProduct.id}`, {
-          method: 'PUT',n          headers: {n            'Content-Type': 'application/json',n            'Authorization': `Bearer ${adminKey}`n          },
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminKey}`
+          },
           body: JSON.stringify(productData)
         });
         toast.success('Producto actualizado correctamente');
       } else {
         await fetchJson('/api/products', {
-          method: 'POST',n          headers: {n            'Content-Type': 'application/json',n            'Authorization': `Bearer ${adminKey}`n          },
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminKey}`
+          },
           body: JSON.stringify(productData)
         });
         toast.success('Producto creado correctamente');
