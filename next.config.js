@@ -14,9 +14,7 @@ const nextConfig = {
   output: 'standalone',
   trailingSlash: false,
   skipTrailingSlashRedirect: true,
-  experimental: {
-    outputFileTracingRoot: '/Users/santiagosaralegui/Downloads/Catalogo CTI - project 10',
-  },
+  outputFileTracingRoot: '/Users/santiagosaralegui/Downloads/Catalogo CTI - project 10',
   // Configuración específica para Vercel
   async rewrites() {
     return [
