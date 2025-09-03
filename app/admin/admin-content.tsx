@@ -80,8 +80,16 @@ export function AdminPageContent() {
     try {
       console.log('🔄 Haciendo requests a APIs...');
       const [productsData, categoriesData] = await Promise.all([
-        fetchJson('/api/products'),
-        fetchJson('/api/categories')
+        fetchJson('/api/products', {
+          headers: {
+            'Authorization': `Bearer ${adminKey}`
+          }
+        }),
+        fetchJson('/api/categories', {
+          headers: {
+            'Authorization': `Bearer ${adminKey}`
+          }
+        })
       ]);
       console.log('📦 Productos recibidos:', productsData?.length || 0);
       console.log('📂 Categorías recibidas:', categoriesData?.length || 0);
