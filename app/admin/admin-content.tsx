@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AdminCategoryManager } from '@/components/admin-category-manager';
 import { AdminProductManager } from '@/components/admin-product-manager';
+import { AdminOrdersManager } from '@/components/admin-orders-manager';
 import { ImageUpload } from '@/components/image-upload';
 import { fetchJson } from '@/lib/fetchJson';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ export function AdminPageContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentSortIndex, setCurrentSortIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -45,30 +47,53 @@ export function AdminPageContent() {
   const adminKey = searchParams.get('key') || 'admin123';
 
   useEffect(() => {
-    if (adminKey === 'admin123') {
-      setIsAuthenticated(true);
-      fetchData();
-    } else if (adminKey && adminKey !== 'admin123') {
-      // Si hay una clave pero no es válida, mostrar error
-      toast.error('Clave de administrador inválida');
-    }
-    setIsInitializing(false);
+    const initializeAdmin = async () => {
+      console.log('🔧 Inicializando admin con key:', adminKey);
+      try {
+        if (adminKey === 'admin123') {
+          console.log('✅ Clave válida, autenticando...');
+          setIsAuthenticated(true);
+          console.log('📡 Cargando datos...');
+          await fetchData();
+          console.log('✅ Datos cargados exitosamente');
+        } else if (adminKey && adminKey !== 'admin123') {
+          console.log('❌ Clave inválida');
+          toast.error('Clave de administrador inválida');
+        } else {
+          console.log('⚠️ Sin clave de admin');
+        }
+      } catch (error) {
+        console.error('❌ Error initializing admin:', error);
+        toast.error('Error al inicializar el panel de administración');
+      } finally {
+        console.log('🏁 Finalizando inicialización');
+        setIsInitializing(false);
+      }
+    };
+
+    initializeAdmin();
   }, [adminKey]);
 
   const fetchData = async () => {
+    console.log('📡 Iniciando fetchData...');
     setIsLoading(true);
     try {
+      console.log('🔄 Haciendo requests a APIs...');
       const [productsData, categoriesData] = await Promise.all([
         fetchJson('/api/products'),
         fetchJson('/api/categories')
       ]);
+      console.log('📦 Productos recibidos:', productsData?.length || 0);
+      console.log('📂 Categorías recibidas:', categoriesData?.length || 0);
       setProducts(productsData);
       setCategories(categoriesData);
+      console.log('✅ fetchData completado exitosamente');
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('❌ Error fetching data:', error);
       toast.error('Error al cargar los datos');
     } finally {
       setIsLoading(false);
+      console.log('🏁 fetchData finalizado');
     }
   };
 
@@ -107,6 +132,10 @@ export function AdminPageContent() {
       setCurrentSortIndex(null);
     }
     setIsDialogOpen(true);
+  };
+
+  const handlePendingOrdersChange = (count: number) => {
+    setPendingOrdersCount(count);
   };
 
   const closeDialog = () => {
@@ -246,9 +275,17 @@ export function AdminPageContent() {
 
       <div className="max-w-7xl mx-auto px-6 py-12">
         <Tabs defaultValue="products" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="products">Productos ({products.length})</TabsTrigger>
             <TabsTrigger value="categories">Categorías ({categories.length})</TabsTrigger>
+            <TabsTrigger value="orders" className="relative">
+              Pedidos
+              {pendingOrdersCount > 0 && (
+                <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
+                  {pendingOrdersCount}
+                </Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -269,6 +306,10 @@ export function AdminPageContent() {
               adminKey={adminKey}
             />
           </TabsContent>
+
+          <TabsContent value="orders">
+            <AdminOrdersManager adminKey={adminKey} onPendingOrdersChange={handlePendingOrdersChange} />
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -284,7 +325,7 @@ export function AdminPageContent() {
           </DialogHeader>
 
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="brand">Marca</Label>
                 <Input
@@ -326,7 +367,7 @@ export function AdminPageContent() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="price">Precio</Label>
                 <Input

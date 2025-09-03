@@ -49,14 +49,9 @@ export function ImageUpload({
           continue;
         }
 
-        // Convertir imagen a base64 para almacenamiento permanente
-        const base64Url = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        newImages.push(base64Url);
+        // Crear URL temporal para la imagen
+        const imageUrl = URL.createObjectURL(file);
+        newImages.push(imageUrl);
       }
 
       if (newImages.length > 0) {

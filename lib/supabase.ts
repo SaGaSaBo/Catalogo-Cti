@@ -30,3 +30,33 @@ export interface SupabaseCategory {
   created_at: string;
   updated_at: string;
 }
+
+export interface SupabaseOrder {
+  id: string;
+  order_number: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone?: string;
+  status: 'recibido' | 'en_proceso' | 'entregado';
+  total_amount: number;
+  order_data: {
+    customer: {
+      name: string;
+      email: string;
+      phone?: string;
+    };
+    items: {
+      id: string;
+      title: string;
+      brand: string;
+      sku: string;
+      size: string;
+      quantity: number;
+      price: number;
+    }[];
+    total: number;
+  };
+  pdf_data?: any;
+  created_at: string;
+  updated_at: string;
+}
