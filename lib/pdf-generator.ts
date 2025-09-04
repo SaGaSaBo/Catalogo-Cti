@@ -106,7 +106,7 @@ export async function createPDF(orderData: OrderData): Promise<Uint8Array> {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(0, 0, 0);
     
-    // Manejar diferentes estructuras de datos de forma segura
+    // Manejar diferentes estructuras de datos de forma segura - Vercel fix
     const productTitle = item.product?.title || item.title || 'Sin título';
     const productBrand = item.product?.brand || item.brand || 'Sin marca';
     const productSku = item.product?.sku || item.sku || 'Sin SKU';

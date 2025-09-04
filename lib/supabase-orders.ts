@@ -39,7 +39,7 @@ export async function createOrder(orderData: {
       phone: orderData.customer.phone || null
     },
     items: orderData.items.map(item => {
-      // Manejar diferentes estructuras de datos de forma más segura
+      // Manejar diferentes estructuras de datos de forma más segura - Vercel fix
       const title = String(item.title || item.product?.title || 'Sin título');
       const brand = String(item.brand || item.product?.brand || 'Sin marca');
       const sku = String(item.sku || item.product?.sku || 'Sin SKU');
