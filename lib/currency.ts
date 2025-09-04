@@ -1,3 +1,5 @@
+
+
 export function formatCurrency(amount: number): string {
   return formatCurrencyWithCode(amount, process.env.NEXT_PUBLIC_CURRENCY || 'CLP');
 }
