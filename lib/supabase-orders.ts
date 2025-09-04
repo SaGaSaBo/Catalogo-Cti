@@ -39,10 +39,10 @@ export async function createOrder(orderData: {
       phone: orderData.customer.phone || null
     },
     items: orderData.items.map(item => {
-      // Manejar diferentes estructuras de datos
-      const title = item.title || item.product?.title || 'Sin título';
-      const brand = item.brand || item.product?.brand || 'Sin marca';
-      const sku = item.sku || item.product?.sku || 'Sin SKU';
+      // Manejar diferentes estructuras de datos de forma más segura
+      const title = String(item.title || item.product?.title || 'Sin título');
+      const brand = String(item.brand || item.product?.brand || 'Sin marca');
+      const sku = String(item.sku || item.product?.sku || 'Sin SKU');
       const price = item.price || item.product?.price || 0;
       
       return {
