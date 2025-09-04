@@ -38,12 +38,23 @@ export async function createOrder(orderData: {
       email: orderData.customer.email,
       phone: orderData.customer.phone || null
     },
-    items: orderData.items.map(item => {
-      // Manejar diferentes estructuras de datos de forma más segura - Vercel fix v2
-      const title = String(item.title || item.product?.title || 'Sin título');
-      const brand = String(item.brand || item.product?.brand || 'Sin marca');
-      const sku = String(item.sku || item.product?.sku || 'Sin SKU');
-      const price = item.price || item.product?.price || 0;
+    items: orderData.items.map((item, index) => {
+      // Manejar diferentes estructuras de datos de forma más segura - Vercel fix v3
+      console.log(`🔍 Procesando item ${index}:`, JSON.stringify(item, null, 2));
+      
+      // Extraer datos de forma segura
+      const rawTitle = item.title || item.product?.title || 'Sin título';
+      const rawBrand = item.brand || item.product?.brand || 'Sin marca';
+      const rawSku = item.sku || item.product?.sku || 'Sin SKU';
+      const rawPrice = item.price || item.product?.price || 0;
+      
+      // Convertir a string de forma segura
+      const title = typeof rawTitle === 'string' ? rawTitle : String(rawTitle || 'Sin título');
+      const brand = typeof rawBrand === 'string' ? rawBrand : String(rawBrand || 'Sin marca');
+      const sku = typeof rawSku === 'string' ? rawSku : String(rawSku || 'Sin SKU');
+      const price = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice || 0);
+      
+      console.log(`✅ Item ${index} procesado:`, { title: title.substring(0, 10) + '...', brand: brand.substring(0, 10) + '...', sku });
       
       return {
         id: item.id,

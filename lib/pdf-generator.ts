@@ -106,11 +106,22 @@ export async function createPDF(orderData: OrderData): Promise<Uint8Array> {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(0, 0, 0);
     
-    // Manejar diferentes estructuras de datos de forma segura - Vercel fix v2
-    const productTitle = item.product?.title || item.title || 'Sin título';
-    const productBrand = item.product?.brand || item.brand || 'Sin marca';
-    const productSku = item.product?.sku || item.sku || 'Sin SKU';
-    const productPrice = item.product?.price || item.price || 0;
+    // Manejar diferentes estructuras de datos de forma segura - Vercel fix v3
+    console.log(`🔍 Procesando item para PDF:`, JSON.stringify(item, null, 2));
+    
+    // Extraer datos de forma segura
+    const rawTitle = item.product?.title || item.title || 'Sin título';
+    const rawBrand = item.product?.brand || item.brand || 'Sin marca';
+    const rawSku = item.product?.sku || item.sku || 'Sin SKU';
+    const rawPrice = item.product?.price || item.price || 0;
+    
+    // Convertir a string de forma segura
+    const productTitle = typeof rawTitle === 'string' ? rawTitle : String(rawTitle || 'Sin título');
+    const productBrand = typeof rawBrand === 'string' ? rawBrand : String(rawBrand || 'Sin marca');
+    const productSku = typeof rawSku === 'string' ? rawSku : String(rawSku || 'Sin SKU');
+    const productPrice = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice || 0);
+    
+    console.log(`✅ Item para PDF procesado:`, { title: productTitle.substring(0, 10) + '...', brand: productBrand.substring(0, 10) + '...', sku: productSku });
     const itemSize = item.size || 'N/A';
     const itemQuantity = item.quantity || 0;
     const itemTotal = item.total || 0;
