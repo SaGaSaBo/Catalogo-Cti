@@ -39,7 +39,7 @@ export async function createOrder(orderData: {
       phone: orderData.customer.phone || null
     },
     items: orderData.items.map((item, index) => {
-      // Manejar diferentes estructuras de datos de forma más segura - Vercel fix v3
+      // Manejar diferentes estructuras de datos de forma más segura - Vercel fix v3 - Ready for production
       console.log(`🔍 Procesando item ${index}:`, JSON.stringify(item, null, 2));
       
       // Extraer datos de forma segura
