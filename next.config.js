@@ -10,9 +10,15 @@ const nextConfig = {
   generateBuildId: async () => {
     return `build-${Date.now()}`;
   },
-  // Externalizar PDFKit para usar fuentes Helvetica nativas
+  // Incluir archivos AFM de PDFKit en el bundle
   experimental: {
     serverExternalPackages: ['pdfkit', 'fontkit'],
+    outputFileTracingIncludes: {
+      // Incluir archivos AFM de PDFKit para que estén disponibles en runtime
+      'app/api/order/pdf/route': [
+        './node_modules/pdfkit/js/data/*',           // incluye todos los AFM
+      ],
+    },
   },
   webpack: (config) => {
     config.externals = config.externals || [];

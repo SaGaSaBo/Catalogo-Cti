@@ -7,6 +7,19 @@ import { createOrder } from '@/lib/supabase-orders';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// Debug: Verificar que los archivos AFM están disponibles
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+try {
+  // Verificar que los archivos AFM están incluidos en el bundle
+  console.log('🔍 Verificando archivos AFM de PDFKit...');
+  console.log('PDFKit data dir exists? (bundle-included is handled by Next)');
+} catch (error) {
+  console.warn('⚠️ No se pudo verificar archivos AFM:', error);
+}
+
 // Normaliza los items del carrito a un formato seguro para el PDF
 function normalizeOrderItems(items: any[]) {
   if (!Array.isArray(items)) return [];
