@@ -127,9 +127,16 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
+    console.log('📊 Props del PDF:', JSON.stringify(pdfProps, null, 2));
     console.log('📊 Generando stream del PDF...');
-    const stream = await renderToStream(<OrderNote {...pdfProps} />);
-    console.log('✅ Stream del PDF creado');
+    
+    try {
+      const stream = await renderToStream(<OrderNote {...pdfProps} />);
+      console.log('✅ Stream del PDF creado');
+    } catch (renderError) {
+      console.error('❌ Error en renderToStream:', renderError);
+      throw renderError;
+    }
 
     // Retornar el stream como respuesta
     const headers = new Headers();
