@@ -143,7 +143,7 @@ async function generateOrderPdf(order: any): Promise<Readable> {
     }
 
     doc.fontSize(9).font('Helvetica');
-    doc.text(String(item.sku), 120, y, { width: 180 });
+    doc.text(String(item.sku), 50, y, { width: 70 });
     doc.text(String(item.name), 120, y, { width: 180 });
     doc.text(String(item.size), 300, y, { width: 80 });
     doc.text(String(item.quantity), 380, y, { width: 40, align: 'right' });
