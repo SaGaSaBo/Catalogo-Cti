@@ -9,13 +9,13 @@ export const dynamic = 'force-dynamic';
 
 // Debug: Verificar que los archivos AFM están disponibles
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 try {
-  // Verificar que los archivos AFM están incluidos en el bundle
+  // Verificar que el archivo Helvetica.afm existe en el bundle
+  const afmPath = fileURLToPath(new URL('./data/Helvetica.afm', import.meta.url));
   console.log('🔍 Verificando archivos AFM de PDFKit...');
-  console.log('PDFKit data dir exists? (bundle-included is handled by Next)');
+  console.log('AFM exists?', existsSync(afmPath), afmPath);
 } catch (error) {
   console.warn('⚠️ No se pudo verificar archivos AFM:', error);
 }
