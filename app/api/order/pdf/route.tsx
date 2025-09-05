@@ -2,10 +2,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import PDFDocument from 'pdfkit';
 import { createOrder } from '@/lib/supabase-orders';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 // Forzar el runtime de Node.js y aumentar la duración máxima en Vercel
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+// Cargar fuentes TTF para evitar problemas con archivos .afm en Vercel
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const fontsDir = path.join(__dirname, '_fonts');
+
+const interRegular = readFileSync(path.join(fontsDir, 'Inter-Regular.ttf'));
+const interBold = readFileSync(path.join(fontsDir, 'Inter-Bold.ttf'));
 
 // Normaliza los items del carrito a un formato seguro para el PDF
 function normalizeOrderItems(items: any[]) {
@@ -114,6 +125,10 @@ export async function POST(req: NextRequest) {
     // Crear stream con PDFKit
     const doc = new PDFDocument({ size: 'A4', margin: 24 });
     
+    // Registrar fuentes TTF para evitar problemas con archivos .afm
+    doc.registerFont('UI-Regular', interRegular);
+    doc.registerFont('UI-Bold', interBold);
+    
     // Streaming response para evitar acumular todo en memoria
     const stream = new ReadableStream({
       start(controller) {
@@ -132,11 +147,11 @@ export async function POST(req: NextRequest) {
 
         // ==== Encabezado de la orden ====
         doc.rect(0, 0, doc.page.width, 40).fill('#3B82F6');
-        doc.fill('#FFFFFF').font('Helvetica-Bold').fontSize(18).text('NOTA DE PEDIDO', 24, 14);
+        doc.fill('#FFFFFF').font('UI-Bold').fontSize(18).text('NOTA DE PEDIDO', 24, 14);
 
         // Información del cliente
-        doc.fill('#000').fontSize(11).font('Helvetica-Bold').text('Información del Cliente', 24, 60);
-        doc.font('Helvetica').fontSize(10);
+        doc.fill('#000').fontSize(11).font('UI-Bold').text('Información del Cliente', 24, 60);
+        doc.font('UI-Regular').fontSize(10);
         doc.text(`Pedido: ${orderId}`, 24, 78);
         doc.text(`Fecha: ${formatDate(new Date().toISOString())}`, 24, 92);
         doc.text(`Cliente: ${rawOrderData.c.n}`, 24, 106);
@@ -152,7 +167,7 @@ export async function POST(req: NextRequest) {
         // Función para dibujar header de tabla (reutilizable para paginación)
         const drawTableHeader = () => {
           doc.rect(24, y - 12, doc.page.width - 48, 18).fill('#3B82F6');
-          doc.fill('#fff').font('Helvetica-Bold').fontSize(9);
+          doc.fill('#fff').font('UI-Bold').fontSize(9);
           doc.text('SKU', col.sku, y - 10);
           doc.text('Producto', col.name, y - 10);
           doc.text('Cant.', col.qty, y - 10);
@@ -165,7 +180,7 @@ export async function POST(req: NextRequest) {
 
         // Filas de productos (sin logs en el loop para evitar IO extra)
         console.log('📊 Procesando', normalizedItems.length, 'items...');
-        doc.fill('#000').font('Helvetica').fontSize(9);
+        doc.fill('#000').font('UI-Regular').fontSize(9);
         normalizedItems.forEach((it, idx) => {
           // Verificar si necesitamos nueva página
           if (y + 20 > doc.page.height - 50) {
@@ -196,11 +211,11 @@ export async function POST(req: NextRequest) {
 
         // Total
         y += 20;
-        doc.font('Helvetica-Bold').fontSize(12);
+        doc.font('UI-Bold').fontSize(12);
         doc.text(`TOTAL: ${formatPrice(total)}`, col.price - 50, y);
 
         // Footer
-        doc.font('Helvetica').fontSize(8).fill('#6B7280');
+        doc.font('UI-Regular').fontSize(8).fill('#6B7280');
         doc.text('Gracias por su compra', 0, doc.page.height - 40, { align: 'center' });
 
         doc.end();
@@ -214,7 +229,7 @@ export async function POST(req: NextRequest) {
     const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
     headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
 
-    console.log('✅ PDF creado exitosamente con PDFKit (streaming)');
+    console.log('✅ PDF creado exitosamente con PDFKit (streaming + TTF fonts)');
     return new Response(stream, { status: 200, headers });
 
   } catch (error) {
