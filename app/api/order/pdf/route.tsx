@@ -1,7 +1,6 @@
 // app/api/order/pdf/route.tsx
 import { NextRequest, NextResponse } from 'next/server';
-import { renderToStream } from '@react-pdf/renderer';
-import React from 'react';
+import PDFDocument from 'pdfkit';
 import { createOrder } from '@/lib/supabase-orders';
 
 // Forzar el runtime de Node.js y aumentar la duración máxima en Vercel
@@ -132,119 +131,103 @@ export async function POST(req: NextRequest) {
       // No bloqueamos la generación del PDF si la BD falla.
     }
 
-    // Crear el PDF con @react-pdf/renderer
-    console.log('📄 Creando PDF con @react-pdf/renderer...');
+    // Crear el PDF con PDFKit (más estable en Vercel)
+    console.log('📄 Creando PDF con PDFKit...');
     
-    let stream;
-    try {
-      // Importar componentes de @react-pdf/renderer
-      const { Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
-      
-      const styles = StyleSheet.create({
-        page: { 
-          padding: 30, 
-          fontSize: 10,
-          fontFamily: 'Helvetica' // Especificar fuente explícitamente
-        },
-        header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#eaeaea', paddingBottom: 10 },
-        title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
-        customerInfo: { fontSize: 10, color: '#333' },
-        table: { display: "flex", width: 'auto', borderStyle: 'solid', borderWidth: 0, borderRightWidth: 0, borderBottomWidth: 0 },
-        tableRow: { flexDirection: 'row', borderBottomColor: '#eaeaea', borderBottomWidth: 1, alignItems: 'center', minHeight: 24 },
-        tableHeader: { backgroundColor: '#f2f2f2', fontWeight: 'bold' },
-        colSku: { width: '20%', padding: 5 },
-        colName: { width: '45%', padding: 5 },
-        colQty: { width: '10%', textAlign: 'right', padding: 5 },
-        colPrice: { width: '25%', textAlign: 'right', padding: 5 },
-        totalSection: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20 },
-        totalText: { fontSize: 12, fontWeight: 'bold' },
+    const formatPrice = (value: number) => {
+      return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
+    };
+
+    const formatDate = (isoString: string) => {
+      return new Date(isoString).toLocaleString('es-CL', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    };
+
+    const total = normalizedItems.reduce((acc, it) => acc + it.qty * it.unitPrice, 0);
+
+    // Crear stream con PDFKit
+    const doc = new PDFDocument({ size: 'A4', margin: 24 });
+    const chunks: Buffer[] = [];
+
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+
+    return new Promise((resolve, reject) => {
+      doc.on('end', () => {
+        const buffer = Buffer.concat(chunks);
+        const headers = new Headers();
+        headers.set('Content-Type', 'application/pdf');
+        const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+        headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
+
+        console.log('✅ PDF creado exitosamente con PDFKit');
+        resolve(new NextResponse(buffer, { status: 200, headers }));
       });
 
-      const formatPrice = (value: number) => {
-        return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
-      };
+      doc.on('error', (err) => {
+        console.error('❌ Error en PDFKit:', err);
+        reject(err);
+      });
 
-      const formatDate = (isoString: string) => {
-        return new Date(isoString).toLocaleString('es-CL', {
-          day: '2-digit', month: '2-digit', year: 'numeric',
-          hour: '2-digit', minute: '2-digit'
-        });
-      };
+      // ==== Encabezado de la orden ====
+      doc.rect(0, 0, doc.page.width, 40).fill('#3B82F6');
+      doc.fill('#FFFFFF').font('Helvetica-Bold').fontSize(18).text('NOTA DE PEDIDO', 24, 14);
 
-      const total = normalizedItems.reduce((acc, it) => acc + it.qty * it.unitPrice, 0);
-
-      console.log('📊 Creando documento PDF...');
+      // Información del cliente
+      doc.fill('#000').fontSize(11).font('Helvetica-Bold').text('Información del Cliente', 24, 60);
+      doc.font('Helvetica').fontSize(10);
+      doc.text(`Pedido: ${orderId}`, 24, 78);
+      doc.text(`Fecha: ${formatDate(new Date().toISOString())}`, 24, 92);
+      doc.text(`Cliente: ${rawOrderData.c.n}`, 24, 106);
+      if (rawOrderData.c.e) doc.text(`Email: ${rawOrderData.c.e}`, 24, 120);
+      if (rawOrderData.c.p) doc.text(`Teléfono: ${rawOrderData.c.p}`, 24, 134);
       
-      // Crear el documento paso a paso para evitar errores de JSX
-      const headerView = React.createElement(View, { style: styles.header }, [
-        React.createElement(Text, { key: 'title', style: styles.title }, 'Nota de Pedido'),
-        React.createElement(Text, { key: 'order', style: styles.customerInfo }, `Pedido: ${orderId}`),
-        React.createElement(Text, { key: 'date', style: styles.customerInfo }, `Fecha: ${formatDate(new Date().toISOString())}`),
-        React.createElement(Text, { key: 'client', style: styles.customerInfo }, `Cliente: ${rawOrderData.c.n}`),
-        rawOrderData.c.e ? React.createElement(Text, { key: 'email', style: styles.customerInfo }, `Email: ${rawOrderData.c.e}`) : null,
-        rawOrderData.c.p ? React.createElement(Text, { key: 'phone', style: styles.customerInfo }, `Teléfono: ${rawOrderData.c.p}`) : null
-      ].filter(Boolean));
+      doc.moveTo(24, 150).lineTo(doc.page.width - 24, 150).strokeColor('#E5E7EB').stroke();
 
-      const tableHeader = React.createElement(View, { 
-        key: 'header', 
-        style: [styles.tableRow, styles.tableHeader], 
-        fixed: true 
-      }, [
-        React.createElement(Text, { key: 'sku', style: styles.colSku }, 'SKU'),
-        React.createElement(Text, { key: 'name', style: styles.colName }, 'Producto'),
-        React.createElement(Text, { key: 'qty', style: styles.colQty }, 'Cant.'),
-        React.createElement(Text, { key: 'price', style: styles.colPrice }, 'Total')
-      ]);
+      // ==== Tabla ====
+      let y = 165;
+      const col = { sku: 24, name: 120, qty: 400, price: 450 };
 
-      const tableRows = normalizedItems.map((it, i) => 
-        React.createElement(View, { 
-          key: i, 
-          style: styles.tableRow, 
-          wrap: false 
-        }, [
-          React.createElement(Text, { key: 'sku', style: styles.colSku }, it.sku),
-          React.createElement(Text, { key: 'name', style: styles.colName }, it.name),
-          React.createElement(Text, { key: 'qty', style: styles.colQty }, it.qty.toString()),
-          React.createElement(Text, { key: 'price', style: styles.colPrice }, formatPrice(it.unitPrice * it.qty))
-        ])
-      );
+      // Header de la tabla
+      doc.rect(24, y - 12, doc.page.width - 48, 18).fill('#3B82F6');
+      doc.fill('#fff').font('Helvetica-Bold').fontSize(9);
+      doc.text('SKU', col.sku, y - 10);
+      doc.text('Producto', col.name, y - 10);
+      doc.text('Cant.', col.qty, y - 10);
+      doc.text('Total', col.price, y - 10);
+      y += 14;
 
-      const tableView = React.createElement(View, { style: styles.table }, [
-        tableHeader,
-        ...tableRows
-      ]);
+      // Filas de productos
+      doc.fill('#000').font('Helvetica').fontSize(9);
+      normalizedItems.forEach((it, idx) => {
+        if (y + 20 > doc.page.height - 50) {
+          doc.addPage();
+          y = 50;
+        }
 
-      const totalView = React.createElement(View, { style: styles.totalSection }, 
-        React.createElement(Text, { style: styles.totalText }, `Total Pedido: ${formatPrice(total)}`)
-      );
+        // Fila alternada
+        if (idx % 2 === 0) {
+          doc.save().rect(24, y - 2, doc.page.width - 48, 18).fill('#F3F4F6').restore();
+        }
 
-      const page = React.createElement(Page, { 
-        size: "A4", 
-        style: styles.page, 
-        wrap: true 
-      }, [headerView, tableView, totalView]);
+        doc.text(it.sku, col.sku, y);
+        doc.text(it.name, col.name, y);
+        doc.text(it.qty.toString(), col.qty, y);
+        doc.text(formatPrice(it.unitPrice * it.qty), col.price, y);
+        y += 18;
+      });
 
-      const pdfDocument = React.createElement(Document, {}, page);
+      // Total
+      y += 20;
+      doc.font('Helvetica-Bold').fontSize(12);
+      doc.text(`TOTAL: ${formatPrice(total)}`, col.price - 50, y);
 
-      console.log('📄 Renderizando PDF a stream...');
-      stream = await renderToStream(pdfDocument);
-      console.log('✅ Stream del PDF creado exitosamente');
-    } catch (renderError) {
-      console.error('❌ Error en renderToStream:', renderError);
-      console.error('❌ Stack trace del render:', renderError instanceof Error ? renderError.stack : 'No stack trace');
-      throw renderError;
-    }
+      // Footer
+      doc.font('Helvetica').fontSize(8).fill('#6B7280');
+      doc.text('Gracias por su compra', 0, doc.page.height - 40, { align: 'center' });
 
-    // Retornar el stream como respuesta
-    const headers = new Headers();
-    headers.set('Content-Type', 'application/pdf');
-    const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
-    headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
-
-    console.log('📤 Enviando PDF al cliente...');
-    return new NextResponse(stream as any, {
-      status: 200,
-      headers,
+      doc.end();
     });
 
   } catch (error) {
