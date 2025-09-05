@@ -9,15 +9,15 @@ import { fileURLToPath } from 'node:url';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Cargar TTF como Buffer (NO URL)
-const REGULAR = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
-const BOLD = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
-
 // 🔧 Parche: evitar que PDFKit lea AFM en el constructor
 const PDFProto: any = (PDFDocument as any).prototype;
 if (!PDFProto.__patchedInitFonts) {
   const original = PDFProto.initFonts;
   PDFProto.initFonts = function () {
+    // Cargar TTF como Buffer (convertir URL a path) - solo cuando se necesite
+    const REGULAR = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
+    const BOLD = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
+    
     // registramos nuestras fuentes con los NOMBRES que PDFKit espera
     this.registerFont('Helvetica', REGULAR);
     this.registerFont('Helvetica-Bold', BOLD);
@@ -137,6 +137,10 @@ export async function POST(req: NextRequest) {
     // Ahora el constructor NO intentará leer AFM
     const doc = new PDFDocument({ size: 'A4', margin: 24 });
 
+    // Cargar fuentes TTF para uso personalizado
+    const REGULAR = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
+    const BOLD = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
+    
     // Si querés, además usá nombres propios:
     doc.registerFont('UI-Regular', REGULAR);
     doc.registerFont('UI-Bold', BOLD);
