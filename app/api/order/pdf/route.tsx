@@ -1,6 +1,7 @@
 // app/api/order/pdf/route.tsx
 import { NextRequest, NextResponse } from 'next/server';
-import PDFDocument from 'pdfkit';
+import { renderToStream } from '@react-pdf/renderer';
+import OrderNote, { OrderNoteProps } from '@/app/pdf/OrderNote';
 import { createOrder } from '@/lib/supabase-orders';
 
 // Forzar el runtime de Node.js y aumentar la duración máxima en Vercel
@@ -108,102 +109,27 @@ export async function POST(req: NextRequest) {
       // No bloqueamos la generación del PDF si la BD falla.
     }
 
-    // Crear el PDF con PDFKit
-    console.log('📄 Creando PDF con PDFKit...');
-    const doc = new PDFDocument({ 
-      margin: 50,
-      font: 'Times-Roman' // Usar fuente que funciona en Vercel
-    });
-    const chunks: Buffer[] = [];
-
-    doc.on('data', (chunk) => chunks.push(chunk));
-    console.log('📊 PDF configurado, generando contenido...');
+    // Crear el PDF con @react-pdf/renderer
+    console.log('📄 Creando PDF con @react-pdf/renderer...');
     
-    // Encabezado
-    doc.fontSize(20).text('NOTA DE PEDIDO', { align: 'center' });
-    doc.moveDown();
-    
-    // Información del pedido
-    doc.fontSize(12);
-    doc.text(`Número de Pedido: ${orderId}`);
-    doc.text(`Cliente: ${rawOrderData.c.n}`);
-    doc.text(`Email: ${rawOrderData.c.e}`);
-    if (rawOrderData.c.p) {
-      doc.text(`Teléfono: ${rawOrderData.c.p}`);
-    }
-    doc.text(`Fecha: ${new Date().toLocaleDateString('es-CL')}`);
-    doc.moveDown();
+    const pdfProps: OrderNoteProps = {
+      orderId: orderId,
+      customerName: rawOrderData.c.n,
+      customerEmail: rawOrderData.c.e,
+      customerPhone: rawOrderData.c.p || '',
+      items: normalizedItems.map(item => ({
+        sku: item.sku,
+        name: item.name,
+        qty: item.qty,
+        unitPrice: item.unitPrice,
+      })),
+      currency: 'CLP',
+      createdAt: new Date().toISOString(),
+    };
 
-    // Tabla de productos
-    doc.fontSize(10);
-    let yPosition = doc.y;
-    
-    // Encabezados de la tabla
-    doc.text('Marca', 50, yPosition);
-    doc.text('Producto', 120, yPosition);
-    doc.text('Talla', 250, yPosition);
-    doc.text('Cant.', 300, yPosition);
-    doc.text('Precio', 350, yPosition);
-    doc.text('Total', 450, yPosition);
-    
-    // Línea separadora
-    yPosition += 20;
-    doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
-    yPosition += 10;
-
-    // Productos
-    normalizedItems.forEach((item, index) => {
-      if (yPosition > 700) {
-        doc.addPage();
-        yPosition = 50;
-      }
-      
-      doc.text(item.brand, 50, yPosition);
-      doc.text(item.name, 120, yPosition, { width: 120 });
-      doc.text(item.size, 250, yPosition);
-      doc.text(item.qty.toString(), 300, yPosition);
-      doc.text(`$${item.unitPrice.toLocaleString()}`, 350, yPosition);
-      doc.text(`$${item.total.toLocaleString()}`, 450, yPosition);
-      
-      // SKU debajo del nombre del producto (más sutil)
-      doc.fontSize(8).fillColor('#666666');
-      doc.text(`SKU: ${item.sku}`, 120, yPosition + 12);
-      doc.fontSize(10).fillColor('black'); // Restaurar tamaño y color
-      
-      yPosition += 30; // Aumentar espacio para el SKU
-    });
-
-    // Total
-    yPosition += 20;
-    doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
-    yPosition += 20;
-    
-    doc.fontSize(14).text(`TOTAL: $${totalAmount.toLocaleString()}`, 400, yPosition);
-
-    // Finalizar el PDF
-    console.log('🏁 Finalizando PDF...');
-    doc.end();
-
-    // Esperar a que se complete la generación
-    console.log('⏳ Esperando finalización del PDF...');
-    await new Promise<void>((resolve) => {
-      doc.on('end', () => {
-        console.log('✅ PDF finalizado');
-        resolve();
-      });
-    });
-
-    // Crear el stream de respuesta
-    console.log('🔄 Creando stream de respuesta...');
-    const pdfBuffer = Buffer.concat(chunks);
-    console.log('📦 Buffer PDF creado, tamaño:', pdfBuffer.length, 'bytes');
-    
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(pdfBuffer);
-        controller.close();
-      }
-    });
+    console.log('📊 Generando stream del PDF...');
+    const stream = await renderToStream(<OrderNote {...pdfProps} />);
+    console.log('✅ Stream del PDF creado');
 
     // Retornar el stream como respuesta
     const headers = new Headers();
@@ -211,7 +137,7 @@ export async function POST(req: NextRequest) {
     const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
     headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
 
-    return new NextResponse(stream, {
+    return new NextResponse(stream as any, {
       status: 200,
       headers,
     });
