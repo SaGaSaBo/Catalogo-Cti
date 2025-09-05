@@ -9,21 +9,11 @@ import { fileURLToPath } from 'node:url';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Función para cargar fuentes (solo en runtime)
-function loadFonts() {
-  try {
-    const fontRegular = readFileSync(
-      fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url))
-    );
-    const fontBold = readFileSync(
-      fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url))
-    );
-    return { fontRegular, fontBold };
-  } catch (error) {
-    console.error('Error loading fonts:', error);
-    throw new Error('Failed to load fonts');
-  }
-}
+// ✅ 1) Resolver URL -> path string -> Buffer
+const REGULAR_PATH = fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url));
+const BOLD_PATH = fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url));
+const REGULAR_BUF = readFileSync(REGULAR_PATH);
+const BOLD_BUF = readFileSync(BOLD_PATH);
 
 // Normaliza los items del carrito a un formato seguro para el PDF
 function normalizeOrderItems(items: any[]) {
@@ -116,9 +106,6 @@ export async function POST(req: NextRequest) {
     // Crear el PDF con PDFKit (streaming para evitar memory issues)
     console.log('📄 Creando PDF con PDFKit...');
     
-    // Cargar fuentes en runtime
-    const { fontRegular, fontBold } = loadFonts();
-    
     const formatPrice = (value: number) => {
       return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
     };
@@ -135,9 +122,9 @@ export async function POST(req: NextRequest) {
     // Crear stream con PDFKit
     const doc = new PDFDocument({ size: 'A4', margin: 24 });
     
-    // Registrar fuentes TTF para evitar problemas con archivos .afm
-    doc.registerFont('UI-Regular', fontRegular);
-    doc.registerFont('UI-Bold', fontBold);
+    // ✅ 2) Registrar buffers (no URLs)
+    doc.registerFont('UI-Regular', REGULAR_BUF);
+    doc.registerFont('UI-Bold', BOLD_BUF);
     
     // Streaming response para evitar acumular todo en memoria
     const stream = new ReadableStream({
@@ -239,7 +226,7 @@ export async function POST(req: NextRequest) {
     const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
     headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
 
-    console.log('✅ PDF creado exitosamente con PDFKit (streaming + TTF fonts)');
+    console.log('✅ PDF creado exitosamente con PDFKit (streaming + TTF buffers)');
     return new Response(stream, { status: 200, headers });
 
   } catch (error) {
