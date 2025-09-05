@@ -1,4 +1,4 @@
-// app/api/orders/[orderId]/pdf/route.ts
+// app/api/orders/[orderId]/pdf/route.tsx
 import { NextResponse } from 'next/server';
 import { renderToStream } from '@react-pdf/renderer';
 import React from 'react';
@@ -57,7 +57,15 @@ export async function GET(_req: Request, { params }: { params: { orderId: string
       });
     };
 
-    const total = items.reduce((acc, it) => acc + (Number(it.price || 0) * Number(it.quantity || 0)), 0);
+    // Reconstruir items para mostrar correctamente
+    const pdfItems = items.map((item: any) => ({
+      sku: item.product?.sku || item.sku || 'N/A',
+      name: `${item.product?.brand || item.brand || ''} - ${item.product?.title || item.title || 'Sin Título'}`,
+      qty: item.quantity || 0,
+      unitPrice: item.product?.price || item.price || 0,
+    }));
+
+    const total = pdfItems.reduce((acc, it) => acc + (it.unitPrice * it.qty), 0);
 
     const pdfDocument = (
       <Document>
@@ -79,12 +87,12 @@ export async function GET(_req: Request, { params }: { params: { orderId: string
               <Text style={styles.colPrice}>Total</Text>
             </View>
 
-            {items.map((it, i) => (
+            {pdfItems.map((it, i) => (
               <View key={i} style={styles.tableRow} wrap={false}>
-                <Text style={styles.colSku}>{it.sku || 'N/A'}</Text>
-                <Text style={styles.colName}>{it.title || 'Sin título'}</Text>
-                <Text style={styles.colQty}>{it.quantity || 0}</Text>
-                <Text style={styles.colPrice}>{formatPrice(Number(it.price || 0) * Number(it.quantity || 0))}</Text>
+                <Text style={styles.colSku}>{it.sku}</Text>
+                <Text style={styles.colName}>{it.name}</Text>
+                <Text style={styles.colQty}>{it.qty}</Text>
+                <Text style={styles.colPrice}>{formatPrice(it.unitPrice * it.qty)}</Text>
               </View>
             ))}
           </View>

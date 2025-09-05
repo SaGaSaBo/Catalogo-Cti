@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToStream } from '@react-pdf/renderer';
 import React from 'react';
-import OrderNote, { OrderNoteProps } from '@/app/pdf/OrderNote';
 import { createOrder } from '@/lib/supabase-orders';
 
 // Forzar el runtime de Node.js y aumentar la duración máxima en Vercel
@@ -123,22 +122,6 @@ export async function POST(req: NextRequest) {
     // Crear el PDF con @react-pdf/renderer
     console.log('📄 Creando PDF con @react-pdf/renderer...');
     
-    const pdfProps: OrderNoteProps = {
-      orderId: orderId,
-      customerName: rawOrderData.c.n,
-      customerEmail: rawOrderData.c.e,
-      customerPhone: rawOrderData.c.p || '',
-      items: normalizedItems.map(item => ({
-        sku: item.sku,
-        name: item.name,
-        qty: item.qty,
-        unitPrice: item.unitPrice,
-      })),
-      currency: 'CLP',
-      createdAt: new Date().toISOString(),
-    };
-
-    console.log('📊 Props del PDF:', JSON.stringify(pdfProps, null, 2));
     console.log('📊 Generando stream del PDF...');
     
     let stream;
@@ -173,18 +156,18 @@ export async function POST(req: NextRequest) {
         });
       };
 
-      const total = pdfProps.items.reduce((acc, it) => acc + it.qty * it.unitPrice, 0);
+      const total = normalizedItems.reduce((acc, it) => acc + it.qty * it.unitPrice, 0);
 
       const pdfDocument = (
         <Document>
           <Page size="A4" style={styles.page} wrap>
             <View style={styles.header}>
               <Text style={styles.title}>Nota de Pedido</Text>
-              <Text style={styles.customerInfo}>Pedido: {pdfProps.orderId}</Text>
-              <Text style={styles.customerInfo}>Fecha: {formatDate(pdfProps.createdAt)}</Text>
-              <Text style={styles.customerInfo}>Cliente: {pdfProps.customerName}</Text>
-              {pdfProps.customerEmail && <Text style={styles.customerInfo}>Email: {pdfProps.customerEmail}</Text>}
-              {pdfProps.customerPhone && <Text style={styles.customerInfo}>Teléfono: {pdfProps.customerPhone}</Text>}
+              <Text style={styles.customerInfo}>Pedido: {orderId}</Text>
+              <Text style={styles.customerInfo}>Fecha: {formatDate(new Date().toISOString())}</Text>
+              <Text style={styles.customerInfo}>Cliente: {rawOrderData.c.n}</Text>
+              {rawOrderData.c.e && <Text style={styles.customerInfo}>Email: {rawOrderData.c.e}</Text>}
+              {rawOrderData.c.p && <Text style={styles.customerInfo}>Teléfono: {rawOrderData.c.p}</Text>}
             </View>
 
             <View style={styles.table}>
@@ -195,7 +178,7 @@ export async function POST(req: NextRequest) {
                 <Text style={styles.colPrice}>Total</Text>
               </View>
 
-              {pdfProps.items.map((it, i) => (
+              {normalizedItems.map((it, i) => (
                 <View key={i} style={styles.tableRow} wrap={false}>
                   <Text style={styles.colSku}>{it.sku}</Text>
                   <Text style={styles.colName}>{it.name}</Text>
