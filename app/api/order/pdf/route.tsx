@@ -1,6 +1,7 @@
 // app/api/order/pdf/route.tsx
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToStream } from '@react-pdf/renderer';
+import React from 'react';
 import OrderNote, { OrderNoteProps } from '@/app/pdf/OrderNote';
 import { createOrder } from '@/lib/supabase-orders';
 
@@ -130,8 +131,9 @@ export async function POST(req: NextRequest) {
     console.log('📊 Props del PDF:', JSON.stringify(pdfProps, null, 2));
     console.log('📊 Generando stream del PDF...');
     
+    let stream;
     try {
-      const stream = await renderToStream(<OrderNote {...pdfProps} />);
+      stream = await renderToStream(<OrderNote {...pdfProps} />);
       console.log('✅ Stream del PDF creado');
     } catch (renderError) {
       console.error('❌ Error en renderToStream:', renderError);
