@@ -69,17 +69,24 @@ function optimizeCartData(cartData: any) {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('📥 Iniciando generación de PDF...');
     const rawOrderData = await req.json();
+    console.log('📦 Datos recibidos:', JSON.stringify(rawOrderData, null, 2));
 
     // Validar datos requeridos (formato optimizado)
     if (!rawOrderData.c || !rawOrderData.i) {
+      console.error('❌ Datos incompletos:', { c: rawOrderData.c, i: rawOrderData.i });
       return NextResponse.json({ error: 'Datos de la orden incompletos' }, { status: 400 });
     }
 
     // Los datos ya vienen optimizados, procesar directamente
+    console.log('🔄 Normalizando items...');
     const normalizedItems = normalizeOrderItems(rawOrderData.i);
+    console.log('✅ Items normalizados:', normalizedItems.length);
+    
     const orderId = `ORD-${Date.now()}`;
     const totalAmount = normalizedItems.reduce((sum, item) => sum + item.total, 0);
+    console.log('💰 Total calculado:', totalAmount);
 
     // Reconstruir datos para Supabase (formato completo)
     const orderDataForDB = {
@@ -102,10 +109,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Crear el PDF con PDFKit
+    console.log('📄 Creando PDF con PDFKit...');
     const doc = new PDFDocument({ margin: 50 });
     const chunks: Buffer[] = [];
 
     doc.on('data', (chunk) => chunks.push(chunk));
+    console.log('📊 PDF configurado, generando contenido...');
     
     // Encabezado
     doc.fontSize(20).text('NOTA DE PEDIDO', { align: 'center' });
@@ -169,15 +178,23 @@ export async function POST(req: NextRequest) {
     doc.fontSize(14).text(`TOTAL: $${totalAmount.toLocaleString()}`, 400, yPosition);
 
     // Finalizar el PDF
+    console.log('🏁 Finalizando PDF...');
     doc.end();
 
     // Esperar a que se complete la generación
+    console.log('⏳ Esperando finalización del PDF...');
     await new Promise<void>((resolve) => {
-      doc.on('end', () => resolve());
+      doc.on('end', () => {
+        console.log('✅ PDF finalizado');
+        resolve();
+      });
     });
 
     // Crear el stream de respuesta
+    console.log('🔄 Creando stream de respuesta...');
     const pdfBuffer = Buffer.concat(chunks);
+    console.log('📦 Buffer PDF creado, tamaño:', pdfBuffer.length, 'bytes');
+    
     const stream = new ReadableStream({
       start(controller) {
         controller.enqueue(pdfBuffer);
@@ -198,6 +215,10 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('❌ Error generando PDF:', error);
-    return NextResponse.json({ error: 'Error interno al generar el PDF' }, { status: 500 });
+    console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    return NextResponse.json({ 
+      error: 'Error interno al generar el PDF',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }
