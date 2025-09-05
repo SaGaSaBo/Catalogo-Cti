@@ -6,7 +6,7 @@ import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/rendere
 // Font.register({ family: 'Oswald', src: 'https://fonts.gstatic.com/s/oswald/v13/Y_TKV6o8WovbUd3m_X9aAA.ttf' });
 
 const styles = StyleSheet.create({
-  page: { padding: 30, fontSize: 10, fontFamily: 'Helvetica' },
+  page: { padding: 30, fontSize: 10 },
   header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#eaeaea', paddingBottom: 10 },
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
   customerInfo: { fontSize: 10, color: '#333' },
