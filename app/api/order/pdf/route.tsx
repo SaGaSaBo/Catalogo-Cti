@@ -9,11 +9,20 @@ import { fileURLToPath } from 'node:url';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// ✅ 1) Resolver URL -> path string -> Buffer
-const REGULAR_PATH = fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url));
-const BOLD_PATH = fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url));
-const REGULAR_BUF = readFileSync(REGULAR_PATH);
-const BOLD_BUF = readFileSync(BOLD_PATH);
+// Función para cargar fuentes (solo en runtime)
+function loadFonts() {
+  try {
+    // ✅ 1) Resolver URL -> path string -> Buffer
+    const REGULAR_PATH = fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url));
+    const BOLD_PATH = fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url));
+    const REGULAR_BUF = readFileSync(REGULAR_PATH);
+    const BOLD_BUF = readFileSync(BOLD_PATH);
+    return { REGULAR_BUF, BOLD_BUF };
+  } catch (error) {
+    console.error('Error loading fonts:', error);
+    throw new Error('Failed to load fonts');
+  }
+}
 
 // Normaliza los items del carrito a un formato seguro para el PDF
 function normalizeOrderItems(items: any[]) {
@@ -105,6 +114,9 @@ export async function POST(req: NextRequest) {
 
     // Crear el PDF con PDFKit (streaming para evitar memory issues)
     console.log('📄 Creando PDF con PDFKit...');
+    
+    // Cargar fuentes en runtime
+    const { REGULAR_BUF, BOLD_BUF } = loadFonts();
     
     const formatPrice = (value: number) => {
       return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
