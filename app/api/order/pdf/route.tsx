@@ -12,9 +12,21 @@ function normalizeOrderItems(items: any[]) {
   if (!Array.isArray(items)) return [];
 
   return items.flatMap(item => {
-    // Caso 1: El item ya está aplanado (viene de CartModal)
+    // Caso 1: Datos optimizados (formato ultra-compacto)
+    if (item.p && typeof item.sz === 'string' && typeof item.q === 'number') {
+      const product = item.p;
+      return [{
+        brand: product.b || 'N/A',
+        name: product.t || 'Sin Título',
+        sku: product.s || 'N/A',
+        size: item.sz || 'N/A',
+        qty: item.q,
+        unitPrice: Number(product.pr) || 0,
+        total: (Number(product.pr) || 0) * item.q,
+      }];
+    }
+    // Caso 2: Formato original (fallback)
     if (item.product && typeof item.size === 'string' && typeof item.quantity === 'number') {
-      // Extraer solo los datos esenciales, sin imágenes ni datos pesados
       const product = item.product;
       return [{
         brand: product.brand || 'N/A',
@@ -26,7 +38,6 @@ function normalizeOrderItems(items: any[]) {
         total: (Number(product.price) || 0) * item.quantity,
       }];
     }
-    // Podríamos añadir más casos de normalización si otras partes de la app envían formatos diferentes
     console.warn('Item con formato no reconocido:', item);
     return [];
   });
@@ -60,20 +71,30 @@ export async function POST(req: NextRequest) {
   try {
     const rawOrderData = await req.json();
 
-    // Validar datos requeridos
-    if (!rawOrderData.customer || !rawOrderData.items) {
+    // Validar datos requeridos (formato optimizado)
+    if (!rawOrderData.c || !rawOrderData.i) {
       return NextResponse.json({ error: 'Datos de la orden incompletos' }, { status: 400 });
     }
 
-    // Optimizar datos para reducir el payload
-    const orderData = optimizeCartData(rawOrderData);
-    const normalizedItems = normalizeOrderItems(orderData.items);
+    // Los datos ya vienen optimizados, procesar directamente
+    const normalizedItems = normalizeOrderItems(rawOrderData.i);
     const orderId = `ORD-${Date.now()}`;
     const totalAmount = normalizedItems.reduce((sum, item) => sum + item.total, 0);
 
+    // Reconstruir datos para Supabase (formato completo)
+    const orderDataForDB = {
+      customer: {
+        name: rawOrderData.c.n,
+        email: rawOrderData.c.e,
+        phone: rawOrderData.c.p
+      },
+      items: rawOrderData.i,
+      total: rawOrderData.t
+    };
+
     try {
-      // Guardar pedido en Supabase con datos optimizados
-      const savedOrder = await createOrder(orderData);
+      // Guardar pedido en Supabase
+      const savedOrder = await createOrder(orderDataForDB);
       console.log('✅ Pedido guardado exitosamente:', savedOrder.order_number);
     } catch (dbError) {
       console.error('❌ Error saving order to database:', dbError);
@@ -93,10 +114,10 @@ export async function POST(req: NextRequest) {
     // Información del pedido
     doc.fontSize(12);
     doc.text(`Número de Pedido: ${orderId}`);
-    doc.text(`Cliente: ${orderData.customer.name}`);
-    doc.text(`Email: ${orderData.customer.email}`);
-    if (orderData.customer.phone) {
-      doc.text(`Teléfono: ${orderData.customer.phone}`);
+    doc.text(`Cliente: ${rawOrderData.c.n}`);
+    doc.text(`Email: ${rawOrderData.c.e}`);
+    if (rawOrderData.c.p) {
+      doc.text(`Teléfono: ${rawOrderData.c.p}`);
     }
     doc.text(`Fecha: ${new Date().toLocaleDateString('es-CL')}`);
     doc.moveDown();
@@ -167,7 +188,7 @@ export async function POST(req: NextRequest) {
     // Retornar el stream como respuesta
     const headers = new Headers();
     headers.set('Content-Type', 'application/pdf');
-    const safeFileName = (orderData.customer.name || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
     headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
 
     return new NextResponse(stream, {

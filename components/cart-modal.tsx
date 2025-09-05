@@ -91,26 +91,28 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     setIsGeneratingPDF(true);
     
     try {
-      // Optimizar datos del carrito para reducir el payload
+      // Optimización ultra-agresiva del payload
       const cartItems = getCartItems();
       const optimizedItems = cartItems.map(item => ({
-        product: {
-          id: item.product.id,
-          sku: item.product.sku,
-          title: item.product.title,
-          brand: item.product.brand,
-          price: item.product.price
-          // Excluir imágenes y otros datos pesados
+        p: {
+          i: item.product.id,
+          s: item.product.sku?.substring(0, 20) || 'N/A',
+          t: item.product.title?.substring(0, 50) || 'Sin título',
+          b: item.product.brand?.substring(0, 30) || 'N/A',
+          pr: Number(item.product.price) || 0
         },
-        size: item.size,
-        quantity: item.quantity
+        sz: item.size?.substring(0, 10) || 'N/A',
+        q: item.quantity
       }));
 
       const orderData = {
-        customer: customerData,
-        items: optimizedItems,
-        total: getTotalAmount(),
-        date: new Date().toISOString()
+        c: {
+          n: customerData.name?.substring(0, 50) || '',
+          e: customerData.email?.substring(0, 50) || '',
+          p: customerData.phone?.substring(0, 20) || ''
+        },
+        i: optimizedItems,
+        t: getTotalAmount()
       };
 
       const response = await fetch('/api/order/pdf', {
