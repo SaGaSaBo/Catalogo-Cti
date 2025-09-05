@@ -133,7 +133,78 @@ export async function POST(req: NextRequest) {
     
     let stream;
     try {
-      stream = await renderToStream(<OrderNote {...pdfProps} />);
+      // Crear el PDF directamente sin usar el componente OrderNote
+      const { Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
+      
+      const styles = StyleSheet.create({
+        page: { padding: 30, fontSize: 10 },
+        header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#eaeaea', paddingBottom: 10 },
+        title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+        customerInfo: { fontSize: 10, color: '#333' },
+        table: { display: "flex", width: 'auto', borderStyle: 'solid', borderWidth: 0, borderRightWidth: 0, borderBottomWidth: 0 },
+        tableRow: { flexDirection: 'row', borderBottomColor: '#eaeaea', borderBottomWidth: 1, alignItems: 'center', minHeight: 24 },
+        tableHeader: { backgroundColor: '#f2f2f2', fontWeight: 'bold' },
+        colSku: { width: '20%', padding: 5 },
+        colName: { width: '45%', padding: 5 },
+        colQty: { width: '10%', textAlign: 'right', padding: 5 },
+        colPrice: { width: '25%', textAlign: 'right', padding: 5 },
+        totalSection: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20 },
+        totalText: { fontSize: 12, fontWeight: 'bold' },
+      });
+
+      const formatPrice = (value: number) => {
+        return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
+      };
+
+      const formatDate = (isoString: string) => {
+        return new Date(isoString).toLocaleString('es-CL', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+      };
+
+      const total = pdfProps.items.reduce((acc, it) => acc + it.qty * it.unitPrice, 0);
+
+      const pdfDocument = (
+        <Document>
+          <Page size="A4" style={styles.page} wrap>
+            <View style={styles.header}>
+              <Text style={styles.title}>Nota de Pedido</Text>
+              <Text style={styles.customerInfo}>Pedido: {pdfProps.orderId}</Text>
+              <Text style={styles.customerInfo}>Fecha: {formatDate(pdfProps.createdAt)}</Text>
+              <Text style={styles.customerInfo}>Cliente: {pdfProps.customerName}</Text>
+              {pdfProps.customerEmail && <Text style={styles.customerInfo}>Email: {pdfProps.customerEmail}</Text>}
+              {pdfProps.customerPhone && <Text style={styles.customerInfo}>Teléfono: {pdfProps.customerPhone}</Text>}
+            </View>
+
+            <View style={styles.table}>
+              <View style={[styles.tableRow, styles.tableHeader]} fixed>
+                <Text style={styles.colSku}>SKU</Text>
+                <Text style={styles.colName}>Producto</Text>
+                <Text style={styles.colQty}>Cant.</Text>
+                <Text style={styles.colPrice}>Total</Text>
+              </View>
+
+              {pdfProps.items.map((it, i) => (
+                <View key={i} style={styles.tableRow} wrap={false}>
+                  <Text style={styles.colSku}>{it.sku}</Text>
+                  <Text style={styles.colName}>{it.name}</Text>
+                  <Text style={styles.colQty}>{it.qty}</Text>
+                  <Text style={styles.colPrice}>{formatPrice(it.unitPrice * it.qty)}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.totalSection}>
+              <Text style={styles.totalText}>
+                Total Pedido: {formatPrice(total)}
+              </Text>
+            </View>
+          </Page>
+        </Document>
+      );
+
+      stream = await renderToStream(pdfDocument);
       console.log('✅ Stream del PDF creado');
     } catch (renderError) {
       console.error('❌ Error en renderToStream:', renderError);
