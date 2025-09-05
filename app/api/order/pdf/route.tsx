@@ -4,19 +4,18 @@ import PDFDocument from 'pdfkit';
 import { createOrder } from '@/lib/supabase-orders';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import path from 'node:path';
 
 // Forzar el runtime de Node.js y aumentar la duración máxima en Vercel
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Cargar fuentes TTF para evitar problemas con archivos .afm en Vercel
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const fontsDir = path.join(__dirname, '_fonts');
-
-const interRegular = readFileSync(path.join(fontsDir, 'Inter-Regular.ttf'));
-const interBold = readFileSync(path.join(fontsDir, 'Inter-Bold.ttf'));
+// ✅ Esto hace que Next incluya los .ttf en el bundle
+const fontRegular = readFileSync(
+  fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url))
+);
+const fontBold = readFileSync(
+  fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url))
+);
 
 // Normaliza los items del carrito a un formato seguro para el PDF
 function normalizeOrderItems(items: any[]) {
@@ -126,8 +125,8 @@ export async function POST(req: NextRequest) {
     const doc = new PDFDocument({ size: 'A4', margin: 24 });
     
     // Registrar fuentes TTF para evitar problemas con archivos .afm
-    doc.registerFont('UI-Regular', interRegular);
-    doc.registerFont('UI-Bold', interBold);
+    doc.registerFont('UI-Regular', fontRegular);
+    doc.registerFont('UI-Bold', fontBold);
     
     // Streaming response para evitar acumular todo en memoria
     const stream = new ReadableStream({
