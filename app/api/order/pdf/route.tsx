@@ -174,44 +174,57 @@ export async function POST(req: NextRequest) {
       const total = normalizedItems.reduce((acc, it) => acc + it.qty * it.unitPrice, 0);
 
       console.log('📊 Creando documento PDF...');
-      const pdfDocument = (
-        <Document>
-          <Page size="A4" style={styles.page} wrap>
-            <View style={styles.header}>
-              <Text style={styles.title}>Nota de Pedido</Text>
-              <Text style={styles.customerInfo}>Pedido: {orderId}</Text>
-              <Text style={styles.customerInfo}>Fecha: {formatDate(new Date().toISOString())}</Text>
-              <Text style={styles.customerInfo}>Cliente: {rawOrderData.c.n}</Text>
-              {rawOrderData.c.e && <Text style={styles.customerInfo}>Email: {rawOrderData.c.e}</Text>}
-              {rawOrderData.c.p && <Text style={styles.customerInfo}>Teléfono: {rawOrderData.c.p}</Text>}
-            </View>
+      
+      // Crear el documento paso a paso para evitar errores de JSX
+      const headerView = React.createElement(View, { style: styles.header }, [
+        React.createElement(Text, { key: 'title', style: styles.title }, 'Nota de Pedido'),
+        React.createElement(Text, { key: 'order', style: styles.customerInfo }, `Pedido: ${orderId}`),
+        React.createElement(Text, { key: 'date', style: styles.customerInfo }, `Fecha: ${formatDate(new Date().toISOString())}`),
+        React.createElement(Text, { key: 'client', style: styles.customerInfo }, `Cliente: ${rawOrderData.c.n}`),
+        rawOrderData.c.e ? React.createElement(Text, { key: 'email', style: styles.customerInfo }, `Email: ${rawOrderData.c.e}`) : null,
+        rawOrderData.c.p ? React.createElement(Text, { key: 'phone', style: styles.customerInfo }, `Teléfono: ${rawOrderData.c.p}`) : null
+      ].filter(Boolean));
 
-            <View style={styles.table}>
-              <View style={[styles.tableRow, styles.tableHeader]} fixed>
-                <Text style={styles.colSku}>SKU</Text>
-                <Text style={styles.colName}>Producto</Text>
-                <Text style={styles.colQty}>Cant.</Text>
-                <Text style={styles.colPrice}>Total</Text>
-              </View>
+      const tableHeader = React.createElement(View, { 
+        key: 'header', 
+        style: [styles.tableRow, styles.tableHeader], 
+        fixed: true 
+      }, [
+        React.createElement(Text, { key: 'sku', style: styles.colSku }, 'SKU'),
+        React.createElement(Text, { key: 'name', style: styles.colName }, 'Producto'),
+        React.createElement(Text, { key: 'qty', style: styles.colQty }, 'Cant.'),
+        React.createElement(Text, { key: 'price', style: styles.colPrice }, 'Total')
+      ]);
 
-              {normalizedItems.map((it, i) => (
-                <View key={i} style={styles.tableRow} wrap={false}>
-                  <Text style={styles.colSku}>{it.sku}</Text>
-                  <Text style={styles.colName}>{it.name}</Text>
-                  <Text style={styles.colQty}>{it.qty}</Text>
-                  <Text style={styles.colPrice}>{formatPrice(it.unitPrice * it.qty)}</Text>
-                </View>
-              ))}
-            </View>
-
-            <View style={styles.totalSection}>
-              <Text style={styles.totalText}>
-                Total Pedido: {formatPrice(total)}
-              </Text>
-            </View>
-          </Page>
-        </Document>
+      const tableRows = normalizedItems.map((it, i) => 
+        React.createElement(View, { 
+          key: i, 
+          style: styles.tableRow, 
+          wrap: false 
+        }, [
+          React.createElement(Text, { key: 'sku', style: styles.colSku }, it.sku),
+          React.createElement(Text, { key: 'name', style: styles.colName }, it.name),
+          React.createElement(Text, { key: 'qty', style: styles.colQty }, it.qty.toString()),
+          React.createElement(Text, { key: 'price', style: styles.colPrice }, formatPrice(it.unitPrice * it.qty))
+        ])
       );
+
+      const tableView = React.createElement(View, { style: styles.table }, [
+        tableHeader,
+        ...tableRows
+      ]);
+
+      const totalView = React.createElement(View, { style: styles.totalSection }, 
+        React.createElement(Text, { style: styles.totalText }, `Total Pedido: ${formatPrice(total)}`)
+      );
+
+      const page = React.createElement(Page, { 
+        size: "A4", 
+        style: styles.page, 
+        wrap: true 
+      }, [headerView, tableView, totalView]);
+
+      const pdfDocument = React.createElement(Document, {}, page);
 
       console.log('📄 Renderizando PDF a stream...');
       stream = await renderToStream(pdfDocument);
