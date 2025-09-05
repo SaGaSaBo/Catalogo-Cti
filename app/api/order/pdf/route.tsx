@@ -1,15 +1,14 @@
 // app/api/order/pdf/route.tsx
 import { NextRequest, NextResponse } from 'next/server';
-import { renderToStream } from '@react-pdf/renderer';
-import OrderNote, { OrderNoteProps } from '@/app/pdf/OrderNote';
+import PDFDocument from 'pdfkit';
 import { createOrder } from '@/lib/supabase-orders';
 
 // Forzar el runtime de Node.js y aumentar la duración máxima en Vercel
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Normaliza los items del carrito a un formato plano y seguro para el PDF
-function normalizeOrderItems(items: any[]): OrderNoteProps['items'] {
+// Normaliza los items del carrito a un formato seguro para el PDF
+function normalizeOrderItems(items: any[]) {
   if (!Array.isArray(items)) return [];
 
   return items.flatMap(item => {
@@ -18,8 +17,10 @@ function normalizeOrderItems(items: any[]): OrderNoteProps['items'] {
       return [{
         sku: item.product.sku || 'N/A',
         name: `${item.product.brand || ''} - ${item.product.title || 'Sin Título'}`,
+        size: item.size || 'N/A',
         qty: item.quantity,
         unitPrice: item.product.price || 0,
+        total: (item.product.price || 0) * item.quantity,
       }];
     }
     // Podríamos añadir más casos de normalización si otras partes de la app envían formatos diferentes
@@ -38,18 +39,11 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedItems = normalizeOrderItems(orderData.items);
-
-    const pdfProps: OrderNoteProps = {
-      orderId: `ORD-${Date.now()}`,
-      customerName: orderData.customer.name,
-      customerEmail: orderData.customer.email,
-      items: normalizedItems,
-      currency: 'CLP', // Asumiendo CLP, podría venir del payload
-      createdAt: new Date().toISOString(),
-    };
+    const orderId = `ORD-${Date.now()}`;
+    const totalAmount = normalizedItems.reduce((sum, item) => sum + item.total, 0);
 
     try {
-      // Guardar pedido en Supabase (opcional, pero recomendado)
+      // Guardar pedido en Supabase
       const savedOrder = await createOrder(orderData);
       console.log('✅ Pedido guardado exitosamente:', savedOrder.order_number);
     } catch (dbError) {
@@ -57,8 +51,84 @@ export async function POST(req: NextRequest) {
       // No bloqueamos la generación del PDF si la BD falla.
     }
 
-    // Generar el stream del PDF
-    const stream = await renderToStream(<OrderNote {...pdfProps} />);
+    // Crear el PDF con PDFKit
+    const doc = new PDFDocument({ margin: 50 });
+    const chunks: Buffer[] = [];
+
+    doc.on('data', (chunk) => chunks.push(chunk));
+    
+    // Encabezado
+    doc.fontSize(20).text('NOTA DE PEDIDO', { align: 'center' });
+    doc.moveDown();
+    
+    // Información del pedido
+    doc.fontSize(12);
+    doc.text(`Número de Pedido: ${orderId}`);
+    doc.text(`Cliente: ${orderData.customer.name}`);
+    doc.text(`Email: ${orderData.customer.email}`);
+    if (orderData.customer.phone) {
+      doc.text(`Teléfono: ${orderData.customer.phone}`);
+    }
+    doc.text(`Fecha: ${new Date().toLocaleDateString('es-CL')}`);
+    doc.moveDown();
+
+    // Tabla de productos
+    doc.fontSize(10);
+    let yPosition = doc.y;
+    
+    // Encabezados de la tabla
+    doc.text('SKU', 50, yPosition);
+    doc.text('Producto', 120, yPosition);
+    doc.text('Talla', 300, yPosition);
+    doc.text('Cant.', 350, yPosition);
+    doc.text('Precio', 400, yPosition);
+    doc.text('Total', 480, yPosition);
+    
+    // Línea separadora
+    yPosition += 20;
+    doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
+    yPosition += 10;
+
+    // Productos
+    normalizedItems.forEach((item, index) => {
+      if (yPosition > 700) {
+        doc.addPage();
+        yPosition = 50;
+      }
+      
+      doc.text(item.sku, 50, yPosition);
+      doc.text(item.name, 120, yPosition, { width: 170 });
+      doc.text(item.size, 300, yPosition);
+      doc.text(item.qty.toString(), 350, yPosition);
+      doc.text(`$${item.unitPrice.toLocaleString()}`, 400, yPosition);
+      doc.text(`$${item.total.toLocaleString()}`, 480, yPosition);
+      
+      yPosition += 25;
+    });
+
+    // Total
+    yPosition += 20;
+    doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
+    yPosition += 20;
+    
+    doc.fontSize(14).text(`TOTAL: $${totalAmount.toLocaleString()}`, 400, yPosition);
+
+    // Finalizar el PDF
+    doc.end();
+
+    // Esperar a que se complete la generación
+    await new Promise<void>((resolve) => {
+      doc.on('end', () => resolve());
+    });
+
+    // Crear el stream de respuesta
+    const pdfBuffer = Buffer.concat(chunks);
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(pdfBuffer);
+        controller.close();
+      }
+    });
 
     // Retornar el stream como respuesta
     const headers = new Headers();
@@ -66,7 +136,7 @@ export async function POST(req: NextRequest) {
     const safeFileName = (orderData.customer.name || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
     headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
 
-    return new NextResponse(stream as any, {
+    return new NextResponse(stream, {
       status: 200,
       headers,
     });
