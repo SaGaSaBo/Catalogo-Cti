@@ -94,7 +94,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
       const orderData = {
         customer: customerData,
         items: getCartItems(),
-        total: getTotalAmount(),
+        total: getTotalAmount(), // El total se recalculará en el backend/PDF, pero es bueno tenerlo.
         date: new Date().toISOString()
       };
 
@@ -114,7 +114,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `orden-${customerData.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `pedido-${customerData.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
