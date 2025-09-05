@@ -71,6 +71,19 @@ function optimizeCartData(cartData: any) {
 export async function POST(req: NextRequest) {
   try {
     console.log('📥 Iniciando generación de PDF...');
+    
+    // Verificar que @react-pdf/renderer esté disponible
+    try {
+      const { Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
+      console.log('✅ @react-pdf/renderer importado correctamente');
+    } catch (importError) {
+      console.error('❌ Error importando @react-pdf/renderer:', importError);
+      return NextResponse.json({ 
+        error: 'Error importando librería de PDF',
+        details: importError instanceof Error ? importError.message : String(importError)
+      }, { status: 500 });
+    }
+
     const rawOrderData = await req.json();
     console.log('📦 Datos recibidos:', JSON.stringify(rawOrderData, null, 2));
 
@@ -122,15 +135,17 @@ export async function POST(req: NextRequest) {
     // Crear el PDF con @react-pdf/renderer
     console.log('📄 Creando PDF con @react-pdf/renderer...');
     
-    console.log('📊 Generando stream del PDF...');
-    
     let stream;
     try {
-      // Crear el PDF directamente sin usar el componente OrderNote
+      // Importar componentes de @react-pdf/renderer
       const { Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
       
       const styles = StyleSheet.create({
-        page: { padding: 30, fontSize: 10 },
+        page: { 
+          padding: 30, 
+          fontSize: 10,
+          fontFamily: 'Helvetica' // Especificar fuente explícitamente
+        },
         header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#eaeaea', paddingBottom: 10 },
         title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
         customerInfo: { fontSize: 10, color: '#333' },
@@ -158,6 +173,7 @@ export async function POST(req: NextRequest) {
 
       const total = normalizedItems.reduce((acc, it) => acc + it.qty * it.unitPrice, 0);
 
+      console.log('📊 Creando documento PDF...');
       const pdfDocument = (
         <Document>
           <Page size="A4" style={styles.page} wrap>
@@ -197,10 +213,12 @@ export async function POST(req: NextRequest) {
         </Document>
       );
 
+      console.log('📄 Renderizando PDF a stream...');
       stream = await renderToStream(pdfDocument);
-      console.log('✅ Stream del PDF creado');
+      console.log('✅ Stream del PDF creado exitosamente');
     } catch (renderError) {
       console.error('❌ Error en renderToStream:', renderError);
+      console.error('❌ Stack trace del render:', renderError instanceof Error ? renderError.stack : 'No stack trace');
       throw renderError;
     }
 
@@ -210,6 +228,7 @@ export async function POST(req: NextRequest) {
     const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
     headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
 
+    console.log('📤 Enviando PDF al cliente...');
     return new NextResponse(stream as any, {
       status: 200,
       headers,
@@ -220,7 +239,8 @@ export async function POST(req: NextRequest) {
     console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json({ 
       error: 'Error interno al generar el PDF',
-      details: error instanceof Error ? error.message : String(error)
+      details: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }
 }
