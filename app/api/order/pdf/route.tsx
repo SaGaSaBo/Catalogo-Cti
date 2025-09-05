@@ -110,7 +110,10 @@ export async function POST(req: NextRequest) {
 
     // Crear el PDF con PDFKit
     console.log('📄 Creando PDF con PDFKit...');
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ 
+      margin: 50,
+      font: 'Times-Roman' // Usar fuente que funciona en Vercel
+    });
     const chunks: Buffer[] = [];
 
     doc.on('data', (chunk) => chunks.push(chunk));
