@@ -9,13 +9,21 @@ import { fileURLToPath } from 'node:url';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// ✅ Esto hace que Next incluya los .ttf en el bundle
-const fontRegular = readFileSync(
-  fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url))
-);
-const fontBold = readFileSync(
-  fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url))
-);
+// Función para cargar fuentes (solo en runtime)
+function loadFonts() {
+  try {
+    const fontRegular = readFileSync(
+      fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url))
+    );
+    const fontBold = readFileSync(
+      fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url))
+    );
+    return { fontRegular, fontBold };
+  } catch (error) {
+    console.error('Error loading fonts:', error);
+    throw new Error('Failed to load fonts');
+  }
+}
 
 // Normaliza los items del carrito a un formato seguro para el PDF
 function normalizeOrderItems(items: any[]) {
@@ -107,6 +115,9 @@ export async function POST(req: NextRequest) {
 
     // Crear el PDF con PDFKit (streaming para evitar memory issues)
     console.log('📄 Creando PDF con PDFKit...');
+    
+    // Cargar fuentes en runtime
+    const { fontRegular, fontBold } = loadFonts();
     
     const formatPrice = (value: number) => {
       return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
