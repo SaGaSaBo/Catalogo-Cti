@@ -19,6 +19,7 @@ function normalizeOrderItems(items: any[]) {
       return [{
         brand: product.brand || 'N/A',
         name: product.title || 'Sin Título',
+        sku: product.sku || 'N/A',
         size: item.size || 'N/A',
         qty: item.quantity,
         unitPrice: Number(product.price) || 0,
@@ -131,7 +132,12 @@ export async function POST(req: NextRequest) {
       doc.text(`$${item.unitPrice.toLocaleString()}`, 350, yPosition);
       doc.text(`$${item.total.toLocaleString()}`, 450, yPosition);
       
-      yPosition += 25;
+      // SKU debajo del nombre del producto (más sutil)
+      doc.fontSize(8).fillColor('#666666');
+      doc.text(`SKU: ${item.sku}`, 120, yPosition + 12);
+      doc.fontSize(10).fillColor('black'); // Restaurar tamaño y color
+      
+      yPosition += 30; // Aumentar espacio para el SKU
     });
 
     // Total
