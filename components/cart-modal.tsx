@@ -91,10 +91,25 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     setIsGeneratingPDF(true);
     
     try {
+      // Optimizar datos del carrito para reducir el payload
+      const cartItems = getCartItems();
+      const optimizedItems = cartItems.map(item => ({
+        product: {
+          id: item.product.id,
+          sku: item.product.sku,
+          title: item.product.title,
+          brand: item.product.brand,
+          price: item.product.price
+          // Excluir imágenes y otros datos pesados
+        },
+        size: item.size,
+        quantity: item.quantity
+      }));
+
       const orderData = {
         customer: customerData,
-        items: getCartItems(),
-        total: getTotalAmount(), // El total se recalculará en el backend/PDF, pero es bueno tenerlo.
+        items: optimizedItems,
+        total: getTotalAmount(),
         date: new Date().toISOString()
       };
 

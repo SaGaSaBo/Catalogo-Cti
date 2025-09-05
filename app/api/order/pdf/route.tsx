@@ -14,13 +14,15 @@ function normalizeOrderItems(items: any[]) {
   return items.flatMap(item => {
     // Caso 1: El item ya está aplanado (viene de CartModal)
     if (item.product && typeof item.size === 'string' && typeof item.quantity === 'number') {
+      // Extraer solo los datos esenciales, sin imágenes ni datos pesados
+      const product = item.product;
       return [{
-        sku: item.product.sku || 'N/A',
-        name: `${item.product.brand || ''} - ${item.product.title || 'Sin Título'}`,
+        sku: product.sku || 'N/A',
+        name: `${product.brand || ''} - ${product.title || 'Sin Título'}`.substring(0, 100), // Limitar longitud
         size: item.size || 'N/A',
         qty: item.quantity,
-        unitPrice: item.product.price || 0,
-        total: (item.product.price || 0) * item.quantity,
+        unitPrice: Number(product.price) || 0,
+        total: (Number(product.price) || 0) * item.quantity,
       }];
     }
     // Podríamos añadir más casos de normalización si otras partes de la app envían formatos diferentes
@@ -29,21 +31,47 @@ function normalizeOrderItems(items: any[]) {
   });
 }
 
+// Función para limpiar y optimizar los datos del carrito antes de enviarlos
+function optimizeCartData(cartData: any) {
+  if (!cartData || !cartData.items) return cartData;
+
+  // Crear una copia optimizada sin datos pesados
+  const optimizedItems = cartData.items.map((item: any) => {
+    if (item.product) {
+      // Extraer solo los campos esenciales del producto
+      const { id, sku, title, brand, price } = item.product;
+      return {
+        product: { id, sku, title, brand, price },
+        size: item.size,
+        quantity: item.quantity
+      };
+    }
+    return item;
+  });
+
+  return {
+    ...cartData,
+    items: optimizedItems
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const orderData = await req.json();
+    const rawOrderData = await req.json();
 
     // Validar datos requeridos
-    if (!orderData.customer || !orderData.items) {
+    if (!rawOrderData.customer || !rawOrderData.items) {
       return NextResponse.json({ error: 'Datos de la orden incompletos' }, { status: 400 });
     }
 
+    // Optimizar datos para reducir el payload
+    const orderData = optimizeCartData(rawOrderData);
     const normalizedItems = normalizeOrderItems(orderData.items);
     const orderId = `ORD-${Date.now()}`;
     const totalAmount = normalizedItems.reduce((sum, item) => sum + item.total, 0);
 
     try {
-      // Guardar pedido en Supabase
+      // Guardar pedido en Supabase con datos optimizados
       const savedOrder = await createOrder(orderData);
       console.log('✅ Pedido guardado exitosamente:', savedOrder.order_number);
     } catch (dbError) {
