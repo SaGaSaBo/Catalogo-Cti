@@ -97,7 +97,17 @@ export async function POST(req: NextRequest) {
         email: rawOrderData.c.e,
         phone: rawOrderData.c.p
       },
-      items: rawOrderData.i,
+      items: rawOrderData.i.map((item: any) => ({
+        product: {
+          id: item.p.i,
+          sku: item.p.s,
+          title: item.p.t,
+          brand: item.p.b,
+          price: item.p.pr
+        },
+        size: item.sz,
+        quantity: item.q
+      })),
       total: rawOrderData.t
     };
 
