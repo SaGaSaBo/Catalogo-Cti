@@ -17,8 +17,8 @@ function normalizeOrderItems(items: any[]) {
       // Extraer solo los datos esenciales, sin imágenes ni datos pesados
       const product = item.product;
       return [{
-        sku: product.sku || 'N/A',
-        name: `${product.brand || ''} - ${product.title || 'Sin Título'}`.substring(0, 100), // Limitar longitud
+        brand: product.brand || 'N/A',
+        name: product.title || 'Sin Título',
         size: item.size || 'N/A',
         qty: item.quantity,
         unitPrice: Number(product.price) || 0,
@@ -105,12 +105,12 @@ export async function POST(req: NextRequest) {
     let yPosition = doc.y;
     
     // Encabezados de la tabla
-    doc.text('SKU', 50, yPosition);
+    doc.text('Marca', 50, yPosition);
     doc.text('Producto', 120, yPosition);
-    doc.text('Talla', 300, yPosition);
-    doc.text('Cant.', 350, yPosition);
-    doc.text('Precio', 400, yPosition);
-    doc.text('Total', 480, yPosition);
+    doc.text('Talla', 250, yPosition);
+    doc.text('Cant.', 300, yPosition);
+    doc.text('Precio', 350, yPosition);
+    doc.text('Total', 450, yPosition);
     
     // Línea separadora
     yPosition += 20;
@@ -124,12 +124,12 @@ export async function POST(req: NextRequest) {
         yPosition = 50;
       }
       
-      doc.text(item.sku, 50, yPosition);
-      doc.text(item.name, 120, yPosition, { width: 170 });
-      doc.text(item.size, 300, yPosition);
-      doc.text(item.qty.toString(), 350, yPosition);
-      doc.text(`$${item.unitPrice.toLocaleString()}`, 400, yPosition);
-      doc.text(`$${item.total.toLocaleString()}`, 480, yPosition);
+      doc.text(item.brand, 50, yPosition);
+      doc.text(item.name, 120, yPosition, { width: 120 });
+      doc.text(item.size, 250, yPosition);
+      doc.text(item.qty.toString(), 300, yPosition);
+      doc.text(`$${item.unitPrice.toLocaleString()}`, 350, yPosition);
+      doc.text(`$${item.total.toLocaleString()}`, 450, yPosition);
       
       yPosition += 25;
     });
