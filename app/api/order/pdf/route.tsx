@@ -43,46 +43,10 @@ function normalizeOrderItems(items: any[]) {
   });
 }
 
-// Función para limpiar y optimizar los datos del carrito antes de enviarlos
-function optimizeCartData(cartData: any) {
-  if (!cartData || !cartData.items) return cartData;
-
-  // Crear una copia optimizada sin datos pesados
-  const optimizedItems = cartData.items.map((item: any) => {
-    if (item.product) {
-      // Extraer solo los campos esenciales del producto
-      const { id, sku, title, brand, price } = item.product;
-      return {
-        product: { id, sku, title, brand, price },
-        size: item.size,
-        quantity: item.quantity
-      };
-    }
-    return item;
-  });
-
-  return {
-    ...cartData,
-    items: optimizedItems
-  };
-}
-
 export async function POST(req: NextRequest) {
   try {
     console.log('📥 Iniciando generación de PDF...');
     
-    // Verificar que @react-pdf/renderer esté disponible
-    try {
-      const { Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
-      console.log('✅ @react-pdf/renderer importado correctamente');
-    } catch (importError) {
-      console.error('❌ Error importando @react-pdf/renderer:', importError);
-      return NextResponse.json({ 
-        error: 'Error importando librería de PDF',
-        details: importError instanceof Error ? importError.message : String(importError)
-      }, { status: 500 });
-    }
-
     const rawOrderData = await req.json();
     console.log('📦 Datos recibidos:', JSON.stringify(rawOrderData, null, 2));
 
@@ -131,7 +95,7 @@ export async function POST(req: NextRequest) {
       // No bloqueamos la generación del PDF si la BD falla.
     }
 
-    // Crear el PDF con PDFKit (más estable en Vercel)
+    // Crear el PDF con PDFKit (streaming para evitar memory issues)
     console.log('📄 Creando PDF con PDFKit...');
     
     const formatPrice = (value: number) => {
@@ -149,86 +113,109 @@ export async function POST(req: NextRequest) {
 
     // Crear stream con PDFKit
     const doc = new PDFDocument({ size: 'A4', margin: 24 });
-    const chunks: Buffer[] = [];
+    
+    // Streaming response para evitar acumular todo en memoria
+    const stream = new ReadableStream({
+      start(controller) {
+        doc.on('data', (chunk: Buffer) => {
+          controller.enqueue(new Uint8Array(chunk));
+        });
+        
+        doc.on('end', () => {
+          controller.close();
+        });
+        
+        doc.on('error', (err) => {
+          console.error('❌ Error en PDFKit:', err);
+          controller.error(err);
+        });
 
-    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+        // ==== Encabezado de la orden ====
+        doc.rect(0, 0, doc.page.width, 40).fill('#3B82F6');
+        doc.fill('#FFFFFF').font('Helvetica-Bold').fontSize(18).text('NOTA DE PEDIDO', 24, 14);
 
-    return new Promise((resolve, reject) => {
-      doc.on('end', () => {
-        const buffer = Buffer.concat(chunks);
-        const headers = new Headers();
-        headers.set('Content-Type', 'application/pdf');
-        const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
-        headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
+        // Información del cliente
+        doc.fill('#000').fontSize(11).font('Helvetica-Bold').text('Información del Cliente', 24, 60);
+        doc.font('Helvetica').fontSize(10);
+        doc.text(`Pedido: ${orderId}`, 24, 78);
+        doc.text(`Fecha: ${formatDate(new Date().toISOString())}`, 24, 92);
+        doc.text(`Cliente: ${rawOrderData.c.n}`, 24, 106);
+        if (rawOrderData.c.e) doc.text(`Email: ${rawOrderData.c.e}`, 24, 120);
+        if (rawOrderData.c.p) doc.text(`Teléfono: ${rawOrderData.c.p}`, 24, 134);
+        
+        doc.moveTo(24, 150).lineTo(doc.page.width - 24, 150).strokeColor('#E5E7EB').stroke();
 
-        console.log('✅ PDF creado exitosamente con PDFKit');
-        resolve(new NextResponse(buffer, { status: 200, headers }));
-      });
+        // ==== Tabla ====
+        let y = 165;
+        const col = { sku: 24, name: 120, qty: 400, price: 450 };
 
-      doc.on('error', (err) => {
-        console.error('❌ Error en PDFKit:', err);
-        reject(err);
-      });
+        // Función para dibujar header de tabla (reutilizable para paginación)
+        const drawTableHeader = () => {
+          doc.rect(24, y - 12, doc.page.width - 48, 18).fill('#3B82F6');
+          doc.fill('#fff').font('Helvetica-Bold').fontSize(9);
+          doc.text('SKU', col.sku, y - 10);
+          doc.text('Producto', col.name, y - 10);
+          doc.text('Cant.', col.qty, y - 10);
+          doc.text('Total', col.price, y - 10);
+          y += 14;
+        };
 
-      // ==== Encabezado de la orden ====
-      doc.rect(0, 0, doc.page.width, 40).fill('#3B82F6');
-      doc.fill('#FFFFFF').font('Helvetica-Bold').fontSize(18).text('NOTA DE PEDIDO', 24, 14);
+        // Dibujar header inicial
+        drawTableHeader();
 
-      // Información del cliente
-      doc.fill('#000').fontSize(11).font('Helvetica-Bold').text('Información del Cliente', 24, 60);
-      doc.font('Helvetica').fontSize(10);
-      doc.text(`Pedido: ${orderId}`, 24, 78);
-      doc.text(`Fecha: ${formatDate(new Date().toISOString())}`, 24, 92);
-      doc.text(`Cliente: ${rawOrderData.c.n}`, 24, 106);
-      if (rawOrderData.c.e) doc.text(`Email: ${rawOrderData.c.e}`, 24, 120);
-      if (rawOrderData.c.p) doc.text(`Teléfono: ${rawOrderData.c.p}`, 24, 134);
-      
-      doc.moveTo(24, 150).lineTo(doc.page.width - 24, 150).strokeColor('#E5E7EB').stroke();
+        // Filas de productos (sin logs en el loop para evitar IO extra)
+        console.log('📊 Procesando', normalizedItems.length, 'items...');
+        doc.fill('#000').font('Helvetica').fontSize(9);
+        normalizedItems.forEach((it, idx) => {
+          // Verificar si necesitamos nueva página
+          if (y + 20 > doc.page.height - 50) {
+            doc.addPage();
+            y = 50;
+            // Reimprimir header en nueva página
+            drawTableHeader();
+          }
 
-      // ==== Tabla ====
-      let y = 165;
-      const col = { sku: 24, name: 120, qty: 400, price: 450 };
+          // Fila alternada
+          if (idx % 2 === 0) {
+            doc.save().rect(24, y - 2, doc.page.width - 48, 18).fill('#F3F4F6').restore();
+          }
 
-      // Header de la tabla
-      doc.rect(24, y - 12, doc.page.width - 48, 18).fill('#3B82F6');
-      doc.fill('#fff').font('Helvetica-Bold').fontSize(9);
-      doc.text('SKU', col.sku, y - 10);
-      doc.text('Producto', col.name, y - 10);
-      doc.text('Cant.', col.qty, y - 10);
-      doc.text('Total', col.price, y - 10);
-      y += 14;
+          // Asegurar que todos los valores sean strings válidos
+          const sku = String(it.sku || 'N/A');
+          const name = String(it.name || 'Sin nombre');
+          const qty = String(it.qty || 0);
+          const price = formatPrice(it.unitPrice * it.qty);
 
-      // Filas de productos
-      doc.fill('#000').font('Helvetica').fontSize(9);
-      normalizedItems.forEach((it, idx) => {
-        if (y + 20 > doc.page.height - 50) {
-          doc.addPage();
-          y = 50;
-        }
+          doc.text(sku, col.sku, y);
+          doc.text(name, col.name, y);
+          doc.text(qty, col.qty, y);
+          doc.text(price, col.price, y);
+          y += 18;
+        });
+        console.log('✅ Items procesados');
 
-        // Fila alternada
-        if (idx % 2 === 0) {
-          doc.save().rect(24, y - 2, doc.page.width - 48, 18).fill('#F3F4F6').restore();
-        }
+        // Total
+        y += 20;
+        doc.font('Helvetica-Bold').fontSize(12);
+        doc.text(`TOTAL: ${formatPrice(total)}`, col.price - 50, y);
 
-        doc.text(it.sku, col.sku, y);
-        doc.text(it.name, col.name, y);
-        doc.text(it.qty.toString(), col.qty, y);
-        doc.text(formatPrice(it.unitPrice * it.qty), col.price, y);
-        y += 18;
-      });
+        // Footer
+        doc.font('Helvetica').fontSize(8).fill('#6B7280');
+        doc.text('Gracias por su compra', 0, doc.page.height - 40, { align: 'center' });
 
-      // Total
-      y += 20;
-      doc.font('Helvetica-Bold').fontSize(12);
-      doc.text(`TOTAL: ${formatPrice(total)}`, col.price - 50, y);
-
-      // Footer
-      doc.font('Helvetica').fontSize(8).fill('#6B7280');
-      doc.text('Gracias por su compra', 0, doc.page.height - 40, { align: 'center' });
-
-      doc.end();
+        doc.end();
+      }
     });
+
+    // Headers correctos para descarga
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/pdf');
+    headers.set('Cache-Control', 'no-store');
+    const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
+
+    console.log('✅ PDF creado exitosamente con PDFKit (streaming)');
+    return new Response(stream, { status: 200, headers });
 
   } catch (error) {
     console.error('❌ Error generando PDF:', error);
