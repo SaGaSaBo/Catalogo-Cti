@@ -10,14 +10,15 @@ const nextConfig = {
   generateBuildId: async () => {
     return `build-${Date.now()}`;
   },
-  // 👇 outputFileTracingIncludes se movió a la raíz en Next.js 15.5.2
-  outputFileTracingIncludes: {
-    'app/api/order/pdf/route': [
-      './app/api/order/pdf/data/*',
-    ],
-    'app/api/order/pdf/route.tsx': [
-      './app/api/order/pdf/data/*',
-    ],
+  experimental: {
+    outputFileTracingIncludes: {
+      // Clave = ruta del archivo de la route, con extensión
+      'app/api/order/pdf/route.tsx': ['./app/api/order/pdf/data/*'],
+
+      // (opcionales, "por si acaso"; no molestan)
+      'app/api/order/pdf/route.ts': ['./app/api/order/pdf/data/*'],
+      'app/api/order/pdf/route': ['./app/api/order/pdf/data/*'],
+    },
   },
 };
 

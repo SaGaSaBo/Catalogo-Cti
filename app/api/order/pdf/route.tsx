@@ -1,23 +1,21 @@
 // app/api/order/pdf/route.tsx
 import PDFDocument from 'pdfkit';
 import { NextResponse } from 'next/server';
-import { existsSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
-  // 🔍 Verificación temporal de archivos AFM (solo en runtime)
+  // 🔍 Verificación temporal de AFM en runtime (opcional)
   try {
-    const dataDir = fileURLToPath(new URL('./data/', import.meta.url));
-    console.log('[AFM] dataDir:', dataDir, 'exists?', existsSync(dataDir));
-    if (existsSync(dataDir)) {
-      console.log('[AFM] files:', readdirSync(dataDir));
-    }
+    const { existsSync } = await import('node:fs');
+    const { fileURLToPath } = await import('node:url');
+    const helv = fileURLToPath(new URL('./data/Helvetica.afm', import.meta.url));
+    console.log('[AFM]', helv, 'exists?', existsSync(helv));
   } catch (e) {
-    console.log('[AFM] error checking AFM files:', e);
+    console.log('[AFM] error checking:', e);
   }
+
   const doc = new PDFDocument({ size: 'A4', margin: 24 });
 
   doc.rect(0, 0, doc.page.width, 40).fill('#3B82F6');
