@@ -8,13 +8,15 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
-  // 🔍 Verificación temporal de archivos AFM
-  const dataDir = fileURLToPath(new URL('./data/', import.meta.url));
-  console.log('[AFM] dataDir:', dataDir, 'exists?', existsSync(dataDir));
-  try { 
-    console.log('[AFM] files:', readdirSync(dataDir)); 
+  // 🔍 Verificación temporal de archivos AFM (solo en runtime)
+  try {
+    const dataDir = fileURLToPath(new URL('./data/', import.meta.url));
+    console.log('[AFM] dataDir:', dataDir, 'exists?', existsSync(dataDir));
+    if (existsSync(dataDir)) {
+      console.log('[AFM] files:', readdirSync(dataDir));
+    }
   } catch (e) {
-    console.log('[AFM] error reading dir:', e);
+    console.log('[AFM] error checking AFM files:', e);
   }
   const doc = new PDFDocument({ size: 'A4', margin: 24 });
 
