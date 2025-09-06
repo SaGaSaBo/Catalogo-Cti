@@ -16,6 +16,7 @@ type ItemIn = {
   size?: string;
   quantity?: number;
   total?: number;
+  sku?: string;
 };
 
 type Payload = {
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage();
     const { width, height } = page.getSize();
-
+    
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
@@ -127,11 +128,22 @@ export async function POST(req: Request) {
       const qty = it.q ?? it.quantity ?? 0;
       const price = it.p?.pr ?? it.price ?? 0;
       const totalLine = it.total ?? price * qty;
+      const sku = it.p?.s ?? it.sku ?? '';
 
       // Producto
-      page.drawText(title.length > 30 ? title.slice(0, 27) + '…' : title, {
+      const productTitle = title.length > 30 ? title.slice(0, 27) + '…' : title;
+      
+      page.drawText(productTitle, {
         x: col.prod, y, size: 9, font: fontReg, color: rgb(0, 0, 0),
       });
+      
+      // SKU debajo del nombre (sutil)
+      if (sku) {
+        page.drawText(`SKU: ${sku}`, {
+          x: col.prod, y: y - 10, size: 7, font: fontReg, color: rgb(0.4, 0.4, 0.4),
+        });
+      }
+      
       page.drawText(brand.length > 18 ? brand.slice(0, 16) + '…' : brand, {
         x: col.brand, y, size: 9, font: fontReg,
       });
