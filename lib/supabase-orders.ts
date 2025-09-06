@@ -1,4 +1,4 @@
-import { supabase, SupabaseOrder } from './supabase';
+import { supabase, supabaseAdmin, SupabaseOrder } from './supabase';
 
 /* ============================
    Config & Tipos
@@ -205,7 +205,7 @@ export async function createOrder(
   }
 
   // 4) Insert explícito (select columnas minimiza payload)
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('orders')
     .insert({
       order_number: orderNumber,
@@ -242,7 +242,7 @@ export async function getOrders(opts: { limit?: number; offset?: number } = {}):
 
   if (DEBUG) console.log('🔍 getOrders', { limit, offset });
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('orders')
     .select('id, created_at, order_number, customer_name, customer_email, customer_phone, status, total_amount, order_data, updated_at')
     .order('created_at', { ascending: false })
@@ -256,15 +256,14 @@ export async function getOrders(opts: { limit?: number; offset?: number } = {}):
 }
 
 export async function getOrder(id: string): Promise<SupabaseOrder | null> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('orders')
     .select('*')
     .eq('id', id)
     .single();
 
   // PGRST116 = No rows
-  // @ts-expect-error PostgREST error typing
-  if (error?.code === 'PGRST116') return null;
+  if ((error as any)?.code === 'PGRST116') return null;
 
   if (error) {
     if (DEBUG) console.error('❌ Error obteniendo pedido:', error);
@@ -275,14 +274,13 @@ export async function getOrder(id: string): Promise<SupabaseOrder | null> {
 
 // Búsqueda alternativa por número de pedido (útil p/ admin o links)
 export async function getOrderByNumber(orderNumber: string): Promise<SupabaseOrder | null> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('orders')
     .select('*')
     .eq('order_number', orderNumber)
     .single();
 
-  // @ts-expect-error PostgREST error typing
-  if (error?.code === 'PGRST116') return null;
+  if ((error as any)?.code === 'PGRST116') return null;
 
   if (error) {
     if (DEBUG) console.error('❌ Error obteniendo pedido por número:', error);
