@@ -9,14 +9,14 @@ import { fileURLToPath } from 'node:url';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// 1) Preparar BUFFERS (fuera del parche y fuera del handler)
-const REGULAR_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
-const BOLD_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
-
-// 2) Parchear initFonts SIN usar fileURLToPath ni URL aquí dentro
+// 2) Parchear initFonts - se aplicará cuando se necesite
 const PDFProto: any = (PDFDocument as any).prototype;
 if (!PDFProto.__patchedInitFonts) {
   PDFProto.initFonts = function patchedInitFonts() {
+    // Cargar Buffers solo cuando se necesite (runtime)
+    const REGULAR_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
+    const BOLD_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
+    
     // Mapear familias estándar a tus TTF (Buffers)
     this.registerFont('Helvetica', REGULAR_BUF);
     this.registerFont('Helvetica-Bold', BOLD_BUF);
@@ -133,6 +133,10 @@ export async function POST(req: NextRequest) {
 
     // Ahora el constructor NO intentará leer AFM
     const doc = new PDFDocument({ size: 'A4', margin: 24 });
+
+    // Cargar fuentes TTF para uso personalizado
+    const REGULAR_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
+    const BOLD_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
 
     // (Opcional) además registrá nombres propios
     doc.registerFont('UI-Regular', REGULAR_BUF);
