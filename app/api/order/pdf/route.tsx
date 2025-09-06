@@ -2,29 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import PDFDocument from 'pdfkit';
 import { createOrder } from '@/lib/supabase-orders';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-// 2) Parche initFonts - se aplicará cuando se necesite (runtime)
-const PDFProto: any = (PDFDocument as any).prototype;
-if (!PDFProto.__patchedInitFonts) {
-  PDFProto.__patchedInitFonts = true;
-  PDFProto.initFonts = function patchedInitFonts() {
-    // Cargar Buffers solo cuando se necesite (runtime)
-    const REGULAR_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
-    const BOLD_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
-    
-    // Mapeamos las familias estándar a tus TTF
-    this.registerFont('Helvetica', REGULAR_BUF);
-    this.registerFont('Helvetica-Bold', BOLD_BUF);
-    this.registerFont('Helvetica-Oblique', REGULAR_BUF);
-    this.registerFont('Helvetica-BoldOblique', BOLD_BUF);
-    this._font = 'Helvetica';
-  };
-}
 
 // Normaliza los items del carrito a un formato seguro para el PDF
 function normalizeOrderItems(items: any[]) {
@@ -114,8 +94,8 @@ export async function POST(req: NextRequest) {
       // No bloqueamos la generación del PDF si la BD falla.
     }
 
-    // Crear el PDF con PDFKit (streaming para evitar memory issues)
-    console.info('📄 Creando PDF con PDFKit (parche aplicado)...');
+    // Crear el PDF con PDFKit (usando Helvetica AFM incluidos en el bundle)
+    console.info('📄 Creando PDF con PDFKit (Helvetica AFM)...');
     
     const formatPrice = (value: number) => {
       return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
@@ -130,17 +110,9 @@ export async function POST(req: NextRequest) {
 
     const total = normalizedItems.reduce((acc, it) => acc + it.qty * it.unitPrice, 0);
 
-    // A partir de acá, el constructor NO intenta leer AFM
+    // Crear PDF con Helvetica (AFM incluidos en el bundle)
     const doc = new PDFDocument({ size: 'A4', margin: 24 });
 
-    // Cargar fuentes TTF para uso personalizado
-    const REGULAR_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
-    const BOLD_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
-
-    // (Opcional) nombres propios además de las estándar parcheadas
-    doc.registerFont('UI-Regular', REGULAR_BUF);
-    doc.registerFont('UI-Bold', BOLD_BUF);
-    
     // Streaming response para evitar acumular todo en memoria
     const stream = new ReadableStream({
       start(controller) {
@@ -159,11 +131,11 @@ export async function POST(req: NextRequest) {
 
         // ==== Encabezado de la orden ====
         doc.rect(0, 0, doc.page.width, 40).fill('#3B82F6');
-        doc.fill('#FFFFFF').font('UI-Bold').fontSize(18).text('NOTA DE PEDIDO', 24, 14);
+        doc.fill('#FFFFFF').font('Helvetica-Bold').fontSize(18).text('NOTA DE PEDIDO', 24, 14);
 
         // Información del cliente
-        doc.fill('#000').fontSize(11).font('UI-Bold').text('Información del Cliente', 24, 60);
-        doc.font('UI-Regular').fontSize(10);
+        doc.fill('#000').fontSize(11).font('Helvetica-Bold').text('Información del Cliente', 24, 60);
+        doc.font('Helvetica').fontSize(10);
         doc.text(`Pedido: ${orderId}`, 24, 78);
         doc.text(`Fecha: ${formatDate(new Date().toISOString())}`, 24, 92);
         doc.text(`Cliente: ${rawOrderData.c.n}`, 24, 106);
@@ -179,7 +151,7 @@ export async function POST(req: NextRequest) {
         // Función para dibujar header de tabla (reutilizable para paginación)
         const drawTableHeader = () => {
           doc.rect(24, y - 12, doc.page.width - 48, 18).fill('#3B82F6');
-          doc.fill('#fff').font('UI-Bold').fontSize(9);
+          doc.fill('#fff').font('Helvetica-Bold').fontSize(9);
           doc.text('SKU', col.sku, y - 10);
           doc.text('Producto', col.name, y - 10);
           doc.text('Cant.', col.qty, y - 10);
@@ -192,7 +164,7 @@ export async function POST(req: NextRequest) {
 
         // Filas de productos (sin logs en el loop para evitar IO extra)
         console.log('📊 Procesando', normalizedItems.length, 'items...');
-        doc.fill('#000').font('UI-Regular').fontSize(9);
+        doc.fill('#000').font('Helvetica').fontSize(9);
         normalizedItems.forEach((it, idx) => {
           // Verificar si necesitamos nueva página
           if (y + 20 > doc.page.height - 50) {
@@ -223,11 +195,11 @@ export async function POST(req: NextRequest) {
 
         // Total
         y += 20;
-        doc.font('UI-Bold').fontSize(12);
+        doc.font('Helvetica-Bold').fontSize(12);
         doc.text(`TOTAL: ${formatPrice(total)}`, col.price - 50, y);
 
         // Footer
-        doc.font('UI-Regular').fontSize(8).fill('#6B7280');
+        doc.font('Helvetica').fontSize(8).fill('#6B7280');
         doc.text('Gracias por su compra', 0, doc.page.height - 40, { align: 'center' });
 
         doc.end();
@@ -241,7 +213,7 @@ export async function POST(req: NextRequest) {
     const safeFileName = (rawOrderData.c.n || 'pedido').replace(/[^a-z0-9]/gi, '-').toLowerCase();
     headers.set('Content-Disposition', `attachment; filename="pedido-${safeFileName}.pdf"`);
 
-    console.log('✅ PDF creado exitosamente con PDFKit (parche aplicado)');
+    console.log('✅ PDF creado exitosamente con PDFKit (Helvetica AFM)');
     return new Response(stream, { status: 200, headers });
 
   } catch (error) {

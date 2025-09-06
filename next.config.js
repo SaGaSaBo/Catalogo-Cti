@@ -10,14 +10,13 @@ const nextConfig = {
   generateBuildId: async () => {
     return `build-${Date.now()}`;
   },
-  // Externalizar PDFKit para que lea AFM desde node_modules
   experimental: {
-    serverExternalPackages: ['pdfkit', 'fontkit'],
-  },
-  webpack: (config) => {
-    config.externals = config.externals || [];
-    config.externals.push({ canvas: 'commonjs canvas' });
-    return config;
+    // 👇 Next incluirá los .afm copiados por tu postinstall
+    outputFileTracingIncludes: {
+      'app/api/order/pdf/route': [
+        './app/api/order/pdf/data/*',
+      ],
+    },
   },
 };
 
