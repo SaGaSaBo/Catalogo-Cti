@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useCartContext } from '@/context/cart-context';
+import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +28,7 @@ interface CustomerData {
 
 export function CartModal({ isOpen, onClose, products }: CartModalProps) {
   const { cart, updateQuantity, getQuantity, getTotalUnits, clearCart } = useCartContext();
+  const { getCartItems, getTotalAmount } = useCart();
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: '',
     email: '',
@@ -42,7 +44,10 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     }).format(price);
   };
 
-  const getCartItems = () => {
+  // Usar las funciones del hook useCart
+  
+  // Helper para convertir OrderItem[] a formato para render
+  const getCartItemsForRender = () => {
     const items: any[] = [];
     
     Object.entries(cart).forEach(([productId, sizes]) => {
@@ -63,9 +68,9 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     
     return items;
   };
-
-  const getTotalAmount = () => {
-    return getCartItems().reduce((total, item) => total + item.total, 0);
+  
+  const getTotalAmountForRender = () => {
+    return getCartItemsForRender().reduce((total, item) => total + item.total, 0);
   };
 
   const handleQuantityChange = (productId: string, size: string, newQuantity: number) => {
@@ -90,10 +95,28 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
 
     setIsGeneratingPDF(true);
     
+    let orderResult: any = null;
+    
     try {
       console.log('🚀 Iniciando proceso de pedido...');
-      const cartItems = getCartItems();
+      const cartItems = getCartItems(products);
       console.log('🛒 Items en carrito:', cartItems.length);
+      
+      // Convertir OrderItem[] a formato esperado por createOrder
+      const flattenedItems = cartItems.flatMap(item => 
+        Object.entries(item.quantities)
+          .filter(([_, qty]) => qty > 0)
+          .map(([size, quantity]) => ({
+            id: item.productId,
+            title: item.title,
+            brand: item.brand,
+            sku: item.sku,
+            size: size,
+            quantity: quantity,
+            price: item.price,
+            total: item.price * quantity
+          }))
+      );
       
       // 1. Primero guardar el pedido en la base de datos
       const orderPayload = {
@@ -102,17 +125,8 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
           email: customerData.email.trim(),
           phone: customerData.phone.trim() || ''
         },
-        items: cartItems.map(item => ({
-          id: item.product.id,
-          title: item.product.title || 'Sin título',
-          brand: item.product.brand || 'N/A',
-          sku: item.product.sku || 'N/A',
-          size: item.size || 'N/A',
-          quantity: item.quantity,
-          price: Number(item.product.price) || 0,
-          total: (Number(item.product.price) || 0) * item.quantity
-        })),
-        total: getTotalAmount()
+        items: flattenedItems,
+        total: getTotalAmount(products)
       };
 
       console.log('💾 Payload del pedido:', JSON.stringify(orderPayload, null, 2));
@@ -135,7 +149,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
           throw new Error(errorData.error || 'Error al guardar el pedido');
         }
 
-        const orderResult = await orderResponse.json();
+        orderResult = await orderResponse.json();
         console.log('✅ Pedido guardado:', orderResult.order.order_number);
       } catch (orderError) {
         console.error('❌ Error guardando pedido:', orderError);
@@ -149,18 +163,18 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
           e: customerData.email?.substring(0, 50) || '',
           p: customerData.phone?.substring(0, 20) || ''
         },
-        i: cartItems.map(item => ({
+        i: flattenedItems.map(item => ({
           p: {
-            i: item.product.id,
-            s: item.product.sku?.substring(0, 20) || 'N/A',
-            t: item.product.title?.substring(0, 50) || 'Sin título',
-            b: item.product.brand?.substring(0, 30) || 'N/A',
-            pr: Number(item.product.price) || 0
+            i: item.id,
+            s: item.sku?.substring(0, 20) || 'N/A',
+            t: item.title?.substring(0, 50) || 'Sin título',
+            b: item.brand?.substring(0, 30) || 'N/A',
+            pr: Number(item.price) || 0
           },
           sz: item.size?.substring(0, 10) || 'N/A',
           q: item.quantity
         })),
-        t: getTotalAmount()
+        t: getTotalAmount(products)
       };
 
       console.log('📄 Generando PDF...');
@@ -205,8 +219,8 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     }
   };
 
-  const cartItems = getCartItems();
-  const totalAmount = getTotalAmount();
+  const cartItems = getCartItemsForRender();
+  const totalAmount = getTotalAmountForRender();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
