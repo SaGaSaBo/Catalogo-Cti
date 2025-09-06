@@ -91,53 +91,90 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     setIsGeneratingPDF(true);
     
     try {
-      // Optimización ultra-agresiva del payload
       const cartItems = getCartItems();
-      const optimizedItems = cartItems.map(item => ({
-        p: {
-          i: item.product.id,
-          s: item.product.sku?.substring(0, 20) || 'N/A',
-          t: item.product.title?.substring(0, 50) || 'Sin título',
-          b: item.product.brand?.substring(0, 30) || 'N/A',
-          pr: Number(item.product.price) || 0
+      
+      // 1. Primero guardar el pedido en la base de datos
+      const orderPayload = {
+        customer: {
+          name: customerData.name.trim(),
+          email: customerData.email.trim(),
+          phone: customerData.phone.trim() || ''
         },
-        sz: item.size?.substring(0, 10) || 'N/A',
-        q: item.quantity
-      }));
+        items: cartItems.map(item => ({
+          id: item.product.id,
+          title: item.product.title || 'Sin título',
+          brand: item.product.brand || 'N/A',
+          sku: item.product.sku || 'N/A',
+          size: item.size || 'N/A',
+          quantity: item.quantity,
+          price: Number(item.product.price) || 0,
+          total: (Number(item.product.price) || 0) * item.quantity
+        })),
+        total: getTotalAmount()
+      };
 
-      const orderData = {
+      console.log('💾 Guardando pedido en base de datos...');
+      const orderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderPayload)
+      });
+
+      if (!orderResponse.ok) {
+        const errorData = await orderResponse.json();
+        throw new Error(errorData.error || 'Error al guardar el pedido');
+      }
+
+      const orderResult = await orderResponse.json();
+      console.log('✅ Pedido guardado:', orderResult.order.order_number);
+
+      // 2. Luego generar el PDF
+      const pdfPayload = {
         c: {
           n: customerData.name?.substring(0, 50) || '',
           e: customerData.email?.substring(0, 50) || '',
           p: customerData.phone?.substring(0, 20) || ''
         },
-        i: optimizedItems,
+        i: cartItems.map(item => ({
+          p: {
+            i: item.product.id,
+            s: item.product.sku?.substring(0, 20) || 'N/A',
+            t: item.product.title?.substring(0, 50) || 'Sin título',
+            b: item.product.brand?.substring(0, 30) || 'N/A',
+            pr: Number(item.product.price) || 0
+          },
+          sz: item.size?.substring(0, 10) || 'N/A',
+          q: item.quantity
+        })),
         t: getTotalAmount()
       };
 
-      const response = await fetch('/api/order/pdf', {
+      console.log('📄 Generando PDF...');
+      const pdfResponse = await fetch('/api/order/pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify(pdfPayload)
       });
 
-      if (!response.ok) {
+      if (!pdfResponse.ok) {
         throw new Error('Error al generar el PDF');
       }
 
-      const blob = await response.blob();
+      const blob = await pdfResponse.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `pedido-${customerData.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
+      a.download = `pedido-${orderResult.order.order_number}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success('PDF generado y descargado correctamente');
+      toast.success(`Pedido ${orderResult.order.order_number} guardado y PDF descargado`);
       
       // Limpiar carrito después de generar el PDF
       clearCart();
