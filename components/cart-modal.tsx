@@ -91,7 +91,9 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     setIsGeneratingPDF(true);
     
     try {
+      console.log('🚀 Iniciando proceso de pedido...');
       const cartItems = getCartItems();
+      console.log('🛒 Items en carrito:', cartItems.length);
       
       // 1. Primero guardar el pedido en la base de datos
       const orderPayload = {
@@ -113,6 +115,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
         total: getTotalAmount()
       };
 
+      console.log('💾 Payload del pedido:', JSON.stringify(orderPayload, null, 2));
       console.log('💾 Guardando pedido en base de datos...');
       const orderResponse = await fetch('/api/orders', {
         method: 'POST',
@@ -182,7 +185,11 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
       onClose();
       
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('❌ Error en proceso de pedido:', error);
+      console.error('❌ Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       toast.error('Error al generar el PDF');
     } finally {
       setIsGeneratingPDF(false);
