@@ -1,121 +1,182 @@
 // app/api/orders/[orderId]/pdf/route.tsx
 import { NextResponse } from 'next/server';
-import { renderToStream } from '@react-pdf/renderer';
-import React from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 async function getOrder(orderId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('orders')
     .select('*')
     .eq('id', orderId)
     .single();
-  if (error) throw error;
+  
+  if (error) {
+    console.error('Error fetching order:', error);
+    throw new Error('Order not found');
+  }
+  
   return data;
 }
 
 export async function GET(_req: Request, { params }: { params: { orderId: string } }) {
   try {
+    console.log('📄 Generando PDF para pedido:', params.orderId);
+    
     const order = await getOrder(params.orderId);
     const items = Array.isArray(order?.order_data?.items) ? order.order_data.items : [];
 
-    // Importar componentes de @react-pdf/renderer
-    const { Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
-    
-    const styles = StyleSheet.create({
-      page: { padding: 30, fontSize: 10 },
-      header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#eaeaea', paddingBottom: 10 },
-      title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
-      customerInfo: { fontSize: 10, color: '#333' },
-      table: { display: "flex", width: 'auto', borderStyle: 'solid', borderWidth: 0, borderRightWidth: 0, borderBottomWidth: 0 },
-      tableRow: { flexDirection: 'row', borderBottomColor: '#eaeaea', borderBottomWidth: 1, alignItems: 'center', minHeight: 24 },
-      tableHeader: { backgroundColor: '#f2f2f2', fontWeight: 'bold' },
-      colSku: { width: '20%', padding: 5 },
-      colName: { width: '45%', padding: 5 },
-      colQty: { width: '10%', textAlign: 'right', padding: 5 },
-      colPrice: { width: '25%', textAlign: 'right', padding: 5 },
-      totalSection: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20 },
-      totalText: { fontSize: 12, fontWeight: 'bold' },
+    console.log('📦 Items del pedido:', items.length);
+
+    // Crear PDF con pdf-lib
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage();
+    const { width, height } = page.getSize();
+
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    // Header
+    page.drawRectangle({
+      x: 0,
+      y: height - 48,
+      width,
+      height: 48,
+      color: rgb(0.231, 0.51, 0.965), // #3B82F6
+    });
+    page.drawText('ORDEN DE COMPRA', {
+      x: 24,
+      y: height - 34,
+      size: 18,
+      font: fontBold,
+      color: rgb(1, 1, 1),
     });
 
-    const formatPrice = (value: number) => {
-      return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
+    // Datos del pedido
+    let y = height - 80;
+    const lineGap = 16;
+
+    const drawText = (text: string, opts?: { bold?: boolean; size?: number }) => {
+      const font = opts?.bold ? fontBold : fontReg;
+      const size = opts?.size ?? 10;
+      page.drawText(text, { x: 24, y, size, font, color: rgb(0, 0, 0) });
+      y -= lineGap;
     };
 
-    const formatDate = (isoString: string) => {
-      return new Date(isoString).toLocaleString('es-CL', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
+    drawText('Información del Pedido', { bold: true, size: 12 });
+    drawText(`Número: ${order.order_number}`);
+    drawText(`Cliente: ${order.customer_name}`);
+    drawText(`Email: ${order.customer_email}`);
+    if (order.customer_phone) drawText(`Teléfono: ${order.customer_phone}`);
+    drawText(`Fecha: ${new Date(order.created_at).toLocaleDateString('es-UY')}`);
+
+    y -= 8;
+
+    // Tabla: headers
+    const col = { prod: 24, brand: 220, size: 360, qty: 420, price: 470, total: 520 };
+    const headerY = () => {
+      page.drawRectangle({
+        x: 24,
+        y: y - 4,
+        width: width - 48,
+        height: 18,
+        color: rgb(0.231, 0.51, 0.965),
       });
+      page.drawText('Producto', { x: col.prod, y: y, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+      page.drawText('Marca',    { x: col.brand, y: y, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+      page.drawText('Talla',    { x: col.size, y: y, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+      page.drawText('Cant.',    { x: col.qty, y: y, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+      page.drawText('Precio',   { x: col.price, y: y, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+      page.drawText('Total',    { x: col.total, y: y, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+      y -= 22;
     };
 
-    // Reconstruir items para mostrar correctamente
-    const pdfItems = items.map((item: any) => ({
-      sku: item.product?.sku || item.sku || 'N/A',
-      name: `${item.product?.brand || item.brand || ''} - ${item.product?.title || item.title || 'Sin Título'}`,
-      qty: item.quantity || 0,
-      unitPrice: item.product?.price || item.price || 0,
-    }));
+    const rowHeight = 22;
+    const bottomMargin = 60;
+    const nf = new Intl.NumberFormat('es-UY');
 
-    const total = pdfItems.reduce((acc, it) => acc + (it.unitPrice * it.qty), 0);
+    const ensureSpace = () => {
+      if (y < bottomMargin) {
+        const p = pdfDoc.addPage();
+        const size = p.getSize();
+        y = size.height - 40;
+        // redibujar header en nueva página
+        p.drawRectangle({ x: 0, y: size.height - 48, width: size.width, height: 48, color: rgb(0.9, 0.9, 0.9) });
+        p.drawText('ORDEN DE COMPRA (cont.)', { x: 24, y: size.height - 34, size: 14, font: fontBold });
+        // reemplazar page actual y header
+        (page as any) = p; // TS helper; en JS puro no hace falta
+        headerY();
+      }
+    };
 
-    const pdfDocument = (
-      <Document>
-        <Page size="A4" style={styles.page} wrap>
-          <View style={styles.header}>
-            <Text style={styles.title}>Nota de Pedido</Text>
-            <Text style={styles.customerInfo}>Pedido: {order.order_number}</Text>
-            <Text style={styles.customerInfo}>Fecha: {formatDate(order.created_at)}</Text>
-            <Text style={styles.customerInfo}>Cliente: {order.customer_name}</Text>
-            <Text style={styles.customerInfo}>Email: {order.customer_email}</Text>
-            {order.customer_phone && <Text style={styles.customerInfo}>Teléfono: {order.customer_phone}</Text>}
-          </View>
+    // Header inicial
+    headerY();
 
-          <View style={styles.table}>
-            <View style={[styles.tableRow, styles.tableHeader]} fixed>
-              <Text style={styles.colSku}>SKU</Text>
-              <Text style={styles.colName}>Producto</Text>
-              <Text style={styles.colQty}>Cant.</Text>
-              <Text style={styles.colPrice}>Total</Text>
-            </View>
+    for (let idx = 0; idx < items.length; idx++) {
+      ensureSpace();
 
-            {pdfItems.map((it, i) => (
-              <View key={i} style={styles.tableRow} wrap={false}>
-                <Text style={styles.colSku}>{it.sku}</Text>
-                <Text style={styles.colName}>{it.name}</Text>
-                <Text style={styles.colQty}>{it.qty}</Text>
-                <Text style={styles.colPrice}>{formatPrice(it.unitPrice * it.qty)}</Text>
-              </View>
-            ))}
-          </View>
+      const item = items[idx];
+      const title = item.title || 'Sin título';
+      const brand = item.brand || 'Sin marca';
+      const sizeVal = item.size || 'N/A';
+      const qty = item.quantity || 0;
+      const price = item.price || 0;
+      const totalLine = item.total || price * qty;
+      const sku = item.sku || '';
 
-          <View style={styles.totalSection}>
-            <Text style={styles.totalText}>
-              Total Pedido: {formatPrice(total)}
-            </Text>
-          </View>
-        </Page>
-      </Document>
-    );
+      // Producto
+      const productTitle = title.length > 30 ? title.slice(0, 27) + '…' : title;
+      
+      page.drawText(productTitle, {
+        x: col.prod, y, size: 9, font: fontReg, color: rgb(0, 0, 0),
+      });
+      
+      // SKU debajo del nombre (sutil)
+      if (sku) {
+        page.drawText(`SKU: ${sku}`, {
+          x: col.prod, y: y - 10, size: 7, font: fontReg, color: rgb(0.4, 0.4, 0.4),
+        });
+      }
+      
+      page.drawText(brand.length > 18 ? brand.slice(0, 16) + '…' : brand, {
+        x: col.brand, y, size: 9, font: fontReg,
+      });
+      page.drawText(String(sizeVal), { x: col.size, y, size: 9, font: fontReg });
+      page.drawText(String(qty),     { x: col.qty, y, size: 9, font: fontReg });
+      page.drawText(`$${nf.format(price)}`, { x: col.price, y, size: 9, font: fontReg });
+      page.drawText(`$${nf.format(totalLine)}`, { x: col.total, y, size: 9, font: fontReg });
 
-    const stream = await renderToStream(pdfDocument);
+      y -= rowHeight;
+    }
 
-    return new NextResponse(stream as any, {
+    y -= 10;
+    page.drawText(`TOTAL: $${nf.format(order.total_amount)}`, { x: col.total - 40, y, size: 12, font: fontBold });
+
+    // Footer
+    page.drawText('Gracias por su compra', {
+      x: 24, y: 24, size: 8, font: fontReg, color: rgb(0.4, 0.45, 0.5),
+    });
+
+    const bytes = await pdfDoc.save();
+
+    console.log('✅ PDF generado exitosamente para pedido:', order.order_number);
+
+    // streaming simple (un chunk es suficiente)
+    const stream = new ReadableStream<Uint8Array>({
+      start(c) { c.enqueue(bytes); c.close(); },
+    });
+
+    return new NextResponse(stream, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="orden-${order.order_number}.pdf"`,
+        'Content-Disposition': `attachment; filename="pedido-${order.order_number}.pdf"`,
+        'Cache-Control': 'no-store',
       },
     });
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    return NextResponse.json({ error: 'Error generating PDF' }, { status: 500 });
+    console.error('❌ Error generando PDF:', error);
+    return NextResponse.json({ error: 'Error generando PDF' }, { status: 500 });
   }
 }
