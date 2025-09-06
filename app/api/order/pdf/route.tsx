@@ -8,32 +8,20 @@ import { fileURLToPath } from 'node:url';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// 1) Precarga TTF en globalThis para que el bundler NO inlinée dentro del parche
-const G: any = globalThis as any;
-
-if (!G.__PDFKIT_FONTS__) {
-  G.__PDFKIT_FONTS__ = {};
-  G.__PDFKIT_FONTS__.REGULAR = readFileSync(
-    fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url))
-  );
-  G.__PDFKIT_FONTS__.BOLD = readFileSync(
-    fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url))
-  );
-}
-
-// 2) Parche initFonts SIN URL/paths/lecturas adentro (solo usa los buffers globales)
+// 2) Parche initFonts - se aplicará cuando se necesite (runtime)
 const PDFProto: any = (PDFDocument as any).prototype;
 if (!PDFProto.__patchedInitFonts) {
   PDFProto.__patchedInitFonts = true;
   PDFProto.initFonts = function patchedInitFonts() {
-    const REG = (globalThis as any).__PDFKIT_FONTS__.REGULAR;
-    const BLD = (globalThis as any).__PDFKIT_FONTS__.BOLD;
-
+    // Cargar Buffers solo cuando se necesite (runtime)
+    const REGULAR_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
+    const BOLD_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
+    
     // Mapeamos las familias estándar a tus TTF
-    this.registerFont('Helvetica', REG);
-    this.registerFont('Helvetica-Bold', BLD);
-    this.registerFont('Helvetica-Oblique', REG);
-    this.registerFont('Helvetica-BoldOblique', BLD);
+    this.registerFont('Helvetica', REGULAR_BUF);
+    this.registerFont('Helvetica-Bold', BOLD_BUF);
+    this.registerFont('Helvetica-Oblique', REGULAR_BUF);
+    this.registerFont('Helvetica-BoldOblique', BOLD_BUF);
     this._font = 'Helvetica';
   };
 }
@@ -145,11 +133,13 @@ export async function POST(req: NextRequest) {
     // A partir de acá, el constructor NO intenta leer AFM
     const doc = new PDFDocument({ size: 'A4', margin: 24 });
 
+    // Cargar fuentes TTF para uso personalizado
+    const REGULAR_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Regular.ttf', import.meta.url)));
+    const BOLD_BUF = readFileSync(fileURLToPath(new URL('./_fonts/Inter-Bold.ttf', import.meta.url)));
+
     // (Opcional) nombres propios además de las estándar parcheadas
-    const REG = (globalThis as any).__PDFKIT_FONTS__.REGULAR;
-    const BLD = (globalThis as any).__PDFKIT_FONTS__.BOLD;
-    doc.registerFont('UI-Regular', REG);
-    doc.registerFont('UI-Bold', BLD);
+    doc.registerFont('UI-Regular', REGULAR_BUF);
+    doc.registerFont('UI-Bold', BOLD_BUF);
     
     // Streaming response para evitar acumular todo en memoria
     const stream = new ReadableStream({
