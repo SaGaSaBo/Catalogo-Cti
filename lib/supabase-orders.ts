@@ -244,7 +244,7 @@ export async function getOrders(opts: { limit?: number; offset?: number } = {}):
 
   const { data, error } = await supabase
     .from('orders')
-    .select('id, created_at, order_number, customer_name, customer_email, customer_phone, status, total_amount')
+    .select('id, created_at, order_number, customer_name, customer_email, customer_phone, status, total_amount, order_data, updated_at')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
