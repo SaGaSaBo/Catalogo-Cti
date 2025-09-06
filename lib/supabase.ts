@@ -4,6 +4,15 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// Debug de configuración
+console.log('🔧 Supabase Config:', {
+  url: supabaseUrl,
+  hasAnonKey: !!supabaseAnonKey,
+  hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+  usingServiceKey: supabaseServiceKey === process.env.SUPABASE_SERVICE_ROLE_KEY,
+  serviceKeyLength: supabaseServiceKey?.length || 0
+});
+
 // Cliente para operaciones de lectura (público)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

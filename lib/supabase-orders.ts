@@ -3,7 +3,7 @@ import { supabase, supabaseAdmin, SupabaseOrder } from './supabase';
 /* ============================
    Config & Tipos
 ============================ */
-const DEBUG = process.env.NODE_ENV !== 'production' && process.env.DEBUG_ORDERS === '1';
+const DEBUG = true; // Habilitar debug temporalmente
 const ORDER_SCHEMA_VERSION = 1 as const;
 
 // Estados permitidos (reutilizado en updateOrderStatus)
@@ -205,6 +205,14 @@ export async function createOrder(
   }
 
   // 4) Insert explícito (select columnas minimiza payload)
+  console.log('🔄 Intentando insertar pedido en Supabase...', {
+    orderNumber,
+    customerName: minimalOrderData.customer.name,
+    customerEmail: minimalOrderData.customer.email,
+    totalAmount: minimalOrderData.total,
+    itemCount: minimalOrderData.itemCount
+  });
+
   const { data, error } = await supabaseAdmin
     .from('orders')
     .insert({
@@ -223,11 +231,20 @@ export async function createOrder(
     .single();
 
   if (error) {
-    if (DEBUG) console.error('❌ Error creando pedido:', error);
+    console.error('❌ Error creando pedido:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
     throw new Error(error.message || 'Failed to create order');
   }
 
-  if (DEBUG) console.log('✅ Pedido creado:', data?.id);
+  console.log('✅ Pedido creado exitosamente:', {
+    id: data?.id,
+    orderNumber: data?.order_number,
+    customerName: data?.customer_name
+  });
   return data as SupabaseOrder;
 }
 
