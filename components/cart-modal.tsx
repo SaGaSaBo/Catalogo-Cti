@@ -117,21 +117,30 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
 
       console.log('💾 Payload del pedido:', JSON.stringify(orderPayload, null, 2));
       console.log('💾 Guardando pedido en base de datos...');
-      const orderResponse = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderPayload)
-      });
+      
+      try {
+        const orderResponse = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(orderPayload)
+        });
 
-      if (!orderResponse.ok) {
-        const errorData = await orderResponse.json();
-        throw new Error(errorData.error || 'Error al guardar el pedido');
+        console.log('📡 Respuesta del servidor:', orderResponse.status, orderResponse.statusText);
+
+        if (!orderResponse.ok) {
+          const errorData = await orderResponse.json();
+          console.error('❌ Error del servidor:', errorData);
+          throw new Error(errorData.error || 'Error al guardar el pedido');
+        }
+
+        const orderResult = await orderResponse.json();
+        console.log('✅ Pedido guardado:', orderResult.order.order_number);
+      } catch (orderError) {
+        console.error('❌ Error guardando pedido:', orderError);
+        throw orderError; // Re-lanzar el error para que se maneje en el catch principal
       }
-
-      const orderResult = await orderResponse.json();
-      console.log('✅ Pedido guardado:', orderResult.order.order_number);
 
       // 2. Luego generar el PDF
       const pdfPayload = {
