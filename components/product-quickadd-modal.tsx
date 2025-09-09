@@ -133,7 +133,7 @@ export function ProductQuickAddModal({
           
           // En mobile, ocultar imágenes cuando se hace scroll hacia abajo
           if (window.innerWidth < 640) { // sm breakpoint
-            setShowImages(scrollTop < 50);
+            setShowImages(scrollTop < 100);
           }
           ticking = false;
         });
@@ -159,45 +159,47 @@ export function ProductQuickAddModal({
     <div
       ref={overlayRef}
       onClick={onOverlayClick}
-      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-start sm:items-center justify-center p-0 sm:p-4"
       aria-modal="true" role="dialog"
     >
-      <div className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2 flex flex-col lg:grid">
-        {/* Galería - Ocultable en mobile */}
-        <div className={`p-2 sm:p-6 lg:p-8 bg-gray-50 flex-shrink-0 transition-all duration-500 ease-in-out ${
-          showImages ? 'block opacity-100' : 'hidden sm:block sm:opacity-100'
-        }`}>
-          <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
-            {images[activeIdx] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={images[activeIdx]} alt={product.title} className="w-full h-full object-contain" />
-            ) : (
-              <div className="w-full h-full grid place-items-center text-gray-400">Sin imagen</div>
-            )}
+      <div className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col">
+        {/* Contenedor scrolleable completo */}
+        <div ref={contentRef} className="flex-1 overflow-y-auto">
+          {/* Galería - Sticky en mobile */}
+          <div className={`p-2 sm:p-6 lg:p-8 bg-gray-50 transition-all duration-300 ${
+            showImages ? 'block' : 'hidden sm:block'
+          }`}>
+            <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
+              {images[activeIdx] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={images[activeIdx]} alt={product.title} className="w-full h-full object-contain" />
+              ) : (
+                <div className="w-full h-full grid place-items-center text-gray-400">Sin imagen</div>
+              )}
+            </div>
+            <div className="mt-3 flex gap-2 overflow-x-auto">
+              {images.map((src, i) => (
+                <button
+                  key={i} onClick={() => setActiveIdx(i)}
+                  className={[
+                    "relative shrink-0 w-16 h-16 rounded-lg border bg-white",
+                    i === activeIdx ? "border-indigo-500 ring-2 ring-indigo-200" : "border-gray-200",
+                  ].join(" ")}
+                  aria-label={`Imagen ${i + 1}`}
+                >
+                  {src ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={src} alt="miniatura" className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <div className="w-full h-full grid place-items-center text-gray-400 text-xs">No img</div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto">
-            {images.map((src, i) => (
-              <button
-                key={i} onClick={() => setActiveIdx(i)}
-                className={[
-                  "relative shrink-0 w-16 h-16 rounded-lg border bg-white",
-                  i === activeIdx ? "border-indigo-500 ring-2 ring-indigo-200" : "border-gray-200",
-                ].join(" ")}
-                aria-label={`Imagen ${i + 1}`}
-              >
-                {src ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={src} alt="miniatura" className="w-full h-full object-cover rounded-lg" />
-                ) : (
-                  <div className="w-full h-full grid place-items-center text-gray-400 text-xs">No img</div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Info + talles */}
-        <div ref={contentRef} className="p-2 sm:p-6 lg:p-8 flex-1 overflow-y-auto">
+          {/* Info + talles */}
+          <div className="p-2 sm:p-6 lg:p-8">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h2 className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
@@ -255,14 +257,13 @@ export function ProductQuickAddModal({
             </div>
           </div>
 
-          <div className="mt-2 mb-12 sm:mb-8" />
+            <div className="mt-2 mb-12 sm:mb-8" />
+          </div>
         </div>
-      </div>
 
-      {/* Footer fijo */}
-      <div className="fixed left-0 right-0 bottom-0 pointer-events-none z-10">
-        <div className="pointer-events-auto max-w-5xl mx-auto px-0 sm:px-4 pb-0 sm:pb-4">
-          <div className="rounded-none sm:rounded-xl border bg-white shadow-lg flex flex-col sm:flex-row items-center sm:items-stretch justify-between gap-0 sm:gap-3 p-1 sm:p-3">
+        {/* Footer fijo */}
+        <div className="flex-shrink-0 border-t bg-white p-2 sm:p-4">
+          <div className="flex flex-col sm:flex-row items-center sm:items-stretch justify-between gap-2 sm:gap-3">
             <div className="flex w-full sm:w-auto justify-between sm:block">
               <div className="px-1 sm:px-2">
                 <div className="text-xs text-gray-600">Unidades</div>
@@ -276,7 +277,7 @@ export function ProductQuickAddModal({
             <div className="flex-1 sm:flex-1" />
             <button
               onClick={onConfirmClick}
-              className="w-full sm:w-auto h-7 sm:h-12 px-2 sm:px-5 rounded-none sm:rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 text-xs sm:text-base"
+              className="w-full sm:w-auto h-8 sm:h-12 px-3 sm:px-5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 text-sm sm:text-base"
               disabled={units === 0}
             >
               ✓ OK – Confirmar
