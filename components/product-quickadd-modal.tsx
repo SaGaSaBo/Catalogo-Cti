@@ -111,26 +111,29 @@ export function ProductQuickAddModal({
   const [showImages, setShowImages] = useState(true);
   const [scrollY, setScrollY] = useState(0);
   const images = product.images?.length ? product.images : [""];
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const onConfirmClick = useCallback(() => {
     onConfirm({ productId: product.id, quantities: qty, units, amount });
     onClose();
   }, [onConfirm, product.id, qty, units, amount, onClose]);
 
-  // Detectar scroll para ocultar/mostrar imágenes en mobile
+  // Detectar scroll del contenedor del modal para ocultar/mostrar imágenes en mobile
   useEffect(() => {
-    if (!open) return;
+    if (!open || !contentRef.current) return;
 
+    const contentElement = contentRef.current;
     let ticking = false;
+    
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          const scrollY = window.scrollY || document.documentElement.scrollTop;
-          setScrollY(scrollY);
+          const scrollTop = contentElement.scrollTop;
+          setScrollY(scrollTop);
           
           // En mobile, ocultar imágenes cuando se hace scroll hacia abajo
           if (window.innerWidth < 640) { // sm breakpoint
-            setShowImages(scrollY < 100);
+            setShowImages(scrollTop < 50);
           }
           ticking = false;
         });
@@ -138,8 +141,8 @@ export function ProductQuickAddModal({
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    contentElement.addEventListener('scroll', handleScroll, { passive: true });
+    return () => contentElement.removeEventListener('scroll', handleScroll);
   }, [open]);
 
   // Resetear estado de imágenes cuando se abre el modal
@@ -194,7 +197,7 @@ export function ProductQuickAddModal({
         </div>
 
         {/* Info + talles */}
-        <div className="p-2 sm:p-6 lg:p-8 flex-1 overflow-y-auto">
+        <div ref={contentRef} className="p-2 sm:p-6 lg:p-8 flex-1 overflow-y-auto">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h2 className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
@@ -225,7 +228,13 @@ export function ProductQuickAddModal({
           </div>
 
           <div className="mt-2 sm:mt-6">
-            <div className="text-sm font-medium mb-2 sm:mb-3">Selecciona talles y cantidades:</div>
+            <div className="text-sm font-medium mb-2 sm:mb-3">
+              Selecciona talles y cantidades:
+              {/* Debug info - solo en mobile */}
+              <span className="sm:hidden text-xs text-gray-400 ml-2">
+                (scroll: {Math.round(scrollY)}px)
+              </span>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
               {product.sizes.map(({ label, stock }) => (
                 <div key={label} className="p-2 sm:p-3 rounded-xl border border-gray-200 bg-white">
