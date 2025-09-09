@@ -108,12 +108,47 @@ export function ProductQuickAddModal({
   };
 
   const [activeIdx, setActiveIdx] = useState(0);
+  const [showImages, setShowImages] = useState(true);
+  const [scrollY, setScrollY] = useState(0);
   const images = product.images?.length ? product.images : [""];
 
   const onConfirmClick = useCallback(() => {
     onConfirm({ productId: product.id, quantities: qty, units, amount });
     onClose();
   }, [onConfirm, product.id, qty, units, amount, onClose]);
+
+  // Detectar scroll para ocultar/mostrar imágenes en mobile
+  useEffect(() => {
+    if (!open) return;
+
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY || document.documentElement.scrollTop;
+          setScrollY(scrollY);
+          
+          // En mobile, ocultar imágenes cuando se hace scroll hacia abajo
+          if (window.innerWidth < 640) { // sm breakpoint
+            setShowImages(scrollY < 100);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [open]);
+
+  // Resetear estado de imágenes cuando se abre el modal
+  useEffect(() => {
+    if (open) {
+      setShowImages(true);
+      setScrollY(0);
+    }
+  }, [open]);
 
   if (!open) return null;
 
@@ -125,8 +160,10 @@ export function ProductQuickAddModal({
       aria-modal="true" role="dialog"
     >
       <div className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2 flex flex-col lg:grid">
-        {/* Galería */}
-        <div className="p-2 sm:p-6 lg:p-8 bg-gray-50 flex-shrink-0">
+        {/* Galería - Ocultable en mobile */}
+        <div className={`p-2 sm:p-6 lg:p-8 bg-gray-50 flex-shrink-0 transition-all duration-500 ease-in-out ${
+          showImages ? 'block opacity-100' : 'hidden sm:block sm:opacity-100'
+        }`}>
           <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
             {images[activeIdx] ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -165,11 +202,22 @@ export function ProductQuickAddModal({
                 {product.brand}{product.sku ? ` · SKU: ${product.sku}` : ""}
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
-              aria-label="Cerrar"
-            >✕</button>
+            <div className="flex items-center gap-1">
+              {/* Botón para mostrar/ocultar imágenes en mobile */}
+              <button
+                onClick={() => setShowImages(!showImages)}
+                className="sm:hidden h-7 w-7 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50 text-xs transition-colors"
+                aria-label={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
+                title={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
+              >
+                {showImages ? "📷" : "👁️"}
+              </button>
+              <button
+                onClick={onClose}
+                className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
+                aria-label="Cerrar"
+              >✕</button>
+            </div>
           </div>
 
           <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
