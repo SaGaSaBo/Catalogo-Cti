@@ -121,13 +121,13 @@ export function ProductQuickAddModal({
     <div
       ref={overlayRef}
       onClick={onOverlayClick}
-      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-2 sm:p-4"
+      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto"
       aria-modal="true" role="dialog"
     >
-      <div className="w-full max-w-5xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2 flex flex-col lg:grid">
+      <div className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2 flex flex-col lg:grid">
         {/* Galería */}
-        <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 flex-shrink-0">
-          <div className="aspect-[4/3] sm:aspect-[4/3] aspect-square rounded-xl overflow-hidden bg-white border border-gray-200">
+        <div className="p-2 sm:p-6 lg:p-8 bg-gray-50 flex-shrink-0">
+          <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
             {images[activeIdx] ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={images[activeIdx]} alt={product.title} className="w-full h-full object-contain" />
@@ -157,28 +157,28 @@ export function ProductQuickAddModal({
         </div>
 
         {/* Info + talles */}
-        <div className="p-4 sm:p-6 lg:p-8 flex-1 overflow-y-auto">
-          <div className="flex items-start justify-between gap-4">
+        <div className="p-2 sm:p-6 lg:p-8 flex-1 overflow-y-auto">
+          <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
-              <div className="text-gray-500 mt-0.5 text-sm sm:text-base">
+              <h2 className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
+              <div className="text-gray-500 mt-0.5 text-xs sm:text-base">
                 {product.brand}{product.sku ? ` · SKU: ${product.sku}` : ""}
               </div>
             </div>
             <button
               onClick={onClose}
-              className="h-9 w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
+              className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
               aria-label="Cerrar"
             >✕</button>
           </div>
 
-          <div className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-semibold text-gray-900">
+          <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
             ${formatPrice(product.price, locale)}
           </div>
 
-          <div className="mt-4 sm:mt-6">
-            <div className="text-sm font-medium mb-3">Selecciona talles y cantidades:</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+          <div className="mt-2 sm:mt-6">
+            <div className="text-sm font-medium mb-2 sm:mb-3">Selecciona talles y cantidades:</div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
               {product.sizes.map(({ label, stock }) => (
                 <div key={label} className="p-2 sm:p-3 rounded-xl border border-gray-200 bg-white">
                   <div className="mb-2 flex items-center justify-between">
@@ -198,31 +198,31 @@ export function ProductQuickAddModal({
             </div>
           </div>
 
-          <div className="mt-8 mb-20 sm:mb-8" />
+          <div className="mt-2 mb-12 sm:mb-8" />
         </div>
       </div>
 
       {/* Footer fijo */}
       <div className="fixed left-0 right-0 bottom-0 pointer-events-none z-10">
-        <div className="pointer-events-auto max-w-5xl mx-auto px-2 sm:px-4 pb-2 sm:pb-4">
-          <div className="rounded-xl border bg-white shadow-lg flex flex-col sm:flex-row items-center sm:items-stretch justify-between gap-2 sm:gap-3 p-3">
+        <div className="pointer-events-auto max-w-5xl mx-auto px-0 sm:px-4 pb-0 sm:pb-4">
+          <div className="rounded-none sm:rounded-xl border bg-white shadow-lg flex flex-col sm:flex-row items-center sm:items-stretch justify-between gap-0 sm:gap-3 p-1 sm:p-3">
             <div className="flex w-full sm:w-auto justify-between sm:block">
-              <div className="px-2">
-                <div className="text-xs sm:text-sm text-gray-600">Unidades</div>
-                <div className="text-lg sm:text-xl font-semibold tabular-nums">{units}</div>
+              <div className="px-1 sm:px-2">
+                <div className="text-xs text-gray-600">Unidades</div>
+                <div className="text-sm sm:text-xl font-semibold tabular-nums">{units}</div>
               </div>
-              <div className="px-2">
-                <div className="text-xs sm:text-sm text-gray-600">Total aprox.</div>
-                <div className="text-lg sm:text-xl font-semibold tabular-nums">${formatPrice(amount, locale)}</div>
+              <div className="px-1 sm:px-2">
+                <div className="text-xs text-gray-600">Total aprox.</div>
+                <div className="text-sm sm:text-xl font-semibold tabular-nums">${formatPrice(amount, locale)}</div>
               </div>
             </div>
             <div className="flex-1 sm:flex-1" />
             <button
               onClick={onConfirmClick}
-              className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 text-sm sm:text-base"
+              className="w-full sm:w-auto h-7 sm:h-12 px-2 sm:px-5 rounded-none sm:rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 text-xs sm:text-base"
               disabled={units === 0}
             >
-              ✓ OK – Confirmar Selección
+              ✓ OK – Confirmar
             </button>
           </div>
         </div>
