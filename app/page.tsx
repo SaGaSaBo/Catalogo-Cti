@@ -14,7 +14,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { getTotalUnits } = useCartContext();
+  const { getTotalUnits, updateQuantity } = useCartContext();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,16 +98,17 @@ export default function HomePage() {
     units: number;
     amount: number;
   }) => {
-    // Aquí puedes integrar con tu hook de carrito existente
+    // Agregar cada talle con su cantidad al carrito
+    Object.entries(payload.quantities).forEach(([size, quantity]) => {
+      if (quantity > 0) {
+        updateQuantity(payload.productId, size, quantity);
+      }
+    });
+    
     console.log('🛒 Producto agregado al carrito:', payload);
     toast.success(`Se agregaron ${payload.units} unidades por $${payload.amount.toLocaleString('es-AR')}`);
   };
 
-  // Función para agregar directo al carrito
-  const handleAddToCart = (product: any) => {
-    console.log('🛒 Agregar directo al carrito:', product.title);
-    toast.success(`Agregado al carrito: ${product.title}`);
-  };
 
   if (isLoading) {
     return (
@@ -188,7 +189,6 @@ export default function HomePage() {
               price={product.price}
               sizes={product.sizes || []}
               onQuickAdd={handleQuickAdd}
-              onAddToCart={() => handleAddToCart(product)}
             />
           ))}
         </div>

@@ -100,16 +100,10 @@ export function ProductCard({
           </div>
         )}
 
-        <div className="pt-2 mt-auto grid grid-cols-2 gap-2">
+        <div className="pt-2 mt-auto">
           <button
             onClick={openQuickAdd}
-            className="h-10 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-sm"
-          >
-            Ver Detalles
-          </button>
-          <button
-            onClick={onAddToCart}
-            className="h-10 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
+            className="w-full h-10 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
           >
             Agregar
           </button>

@@ -92,10 +92,6 @@ export default function Page() {
               key={i} 
               {...p} 
               onQuickAdd={handleQuickAdd}
-              onAddToCart={() => {
-                console.log("🛒 Agregar directo al carrito:", p.title);
-                alert(`Agregado al carrito: ${p.title}`);
-              }}
             />
           ))}
         </div>
