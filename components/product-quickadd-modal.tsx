@@ -124,6 +124,7 @@ export function ProductQuickAddModal({
 
     const contentElement = contentRef.current;
     let ticking = false;
+    let lastScrollTop = 0;
     
     const handleScroll = () => {
       if (!ticking) {
@@ -133,7 +134,19 @@ export function ProductQuickAddModal({
           
           // En mobile, ocultar imágenes cuando se hace scroll hacia abajo
           if (window.innerWidth < 640) { // sm breakpoint
-            setShowImages(scrollTop < 100);
+            const scrollDelta = scrollTop - lastScrollTop;
+            
+            // Solo cambiar estado si hay un cambio significativo
+            if (Math.abs(scrollDelta) > 10) {
+              if (scrollDelta > 0 && scrollTop > 150) {
+                // Scrolling down - hide images
+                setShowImages(false);
+              } else if (scrollDelta < 0 && scrollTop < 100) {
+                // Scrolling up - show images
+                setShowImages(true);
+              }
+              lastScrollTop = scrollTop;
+            }
           }
           ticking = false;
         });
@@ -166,8 +179,8 @@ export function ProductQuickAddModal({
         {/* Contenedor scrolleable completo */}
         <div ref={contentRef} className="flex-1 overflow-y-auto">
           {/* Galería - Sticky en mobile */}
-          <div className={`p-2 sm:p-6 lg:p-8 bg-gray-50 transition-all duration-300 ${
-            showImages ? 'block' : 'hidden sm:block'
+          <div className={`p-2 sm:p-6 lg:p-8 bg-gray-50 transition-all duration-500 ease-in-out ${
+            showImages ? 'block opacity-100 transform translate-y-0' : 'hidden sm:block sm:opacity-100 sm:transform sm:translate-y-0'
           }`}>
             <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
               {images[activeIdx] ? (
@@ -200,62 +213,62 @@ export function ProductQuickAddModal({
 
           {/* Info + talles */}
           <div className="p-2 sm:p-6 lg:p-8">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
-              <div className="text-gray-500 mt-0.5 text-xs sm:text-base">
-                {product.brand}{product.sku ? ` · SKU: ${product.sku}` : ""}
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
+                <div className="text-gray-500 mt-0.5 text-xs sm:text-base">
+                  {product.brand}{product.sku ? ` · SKU: ${product.sku}` : ""}
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                {/* Botón para mostrar/ocultar imágenes en mobile */}
+                <button
+                  onClick={() => setShowImages(!showImages)}
+                  className="sm:hidden h-7 w-7 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50 text-xs transition-colors"
+                  aria-label={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
+                  title={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
+                >
+                  {showImages ? "📷" : "👁️"}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
+                  aria-label="Cerrar"
+                >✕</button>
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              {/* Botón para mostrar/ocultar imágenes en mobile */}
-              <button
-                onClick={() => setShowImages(!showImages)}
-                className="sm:hidden h-7 w-7 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50 text-xs transition-colors"
-                aria-label={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
-                title={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
-              >
-                {showImages ? "📷" : "👁️"}
-              </button>
-              <button
-                onClick={onClose}
-                className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
-                aria-label="Cerrar"
-              >✕</button>
-            </div>
-          </div>
 
-          <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
-            ${formatPrice(product.price, locale)}
-          </div>
-
-          <div className="mt-2 sm:mt-6">
-            <div className="text-sm font-medium mb-2 sm:mb-3">
-              Selecciona talles y cantidades:
-              {/* Debug info - solo en mobile */}
-              <span className="sm:hidden text-xs text-gray-400 ml-2">
-                (scroll: {Math.round(scrollY)}px)
-              </span>
+            <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
+              ${formatPrice(product.price, locale)}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
-              {product.sizes.map(({ label, stock }) => (
-                <div key={label} className="p-2 sm:p-3 rounded-xl border border-gray-200 bg-white">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium">{label}</span>
-                    {typeof stock === "number" && (
-                      <span className="text-[10px] sm:text-[11px] text-gray-500">stock {stock}</span>
-                    )}
+
+            <div className="mt-2 sm:mt-6">
+              <div className="text-sm font-medium mb-2 sm:mb-3">
+                Selecciona talles y cantidades:
+                {/* Debug info - solo en mobile */}
+                <span className="sm:hidden text-xs text-gray-400 ml-2">
+                  (scroll: {Math.round(scrollY)}px)
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
+                {product.sizes.map(({ label, stock }) => (
+                  <div key={label} className="p-2 sm:p-3 rounded-xl border border-gray-200 bg-white">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-sm font-medium">{label}</span>
+                      {typeof stock === "number" && (
+                        <span className="text-[10px] sm:text-[11px] text-gray-500">stock {stock}</span>
+                      )}
+                    </div>
+                    <Stepper
+                      value={qty[label] ?? 0}
+                      onChange={(v) => setQty((q) => ({ ...q, [label]: v }))}
+                      min={0}
+                      max={stock ?? 999}
+                    />
                   </div>
-                  <Stepper
-                    value={qty[label] ?? 0}
-                    onChange={(v) => setQty((q) => ({ ...q, [label]: v }))}
-                    min={0}
-                    max={stock ?? 999}
-                  />
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
             <div className="mt-2 mb-12 sm:mb-8" />
           </div>
