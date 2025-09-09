@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
+import { ProductQuickAddModal, type QuickAddProduct } from "@/components/product-quickadd-modal";
 
 export const formatPrice = (n: number, locale = "es-AR") =>
   new Intl.NumberFormat(locale).format(n);
@@ -12,6 +14,15 @@ export type ProductCardProps = {
   sizes?: string[];
   onDetails?: () => void;
   onAddToCart?: () => void;
+  // Nuevas props para el modal
+  productId?: string;
+  images?: string[];
+  onQuickAdd?: (payload: {
+    productId: string;
+    quantities: Record<string, number>;
+    units: number;
+    amount: number;
+  }) => void;
 };
 
 export function ProductCard({
@@ -23,9 +34,40 @@ export function ProductCard({
   sizes = [],
   onDetails,
   onAddToCart,
+  productId,
+  images = [],
+  onQuickAdd,
 }: ProductCardProps) {
+  const [open, setOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<QuickAddProduct | null>(null);
+
   const shown = sizes.slice(0, 6);
   const rest = Math.max(0, sizes.length - shown.length);
+
+  const openQuickAdd = () => {
+    const mapped: QuickAddProduct = {
+      id: productId || title, // fallback al título si no hay ID
+      title,
+      brand,
+      sku,
+      price,
+      images: images.length > 0 ? images : (imageUrl ? [imageUrl] : []),
+      sizes: sizes.map((s: string) => ({ label: s })),
+    };
+    setSelectedProduct(mapped);
+    setOpen(true);
+  };
+
+  const confirmQuickAdd = (payload: {
+    productId: string;
+    quantities: Record<string, number>;
+    units: number;
+    amount: number;
+  }) => {
+    if (onQuickAdd) {
+      onQuickAdd(payload);
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-[0_6px_20px_rgba(0,0,0,.06)] border border-gray-100 overflow-hidden flex flex-col">
@@ -60,7 +102,7 @@ export function ProductCard({
 
         <div className="pt-2 mt-auto grid grid-cols-2 gap-2">
           <button
-            onClick={onDetails}
+            onClick={openQuickAdd}
             className="h-10 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-sm"
           >
             Ver Detalles
@@ -73,6 +115,18 @@ export function ProductCard({
           </button>
         </div>
       </div>
+
+      {/* Modal de Quick Add */}
+      {selectedProduct && (
+        <ProductQuickAddModal
+          open={open}
+          onClose={() => setOpen(false)}
+          product={selectedProduct}
+          onConfirm={confirmQuickAdd}
+          locale="es-AR"
+          brandAccent="indigo-600"
+        />
+      )}
     </div>
   );
 }

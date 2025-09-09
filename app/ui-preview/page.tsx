@@ -15,8 +15,14 @@ const demoCategories = [
 
 const demoProducts: ProductCardProps[] = [
   {
+    productId: "demo-1",
     imageUrl:
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1594938298605-c63c6e57b7c5?q=80&w=800&auto=format&fit=crop"
+    ],
     title: "Basic Negra",
     brand: "Florenzi",
     sku: "FCMAPCL5248NE00L",
@@ -24,8 +30,13 @@ const demoProducts: ProductCardProps[] = [
     sizes: ["XS", "S", "M", "L", "XL", "XXL"],
   },
   {
+    productId: "demo-2",
     imageUrl:
       "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop"
+    ],
     title: "AMBO MINIMAT FLORENZI",
     brand: "Florenzi",
     sku: "AMFLORENZIMINIMAT",
@@ -33,7 +44,9 @@ const demoProducts: ProductCardProps[] = [
     sizes: ["44", "46", "48", "50", "52"],
   },
   {
+    productId: "demo-3",
     imageUrl: "",
+    images: [],
     title: "Terno Eleganza",
     brand: "Guarnieri",
     sku: "TRN-ELG-001",
@@ -53,6 +66,17 @@ export default function Page() {
     );
   }, [query]);
 
+  // Función de ejemplo para manejar la confirmación del modal
+  const handleQuickAdd = (payload: {
+    productId: string;
+    quantities: Record<string, number>;
+    units: number;
+    amount: number;
+  }) => {
+    console.log("🛒 Producto agregado al carrito:", payload);
+    alert(`Se agregaron ${payload.units} unidades por $${payload.amount.toLocaleString('es-AR')}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <ACHeader cartCount={3} />
@@ -64,7 +88,15 @@ export default function Page() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((p, i) => (
-            <ProductCard key={i} {...p} />
+            <ProductCard 
+              key={i} 
+              {...p} 
+              onQuickAdd={handleQuickAdd}
+              onAddToCart={() => {
+                console.log("🛒 Agregar directo al carrito:", p.title);
+                alert(`Agregado al carrito: ${p.title}`);
+              }}
+            />
           ))}
         </div>
       </main>
