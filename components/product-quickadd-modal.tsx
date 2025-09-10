@@ -115,24 +115,77 @@ export function ProductQuickAddModal({
   const [activeIdx, setActiveIdx] = useState(0);
   const images = product.images?.length ? product.images : [""];
   const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Referencias para accesibilidad
+  const openerRef = useRef<HTMLElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const startTrapRef = useRef<HTMLSpanElement>(null);
+  const endTrapRef = useRef<HTMLSpanElement>(null);
 
   const onConfirmClick = useCallback(() => {
     onConfirm({ productId: product.id, quantities: qty, units, amount });
     onClose();
   }, [onConfirm, product.id, qty, units, amount, onClose]);
 
+  // 1. Cerrar con Esc y devolver foco
+  useEffect(() => {
+    if (!open) return;
+    openerRef.current = (document.activeElement as HTMLElement) ?? null;
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      // Devolver foco al disparador
+      openerRef.current?.focus?.();
+    };
+  }, [open, onClose]);
+
+  // 2. Trampa de foco (focus trap) simple
+  useEffect(() => {
+    if (!open || !dialogRef.current) return;
+
+    // foco inicial
+    const focusable = dialogRef.current.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    focusable?.focus();
+
+    const handleFocus = (e: FocusEvent) => {
+      if (!dialogRef.current) return;
+      if (!dialogRef.current.contains(e.target as Node)) {
+        // si el foco se fue, devolverlo al primer foco dentro del modal
+        focusable?.focus();
+      }
+    };
+    document.addEventListener("focusin", handleFocus);
+    return () => document.removeEventListener("focusin", handleFocus);
+  }, [open]);
 
   if (!open) return null;
 
   return (
-    <div
-      ref={overlayRef}
-      onClick={onOverlayClick}
-      onTouchMove={onOverlayTouchMove}
-      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-start sm:items-center justify-center p-0 sm:p-4"
-      aria-modal="true" role="dialog"
-    >
-      <div className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col">
+    <>
+      {/* Sentinelas de foco */}
+      <span ref={startTrapRef} tabIndex={0} className="sr-only" />
+      
+      <div
+        ref={overlayRef}
+        onClick={onOverlayClick}
+        onTouchMove={onOverlayTouchMove}
+        className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-start sm:items-center justify-center p-0 sm:p-4"
+        aria-modal="true" role="dialog"
+      >
+        <div 
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qa-title"
+          aria-describedby="qa-desc"
+          className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col"
+        >
         {/* Contenedor scrolleable completo */}
         <div ref={contentRef} className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           {/* Galería - Parte del scroll natural */}
@@ -168,19 +221,19 @@ export function ProductQuickAddModal({
 
           {/* Info + talles */}
           <div className="p-2 sm:p-6 lg:p-8">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
-                <div className="text-gray-500 mt-0.5 text-xs sm:text-base">
-                  {product.brand}{product.sku ? ` · SKU: ${product.sku}` : ""}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h2 id="qa-title" className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
+                  <div className="text-gray-500 mt-0.5 text-xs sm:text-base">
+                    {product.brand}{product.sku ? ` · SKU: ${product.sku}` : ""}
+                  </div>
                 </div>
+                <button
+                  onClick={onClose}
+                  className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
+                  aria-label="Cerrar modal"
+                >✕</button>
               </div>
-              <button
-                onClick={onClose}
-                className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
-                aria-label="Cerrar"
-              >✕</button>
-            </div>
 
             <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
               ${formatPrice(product.price, locale)}
@@ -238,6 +291,15 @@ export function ProductQuickAddModal({
           </div>
         </div>
       </div>
-    </div>
+      
+      {/* Descripción para lectores de pantalla */}
+      <p id="qa-desc" className="sr-only">
+        Selecciona talles y cantidades. Usa los botones más/menos para ajustar la cantidad de cada talle. 
+        El total se actualiza automáticamente. Presiona Escape para cerrar el modal.
+      </p>
+      
+      {/* Sentinelas de foco */}
+      <span ref={endTrapRef} tabIndex={0} className="sr-only" />
+    </>
   );
 }
