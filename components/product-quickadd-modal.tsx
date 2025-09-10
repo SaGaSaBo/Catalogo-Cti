@@ -186,41 +186,41 @@ export function ProductQuickAddModal({
           aria-describedby="qa-desc"
           className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col"
         >
-        {/* Contenedor scrolleable completo */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-          {/* Galería - Parte del scroll natural */}
-          <div className="p-2 sm:p-6 lg:p-8 bg-gray-50">
-            <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
-              {images[activeIdx] ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={images[activeIdx]} alt={product.title} className="w-full h-full object-contain" />
-              ) : (
-                <div className="w-full h-full grid place-items-center text-gray-400">Sin imagen</div>
-              )}
+          {/* Contenedor scrolleable completo */}
+          <div ref={contentRef} className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+            {/* Galería - Parte del scroll natural */}
+            <div className="p-2 sm:p-6 lg:p-8 bg-gray-50">
+              <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
+                {images[activeIdx] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={images[activeIdx]} alt={product.title} className="w-full h-full object-contain" />
+                ) : (
+                  <div className="w-full h-full grid place-items-center text-gray-400">Sin imagen</div>
+                )}
+              </div>
+              <div className="mt-3 flex gap-2 overflow-x-auto">
+                {images.map((src, i) => (
+                  <button
+                    key={i} onClick={() => setActiveIdx(i)}
+                    className={[
+                      "relative shrink-0 w-16 h-16 rounded-lg border bg-white",
+                      i === activeIdx ? "border-indigo-500 ring-2 ring-indigo-200" : "border-gray-200",
+                    ].join(" ")}
+                    aria-label={`Imagen ${i + 1}`}
+                  >
+                    {src ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={src} alt="miniatura" className="w-full h-full object-cover rounded-lg" />
+                    ) : (
+                      <div className="w-full h-full grid place-items-center text-gray-400 text-xs">No img</div>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="mt-3 flex gap-2 overflow-x-auto">
-              {images.map((src, i) => (
-                <button
-                  key={i} onClick={() => setActiveIdx(i)}
-                  className={[
-                    "relative shrink-0 w-16 h-16 rounded-lg border bg-white",
-                    i === activeIdx ? "border-indigo-500 ring-2 ring-indigo-200" : "border-gray-200",
-                  ].join(" ")}
-                  aria-label={`Imagen ${i + 1}`}
-                >
-                  {src ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={src} alt="miniatura" className="w-full h-full object-cover rounded-lg" />
-                  ) : (
-                    <div className="w-full h-full grid place-items-center text-gray-400 text-xs">No img</div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Info + talles */}
-          <div className="p-2 sm:p-6 lg:p-8">
+            {/* Info + talles */}
+            <div className="p-2 sm:p-6 lg:p-8">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <h2 id="qa-title" className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
@@ -235,59 +235,60 @@ export function ProductQuickAddModal({
                 >✕</button>
               </div>
 
-            <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
-              ${formatPrice(product.price, locale)}
-            </div>
-
-            <div className="mt-2 sm:mt-6">
-              <div className="text-sm font-medium mb-2 sm:mb-3">
-                Selecciona talles y cantidades:
+              <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
+                ${formatPrice(product.price, locale)}
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
-                {product.sizes.map(({ label, stock }) => (
-                  <div key={label} className="p-2 sm:p-3 rounded-xl border border-gray-200 bg-white">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-medium">{label}</span>
-                      {typeof stock === "number" && (
-                        <span className="text-[10px] sm:text-[11px] text-gray-500">stock {stock}</span>
-                      )}
+
+              <div className="mt-2 sm:mt-6">
+                <div className="text-sm font-medium mb-2 sm:mb-3">
+                  Selecciona talles y cantidades:
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
+                  {product.sizes.map(({ label, stock }) => (
+                    <div key={label} className="p-2 sm:p-3 rounded-xl border border-gray-200 bg-white">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-sm font-medium">{label}</span>
+                        {typeof stock === "number" && (
+                          <span className="text-[10px] sm:text-[11px] text-gray-500">stock {stock}</span>
+                        )}
+                      </div>
+                      <Stepper
+                        value={qty[label] ?? 0}
+                        onChange={(v) => setQty((q) => ({ ...q, [label]: v }))}
+                        min={0}
+                        max={stock ?? 999}
+                      />
                     </div>
-                    <Stepper
-                      value={qty[label] ?? 0}
-                      onChange={(v) => setQty((q) => ({ ...q, [label]: v }))}
-                      min={0}
-                      max={stock ?? 999}
-                    />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="mt-2 mb-12 sm:mb-8" />
+              <div className="mt-2 mb-12 sm:mb-8" />
+            </div>
           </div>
-        </div>
 
-        {/* Footer fijo */}
-        <div className="flex-shrink-0 border-t bg-white p-2 sm:p-4">
-          <div className="flex flex-col sm:flex-row items-center sm:items-stretch justify-between gap-2 sm:gap-3">
-            <div className="flex w-full sm:w-auto justify-between sm:block">
-              <div className="px-1 sm:px-2">
-                <div className="text-xs text-gray-600">Unidades</div>
-                <div className="text-sm sm:text-xl font-semibold tabular-nums">{units}</div>
+          {/* Footer fijo */}
+          <div className="flex-shrink-0 border-t bg-white p-2 sm:p-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-stretch justify-between gap-2 sm:gap-3">
+              <div className="flex w-full sm:w-auto justify-between sm:block">
+                <div className="px-1 sm:px-2">
+                  <div className="text-xs text-gray-600">Unidades</div>
+                  <div className="text-sm sm:text-xl font-semibold tabular-nums">{units}</div>
+                </div>
+                <div className="px-1 sm:px-2">
+                  <div className="text-xs text-gray-600">Total aprox.</div>
+                  <div className="text-sm sm:text-xl font-semibold tabular-nums">${formatPrice(amount, locale)}</div>
+                </div>
               </div>
-              <div className="px-1 sm:px-2">
-                <div className="text-xs text-gray-600">Total aprox.</div>
-                <div className="text-sm sm:text-xl font-semibold tabular-nums">${formatPrice(amount, locale)}</div>
-              </div>
+              <div className="flex-1 sm:flex-1" />
+              <button
+                onClick={onConfirmClick}
+                className="w-full sm:w-auto h-8 sm:h-12 px-3 sm:px-5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 text-sm sm:text-base"
+                disabled={units === 0}
+              >
+                ✓ OK – Confirmar
+              </button>
             </div>
-            <div className="flex-1 sm:flex-1" />
-            <button
-              onClick={onConfirmClick}
-              className="w-full sm:w-auto h-8 sm:h-12 px-3 sm:px-5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 text-sm sm:text-base"
-              disabled={units === 0}
-            >
-              ✓ OK – Confirmar
-            </button>
           </div>
         </div>
       </div>
