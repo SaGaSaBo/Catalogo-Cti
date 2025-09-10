@@ -1,4 +1,4 @@
-# Catálogo Mayorista con Flipbook
+# CATALOGO-MTX
 
 Un catálogo mayorista moderno con interfaz de flipbook, sistema de pedidos por email y panel de administración completo.
 

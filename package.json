@@ -1,12 +1,17 @@
 {
-  "name": "nextjs",
+  "name": "catalogo-mtx",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate": "node scripts/migrate-to-new-project.js",
+    "verify-env": "node scripts/verify-env.js",
+    "setup-check": "node scripts/quick-setup.js",
+    "setup-github": "node scripts/setup-github.js",
+    "setup-complete": "node scripts/complete-setup.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
