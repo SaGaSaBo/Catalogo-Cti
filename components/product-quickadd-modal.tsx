@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lockBodyScroll, unlockBodyScroll } from "../lib/scroll-lock";
 
 // Utilidad: formato moneda (ajusta locale si quieres)
 const formatPrice = (n: number, locale = "es-CL") =>
@@ -78,12 +79,11 @@ export function ProductQuickAddModal({
   locale?: string;
   brandAccent?: string; // tailwind color, ej: "indigo-600"
 }) {
-  // bloquear scroll del fondo
+  // Bloquear scroll del fondo con utilidad avanzada
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    lockBodyScroll();
+    return () => unlockBodyScroll();
   }, [open]);
 
   // estado de cantidades por talle
@@ -107,9 +107,12 @@ export function ProductQuickAddModal({
     if (e.target === overlayRef.current) onClose();
   };
 
+  // Prevenir scroll del body en iOS cuando se toca fuera del modal
+  const onOverlayTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+  };
+
   const [activeIdx, setActiveIdx] = useState(0);
-  const [showImages, setShowImages] = useState(true);
-  const [scrollY, setScrollY] = useState(0);
   const images = product.images?.length ? product.images : [""];
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -118,53 +121,6 @@ export function ProductQuickAddModal({
     onClose();
   }, [onConfirm, product.id, qty, units, amount, onClose]);
 
-  // Detectar scroll del contenedor del modal para ocultar/mostrar imágenes en mobile
-  useEffect(() => {
-    if (!open || !contentRef.current) return;
-
-    const contentElement = contentRef.current;
-    let ticking = false;
-    let lastScrollTop = 0;
-    
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const scrollTop = contentElement.scrollTop;
-          setScrollY(scrollTop);
-          
-          // En mobile, ocultar imágenes cuando se hace scroll hacia abajo
-          if (window.innerWidth < 640) { // sm breakpoint
-            const scrollDelta = scrollTop - lastScrollTop;
-            
-            // Solo cambiar estado si hay un cambio significativo
-            if (Math.abs(scrollDelta) > 10) {
-              if (scrollDelta > 0 && scrollTop > 150) {
-                // Scrolling down - hide images
-                setShowImages(false);
-              } else if (scrollDelta < 0 && scrollTop < 100) {
-                // Scrolling up - show images
-                setShowImages(true);
-              }
-              lastScrollTop = scrollTop;
-            }
-          }
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    contentElement.addEventListener('scroll', handleScroll, { passive: true });
-    return () => contentElement.removeEventListener('scroll', handleScroll);
-  }, [open]);
-
-  // Resetear estado de imágenes cuando se abre el modal
-  useEffect(() => {
-    if (open) {
-      setShowImages(true);
-      setScrollY(0);
-    }
-  }, [open]);
 
   if (!open) return null;
 
@@ -172,16 +128,15 @@ export function ProductQuickAddModal({
     <div
       ref={overlayRef}
       onClick={onOverlayClick}
+      onTouchMove={onOverlayTouchMove}
       className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-start sm:items-center justify-center p-0 sm:p-4"
       aria-modal="true" role="dialog"
     >
       <div className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col">
         {/* Contenedor scrolleable completo */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto">
-          {/* Galería - Sticky en mobile */}
-          <div className={`p-2 sm:p-6 lg:p-8 bg-gray-50 transition-all duration-500 ease-in-out ${
-            showImages ? 'block opacity-100 transform translate-y-0' : 'hidden sm:block sm:opacity-100 sm:transform sm:translate-y-0'
-          }`}>
+        <div ref={contentRef} className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {/* Galería - Parte del scroll natural */}
+          <div className="p-2 sm:p-6 lg:p-8 bg-gray-50">
             <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
               {images[activeIdx] ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -220,22 +175,11 @@ export function ProductQuickAddModal({
                   {product.brand}{product.sku ? ` · SKU: ${product.sku}` : ""}
                 </div>
               </div>
-              <div className="flex items-center gap-1">
-                {/* Botón para mostrar/ocultar imágenes en mobile */}
-                <button
-                  onClick={() => setShowImages(!showImages)}
-                  className="sm:hidden h-7 w-7 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50 text-xs transition-colors"
-                  aria-label={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
-                  title={showImages ? "Ocultar imágenes" : "Mostrar imágenes"}
-                >
-                  {showImages ? "📷" : "👁️"}
-                </button>
-                <button
-                  onClick={onClose}
-                  className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
-                  aria-label="Cerrar"
-                >✕</button>
-              </div>
+              <button
+                onClick={onClose}
+                className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
+                aria-label="Cerrar"
+              >✕</button>
             </div>
 
             <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
@@ -245,10 +189,6 @@ export function ProductQuickAddModal({
             <div className="mt-2 sm:mt-6">
               <div className="text-sm font-medium mb-2 sm:mb-3">
                 Selecciona talles y cantidades:
-                {/* Debug info - solo en mobile */}
-                <span className="sm:hidden text-xs text-gray-400 ml-2">
-                  (scroll: {Math.round(scrollY)}px)
-                </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
                 {product.sizes.map(({ label, stock }) => (
