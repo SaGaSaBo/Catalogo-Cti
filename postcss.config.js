@@ -1,8 +1,7 @@
-/** PostCSS config para Next.js */
+/** PostCSS config para Next.js 15 */
 module.exports = {
   plugins: {
-    // Si tienes Tailwind, descomenta la siguiente línea:
-    // tailwindcss: {},
+    tailwindcss: {},
     autoprefixer: {},
   },
 };
