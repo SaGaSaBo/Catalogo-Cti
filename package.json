@@ -55,7 +55,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.0.0",
     "input-otp": "^1.2.4",
-    "lucide-react": "^0.344.0",
+    "lucide-react": "^0.544.0",
     "next": "15.5.2",
     "pdf-lib": "^1.17.1",
     "react": "^18",
@@ -72,7 +72,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.17",
+    "autoprefixer": "^10.4.21",
     "eslint": "^8",
     "eslint-config-next": "15.5.2",
     "postcss": "^8.4.35",
