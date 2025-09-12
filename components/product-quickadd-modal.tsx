@@ -49,71 +49,27 @@ function Stepper({
           if (e.key === "ArrowUp") { e.preventDefault(); inc(); }
           if (e.key === "ArrowDown") { e.preventDefault(); dec(); }
         }}
-        inputMode="numeric"
-        className="w-10 sm:w-12 text-center outline-none text-sm font-medium"
-        aria-live="polite"
+        className="flex-1 text-center text-sm sm:text-base font-medium bg-transparent border-0 focus:outline-none"
+        aria-label="Cantidad"
+        disabled={disabled}
       />
 
       <button
         type="button" onClick={inc} disabled={disabled || value >= max}
-        className="h-full w-8 sm:w-10 grid place-items-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 touch-manipulation"
+        className="h-full w-8 sm:w-10 grid place-items-center text-gray-500 hover:bg-gray-50 disabled:opacity-40 touch-manipulation"
         aria-label="Aumentar"
       >+</button>
     </div>
   );
 }
 
-// Modal principal
-export function ProductQuickAddModal({
-  open, onClose, product, onConfirm, locale = "es-CL", brandAccent = "indigo-600",
+export default function ProductQuickAddModal({
+  open, onClose, product, onConfirm,
 }: {
-  open: boolean;
-  onClose: () => void;
-  product: QuickAddProduct;
-  onConfirm: (p: {
-    productId: string;
-    quantities: Record<string, number>;
-    units: number;
-    amount: number;
-  }) => void;
-  locale?: string;
-  brandAccent?: string; // tailwind color, ej: "indigo-600"
+  open: boolean; onClose: () => void; product: QuickAddProduct | null; onConfirm: (items: Array<{ size: string; qty: number }>) => void;
 }) {
-  // Bloquear scroll del fondo con utilidad avanzada
-  useEffect(() => {
-    if (!open) return;
-    lockBodyScroll();
-    return () => unlockBodyScroll();
-  }, [open]);
-
-  // estado de cantidades por talle
-  const initial = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const s of product.sizes) map[s.label] = Math.max(0, s.initial ?? 0);
-    return map;
-  }, [product]);
-
-  const [qty, setQty] = useState<Record<string, number>>(initial);
-  useEffect(() => setQty(initial), [initial]);
-
-  const units = useMemo(
-    () => Object.values(qty).reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0),
-    [qty]
-  );
-  const amount = useMemo(() => units * (product?.price ?? 0), [units, product?.price]);
-
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
   const overlayRef = useRef<HTMLDivElement>(null);
-  const onOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === overlayRef.current) onClose();
-  };
-
-  // Prevenir scroll del body en iOS cuando se toca fuera del modal
-  const onOverlayTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault();
-  };
-
-  const [activeIdx, setActiveIdx] = useState(0);
-  const images = product.images?.length ? product.images : [""];
   const contentRef = useRef<HTMLDivElement>(null);
   
   // Referencias para accesibilidad
@@ -122,10 +78,13 @@ export function ProductQuickAddModal({
   const startTrapRef = useRef<HTMLSpanElement>(null);
   const endTrapRef = useRef<HTMLSpanElement>(null);
 
-  const onConfirmClick = useCallback(() => {
-    onConfirm({ productId: product.id, quantities: qty, units, amount });
-    onClose();
-  }, [onConfirm, product.id, qty, units, amount, onClose]);
+  // Inicializar cantidades
+  useEffect(() => {
+    if (!product) return;
+    const initial: Record<string, number> = {};
+    product.sizes.forEach((s) => { initial[s.label] = s.initial || 0; });
+    setQuantities(initial);
+  }, [product]);
 
   // 1. Cerrar con Esc y devolver foco
   useEffect(() => {
@@ -164,7 +123,42 @@ export function ProductQuickAddModal({
     return () => document.removeEventListener("focusin", handleFocus);
   }, [open]);
 
-  if (!open) return null;
+  // Scroll lock
+  useEffect(() => {
+    if (open) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
+    return () => unlockBodyScroll();
+  }, [open]);
+
+  const updateQuantity = useCallback((size: string, qty: number) => {
+    setQuantities((prev) => ({ ...prev, [size]: qty }));
+  }, []);
+
+  const units = useMemo(() => Object.values(quantities).reduce((a, b) => a + b, 0), [quantities]);
+  const amount = useMemo(() => {
+    if (!product) return 0;
+    return Object.entries(quantities).reduce((sum, [size, qty]) => {
+      return sum + (qty * product.price);
+    }, 0);
+  }, [quantities, product]);
+
+  const onConfirmClick = useCallback(() => {
+    const items = Object.entries(quantities)
+      .filter(([, qty]) => qty > 0)
+      .map(([size, qty]) => ({ size, qty }));
+    onConfirm(items);
+    onClose();
+  }, [quantities, onConfirm, onClose]);
+
+  const onOverlayTouchMove = useCallback((e: React.TouchEvent) => {
+    // iOS fix: evitar que el touch fuera del modal arrastre el body
+    e.preventDefault();
+  }, []);
+
+  if (!open || !product) return null;
 
   return (
     <>
@@ -173,121 +167,117 @@ export function ProductQuickAddModal({
       
       <div
         ref={overlayRef}
-        onClick={onOverlayClick}
+        className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto"
+        onClick={(e) => e.target === overlayRef.current && onClose()}
         onTouchMove={onOverlayTouchMove}
-        className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-start sm:items-center justify-center p-0 sm:p-4"
-        aria-modal="true" role="dialog"
       >
-        <div 
+        <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="qa-title"
           aria-describedby="qa-desc"
-          className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] sm:rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col"
+          className="w-full h-full sm:max-w-5xl sm:max-h-[90vh] bg-white flex flex-col overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
         >
-          {/* Contenedor scrolleable completo */}
-          <div ref={contentRef} className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-            {/* Galería - Parte del scroll natural */}
-            <div className="p-2 sm:p-6 lg:p-8 bg-gray-50">
-              <div className="aspect-[3/4] sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-white border border-gray-200">
-                {images[activeIdx] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={images[activeIdx]} alt={product.title} className="w-full h-full object-contain" />
-                ) : (
-                  <div className="w-full h-full grid place-items-center text-gray-400">Sin imagen</div>
+          {/* Header */}
+          <div className="flex-shrink-0 flex items-center justify-between p-4 sm:p-6 border-b border-gray-100">
+            <div className="flex-1 min-w-0">
+              <h2 id="qa-title" className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+                {product.title}
+              </h2>
+              <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                <span>{product.brand}</span>
+                {product.sku && (
+                  <>
+                    <span>•</span>
+                    <span className="font-mono">{product.sku}</span>
+                  </>
                 )}
               </div>
-              <div className="mt-3 flex gap-2 overflow-x-auto">
-                {images.map((src, i) => (
-                  <button
-                    key={i} onClick={() => setActiveIdx(i)}
-                    className={[
-                      "relative shrink-0 w-16 h-16 rounded-lg border bg-white",
-                      i === activeIdx ? "border-indigo-500 ring-2 ring-indigo-200" : "border-gray-200",
-                    ].join(" ")}
-                    aria-label={`Imagen ${i + 1}`}
-                  >
-                    {src ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={src} alt="miniatura" className="w-full h-full object-cover rounded-lg" />
-                    ) : (
-                      <div className="w-full h-full grid place-items-center text-gray-400 text-xs">No img</div>
-                    )}
-                  </button>
-                ))}
-              </div>
             </div>
+            <button
+              onClick={onClose}
+              className="ml-4 p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-lg"
+              aria-label="Cerrar modal"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-            {/* Info + talles */}
-            <div className="p-2 sm:p-6 lg:p-8">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <h2 id="qa-title" className="text-sm sm:text-xl lg:text-2xl font-bold leading-tight">{product.title}</h2>
-                  <div className="text-gray-500 mt-0.5 text-xs sm:text-base">
-                    {product.brand}{product.sku ? ` · SKU: ${product.sku}` : ""}
+          {/* Contenido scrolleable */}
+          <div
+            ref={contentRef}
+            className="flex-1 overflow-y-auto"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            <div className="p-4 sm:p-6">
+              {/* Galería compacta */}
+              {product.images && product.images.length > 0 && (
+                <div className="mb-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                    {product.images.slice(0, 6).map((img, i) => (
+                      <div key={i} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={img}
+                          alt={`${product.title} - Imagen ${i + 1}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0 grid place-items-center rounded-full border border-gray-200 hover:bg-gray-50"
-                  aria-label="Cerrar modal"
-                >✕</button>
-              </div>
+              )}
 
-              <div className="mt-1 sm:mt-4 text-lg sm:text-3xl font-semibold text-gray-900">
-                ${formatPrice(product.price, locale)}
-              </div>
-
-              <div className="mt-2 sm:mt-6">
-                <div className="text-sm font-medium mb-2 sm:mb-3">
-                  Selecciona talles y cantidades:
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
-                  {product.sizes.map(({ label, stock }) => (
-                    <div key={label} className="p-2 sm:p-3 rounded-xl border border-gray-200 bg-white">
-                      <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm font-medium">{label}</span>
-                        {typeof stock === "number" && (
-                          <span className="text-[10px] sm:text-[11px] text-gray-500">stock {stock}</span>
-                        )}
+              {/* Sección de talles */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Seleccionar talles</h3>
+                <div className="space-y-3">
+                  {product.sizes.map((size) => (
+                    <div key={size.label} className="flex items-center gap-3">
+                      <div className="flex-shrink-0 w-16 sm:w-20 text-sm sm:text-base font-medium text-gray-700">
+                        {size.label}
                       </div>
-                      <Stepper
-                        value={qty[label] ?? 0}
-                        onChange={(v) => setQty((q) => ({ ...q, [label]: v }))}
-                        min={0}
-                        max={stock ?? 999}
-                      />
+                      <div className="flex-1">
+                        <Stepper
+                          value={quantities[size.label] || 0}
+                          onChange={(qty) => updateQuantity(size.label, qty)}
+                          max={size.stock || 999}
+                          disabled={!size.stock}
+                        />
+                      </div>
+                      {size.stock !== undefined && (
+                        <div className="flex-shrink-0 text-xs sm:text-sm text-gray-500">
+                          Stock: {size.stock}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
-
-              <div className="mt-2 mb-12 sm:mb-8" />
             </div>
           </div>
 
           {/* Footer fijo */}
-          <div className="flex-shrink-0 border-t bg-white p-2 sm:p-4">
-            <div className="flex flex-col sm:flex-row items-center sm:items-stretch justify-between gap-2 sm:gap-3">
-              <div className="flex w-full sm:w-auto justify-between sm:block">
-                <div className="px-1 sm:px-2">
-                  <div className="text-xs text-gray-600">Unidades</div>
-                  <div className="text-sm sm:text-xl font-semibold tabular-nums">{units}</div>
+          <div className="flex-shrink-0 border-t border-gray-100 bg-white">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="text-sm text-gray-500">Total ({units} unidades)</div>
+                  <div className="text-sm sm:text-xl font-semibold tabular-nums">${formatPrice(amount, "es-CL")}</div>
                 </div>
-                <div className="px-1 sm:px-2">
-                  <div className="text-xs text-gray-600">Total aprox.</div>
-                  <div className="text-sm sm:text-xl font-semibold tabular-nums">${formatPrice(amount, locale)}</div>
-                </div>
+                <div className="flex-1 sm:flex-1" />
+                <button
+                  onClick={onConfirmClick}
+                  className="w-full sm:w-auto h-8 sm:h-12 px-3 sm:px-5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 text-sm sm:text-base"
+                  disabled={units === 0}
+                >
+                  ✓ OK – Confirmar
+                </button>
               </div>
-              <div className="flex-1 sm:flex-1" />
-              <button
-                onClick={onConfirmClick}
-                className="w-full sm:w-auto h-8 sm:h-12 px-3 sm:px-5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 text-sm sm:text-base"
-                disabled={units === 0}
-              >
-                ✓ OK – Confirmar
-              </button>
             </div>
           </div>
         </div>
