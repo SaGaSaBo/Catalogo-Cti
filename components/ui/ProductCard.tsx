@@ -162,10 +162,10 @@ export function ProductCard({
 
       {/* Modal de selección rápida */}
       <ProductQuickAddModal
-        open={open}
+        isOpen={open}
         onClose={() => setOpen(false)}
         product={selectedProduct}
-        onConfirm={handleQuickAdd}
+        onAddToCart={handleQuickAdd}
       />
     </>
   );

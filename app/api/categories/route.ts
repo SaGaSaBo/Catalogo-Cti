@@ -47,9 +47,7 @@ export async function POST(req: Request) {
 
     // Create new category
     const newCategory = await createCategory({
-      name: body.name.trim(),
-      description: body.description?.trim() || '',
-      sortIndex: body.sortIndex || 1
+      name: body.name.trim()
     });
 
     return NextResponse.json(newCategory, { status: 201 });

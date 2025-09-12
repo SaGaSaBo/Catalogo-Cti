@@ -125,7 +125,7 @@ export function AdminPageContent() {
       setFormData({
         brand: product.brand,
         title: product.title,
-        description: product.description,
+        description: product.description || '',
         sku: product.sku,
         price: product.price.toString(),
         sizes: product.sizes.join(', '),

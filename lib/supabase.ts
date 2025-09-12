@@ -17,7 +17,7 @@ console.log('🔧 Supabase Config:', {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Cliente para operaciones de escritura (servicio)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey || '');
 
 // Tipos para las tablas de Supabase
 export interface SupabaseProduct {

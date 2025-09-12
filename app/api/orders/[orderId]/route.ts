@@ -12,13 +12,14 @@ const supabase = createClient(
 // GET - Obtener un pedido específico
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const { data, error } = await supabase
       .from('orders')
       .select('*')
-      .eq('id', params.orderId)
+      .eq('id', orderId)
       .single();
 
     if (error) {
@@ -40,9 +41,10 @@ export async function GET(
 // PUT - Actualizar un pedido (principalmente para cambiar status)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const body = await request.json();
     const { status } = body;
 
@@ -56,7 +58,7 @@ export async function PUT(
         status,
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.orderId)
+      .eq('id', orderId)
       .select()
       .single();
 
@@ -75,13 +77,14 @@ export async function PUT(
 // DELETE - Eliminar un pedido
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const { error } = await supabase
       .from('orders')
       .delete()
-      .eq('id', params.orderId);
+      .eq('id', orderId);
 
     if (error) {
       console.error('Error deleting order:', error);

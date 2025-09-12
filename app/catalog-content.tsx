@@ -169,14 +169,19 @@ export function CatalogPageContent() {
           <CategoryFilter
             categories={categories}
             selectedCategoryId={selectedCategoryId}
-            onCategoryChange={handleCategoryChange}
+            onCategorySelect={handleCategoryChange}
+            productCounts={{}}
           />
         </div>
 
-        <FlipbookCatalog products={filteredProducts} />
+        <FlipbookCatalog 
+          products={filteredProducts} 
+          currentPage={1} 
+          onPageChange={() => {}} 
+        />
 
         <div className="mt-12">
-          <CartSummary />
+          <CartSummary products={filteredProducts} />
         </div>
       </div>
     </div>

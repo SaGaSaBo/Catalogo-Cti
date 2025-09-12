@@ -1,19 +1,15 @@
 'use client';
-
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 type Props = {
-  /** Ruta interna del archivo en el bucket (ej: "productos/1234/main.jpg") */
-  storagePath: string;
+  storagePath: string; // ej: "productos/sku-123/main-800.webp"
   alt: string;
-  // Tamaños recomendados para responsive
   width: number;
   height: number;
-  sizes?: string; // ej: "(max-width: 768px) 50vw, 33vw"
+  sizes?: string;
   priority?: boolean;
   className?: string;
-  // Placeholder opcional mientras llega la url firmada
   placeholderSrc?: string;
 };
 
@@ -33,18 +29,14 @@ export default function SmartImage({
     let cancelled = false;
     (async () => {
       try {
-        const params = new URLSearchParams({ path: storagePath });
-        const res = await fetch(`/api/storage/signed-url?${params.toString()}`, { cache: 'force-cache' });
+        const res = await fetch(`/api/storage/signed-url?path=${encodeURIComponent(storagePath)}`, { cache: 'force-cache' });
         const json = await res.json();
         if (!cancelled) setSrc(json.url);
-      } catch {
-        // no-op
-      }
+      } catch {/* ignore */}
     })();
     return () => { cancelled = true; };
   }, [storagePath]);
 
-  // Mientras no tengamos URL, uso placeholder (blur up) o un div vacío
   if (!src && placeholderSrc) {
     return (
       <Image
@@ -60,10 +52,7 @@ export default function SmartImage({
       />
     );
   }
-
-  if (!src) {
-    return <div className={className} style={{ width, height, background: '#f3f3f3' }} />;
-  }
+  if (!src) return <div className={className} style={{ width, height, background: '#f3f3f3' }} />;
 
   return (
     <Image
@@ -74,7 +63,6 @@ export default function SmartImage({
       sizes={sizes}
       className={className}
       priority={priority}
-      // next/image entregará AVIF/WebP si el browser soporta
     />
   );
 }

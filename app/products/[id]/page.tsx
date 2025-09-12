@@ -213,7 +213,7 @@ export default function ProductDetailPage() {
                 {product.sizes.map((size) => (
                   <Button
                     key={size}
-                    variant={selectedSize === size ? "default" : "outline"}
+                    variant={selectedSize === size ? "primary" : "outline"}
                     size="sm"
                     onClick={() => setSelectedSize(size)}
                     className="h-12"

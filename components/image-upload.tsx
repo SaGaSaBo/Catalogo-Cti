@@ -140,7 +140,7 @@ export function ImageUpload({
                   </div>
                   <Button
                     type="button"
-                    variant="destructive"
+                    variant="secondary"
                     size="sm"
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => handleRemoveImage(originalIndex)}
@@ -161,7 +161,7 @@ export function ImageUpload({
               <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 mb-2">No hay imágenes agregadas</p>
               <p className="text-sm text-gray-400">
-                Haz clic en "Agregar Imágenes" para incluir fotos del producto
+                Haz clic en &quot;Agregar Imágenes&quot; para incluir fotos del producto
               </p>
             </div>
           )}

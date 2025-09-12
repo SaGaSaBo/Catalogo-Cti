@@ -62,7 +62,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
               <>
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="sm"
                   className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white"
                   onClick={prevImage}
                 >
@@ -70,7 +70,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
                 </Button>
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="sm"
                   className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white"
                   onClick={nextImage}
                 >
@@ -80,7 +80,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
             )}
             <Button
               variant="outline"
-              size="icon"
+              size="sm"
               className="absolute top-4 right-4 bg-white/90 hover:bg-white"
               onClick={() => setIsLightboxOpen(false)}
             >

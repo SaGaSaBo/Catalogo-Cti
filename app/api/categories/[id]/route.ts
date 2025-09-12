@@ -46,9 +46,7 @@ export async function PUT(
 
     // Update category
     const updatedCategory = await updateCategory(categoryId, {
-      name: body.name.trim(),
-      description: body.description?.trim() || existingCategory.description,
-      sortIndex: body.sortIndex || existingCategory.sortIndex
+      name: body.name.trim()
     });
 
     return NextResponse.json(updatedCategory);

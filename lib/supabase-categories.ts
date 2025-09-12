@@ -6,8 +6,6 @@ function convertFromSupabase(supabaseCategory: SupabaseCategory): Category {
   return {
     id: supabaseCategory.id,
     name: supabaseCategory.name,
-    description: supabaseCategory.description || '',
-    sortIndex: supabaseCategory.sort_index
   };
 }
 
@@ -15,8 +13,6 @@ function convertFromSupabase(supabaseCategory: SupabaseCategory): Category {
 function convertToSupabase(category: Partial<Category>): Partial<SupabaseCategory> {
   return {
     name: category.name,
-    description: category.description,
-    sort_index: category.sortIndex
   };
 }
 

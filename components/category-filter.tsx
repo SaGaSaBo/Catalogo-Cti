@@ -24,7 +24,7 @@ export function CategoryFilter({
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtrar por Categoría</h3>
       <div className="flex flex-wrap gap-3">
         <Button
-          variant={selectedCategoryId === null ? "default" : "outline"}
+          variant={selectedCategoryId === null ? "primary" : "outline"}
           onClick={() => onCategorySelect(null)}
           className="flex items-center gap-2"
         >
@@ -37,7 +37,7 @@ export function CategoryFilter({
         {categories.map((category) => (
           <Button
             key={category.id}
-            variant={selectedCategoryId === category.id ? "default" : "outline"}
+            variant={selectedCategoryId === category.id ? "primary" : "outline"}
             onClick={() => onCategorySelect(category.id)}
             className="flex items-center gap-2"
           >

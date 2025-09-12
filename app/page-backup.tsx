@@ -5,12 +5,12 @@ import { useCart } from '@/hooks/use-cart';
 import { toast } from 'sonner';
 
 export default function HomePage() {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [expandedProduct, setExpandedProduct] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedProduct, setExpandedProduct] = useState<any | null>(null);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
@@ -34,7 +34,7 @@ export default function HomePage() {
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       } catch (err) {
         console.error('Error:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
         setIsLoading(false);
       }

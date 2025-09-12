@@ -11,13 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Plus, Minus, Search, X, Check } from 'lucide-react';
 
 export default function HomePage() {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [expandedProduct, setExpandedProduct] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedProduct, setExpandedProduct] = useState<any | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { updateQuantity, getQuantity, getTotalUnits } = useCartContext();
 
@@ -40,7 +40,7 @@ export default function HomePage() {
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       } catch (err) {
         console.error('Error:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
         setIsLoading(false);
       }

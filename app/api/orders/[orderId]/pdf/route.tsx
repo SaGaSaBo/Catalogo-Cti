@@ -21,11 +21,12 @@ async function getOrder(orderId: string) {
   return data;
 }
 
-export async function GET(_req: Request, { params }: { params: { orderId: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ orderId: string }> }) {
   try {
-    console.log('📄 Generando PDF para pedido:', params.orderId);
+    const { orderId } = await params;
+    console.log('📄 Generando PDF para pedido:', orderId);
     
-    const order = await getOrder(params.orderId);
+    const order = await getOrder(orderId);
     const items = Array.isArray(order?.order_data?.items) ? order.order_data.items : [];
 
     console.log('📦 Items del pedido:', items.length);
