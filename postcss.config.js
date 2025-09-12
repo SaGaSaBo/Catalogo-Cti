@@ -1,10 +1,8 @@
-/**
- * PostCSS config para Next 15 en Vercel.
- * Configuración compatible con Next.js 15 que requiere plugins como strings.
- */
+/** PostCSS config para Next.js */
 module.exports = {
   plugins: {
-    tailwindcss: {},
+    // Si tienes Tailwind, descomenta la siguiente línea:
+    // tailwindcss: {},
     autoprefixer: {},
   },
 };
