@@ -8,19 +8,14 @@ module.exports = {
     './lib/**/*.{js,ts,jsx,tsx,mdx}',
     './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  theme: { extend: {} },
+  theme: {
+    extend: {
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
+    },
+  },
   plugins: [],
-  safelist: [
-    { pattern: /(bg|text|border|ring|fill|stroke)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(50|100|200|300|400|500|600|700|800|900)/, variants: ['hover','focus','active','disabled'] },
-    { pattern: /(grid-cols|col-span|row-span)-[1-9]/ },
-    { pattern: /(grid-cols|col-span|row-span)-(10|11|12)/ },
-    { pattern: /(order|z)-\d+/ },
-    { pattern: /(gap|space-x|space-y)-[0-9]/ },
-    { pattern: /rounded(-(sm|md|lg|xl|2xl|3xl|full))?/ },
-    { pattern: /border(-(0|2|4|8))?/ },
-    { pattern: /(flex|items|justify|content|self|place)-(start|end|center|between|around|evenly)/ },
-    { pattern: /(w|h|max-w|max-h|min-w|min-h)-(\\d|\\d{2}|full|screen)/ },
-    { pattern: /text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl)/ },
-    { pattern: /aspect-(auto|square|video)/ },
-  ],
 };

@@ -2,38 +2,115 @@ export const dynamic = 'force-static';
 
 export default function UIPreview() {
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">UI Preview</h1>
+    <main className="container mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="mb-2">UI Preview</h1>
+        <p className="text-slate-600">
+          Componentes y estilos del sistema de diseño
+        </p>
+      </div>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="rounded-xl border p-4">
-          <p className="text-sm text-gray-500">Colores</p>
-          <div className="mt-2 flex gap-2">
-            <span className="inline-block h-6 w-6 rounded bg-blue-500" />
-            <span className="inline-block h-6 w-6 rounded bg-emerald-500" />
-            <span className="inline-block h-6 w-6 rounded bg-rose-500" />
+      <div className="space-y-8">
+        {/* Colores */}
+        <section className="card">
+          <h2 className="mb-4">Paleta de Colores</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-slate-600">Slate</p>
+              <div className="flex gap-1">
+                <div className="h-8 w-8 rounded bg-slate-100 ring-1 ring-slate-200" />
+                <div className="h-8 w-8 rounded bg-slate-300" />
+                <div className="h-8 w-8 rounded bg-slate-500" />
+                <div className="h-8 w-8 rounded bg-slate-900" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-slate-600">Blue</p>
+              <div className="flex gap-1">
+                <div className="h-8 w-8 rounded bg-blue-100" />
+                <div className="h-8 w-8 rounded bg-blue-300" />
+                <div className="h-8 w-8 rounded bg-blue-500" />
+                <div className="h-8 w-8 rounded bg-blue-900" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-slate-600">Green</p>
+              <div className="flex gap-1">
+                <div className="h-8 w-8 rounded bg-emerald-100" />
+                <div className="h-8 w-8 rounded bg-emerald-300" />
+                <div className="h-8 w-8 rounded bg-emerald-500" />
+                <div className="h-8 w-8 rounded bg-emerald-900" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-slate-600">Red</p>
+              <div className="flex gap-1">
+                <div className="h-8 w-8 rounded bg-rose-100" />
+                <div className="h-8 w-8 rounded bg-rose-300" />
+                <div className="h-8 w-8 rounded bg-rose-500" />
+                <div className="h-8 w-8 rounded bg-rose-900" />
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-xl border p-4">
-          <p className="text-sm text-gray-500">Tipografía</p>
-          <div className="mt-2 space-y-1">
-            <p className="text-xs">xs</p>
-            <p className="text-sm">sm</p>
-            <p className="text-base">base</p>
-            <p className="text-lg">lg</p>
-            <p className="text-xl">xl</p>
+        {/* Tipografía */}
+        <section className="card">
+          <h2 className="mb-4">Tipografía</h2>
+          <div className="space-y-4">
+            <div>
+              <h1>Heading 1</h1>
+              <h2>Heading 2</h2>
+              <h3>Heading 3</h3>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs text-slate-500">text-xs: Lorem ipsum dolor sit amet</p>
+              <p className="text-sm text-slate-600">text-sm: Lorem ipsum dolor sit amet</p>
+              <p className="text-base">text-base: Lorem ipsum dolor sit amet</p>
+              <p className="text-lg">text-lg: Lorem ipsum dolor sit amet</p>
+              <p className="text-xl">text-xl: Lorem ipsum dolor sit amet</p>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-xl border p-4">
-          <p className="text-sm text-gray-500">Grid & Cards</p>
-          <article className="rounded-lg border p-3 hover:shadow-sm">
-            <h3 className="font-medium">Card</h3>
-            <p className="text-gray-500 text-sm">Deberías ver bordes redondeados, padding y hover suave.</p>
-          </article>
-        </div>
-      </section>
+        {/* Botones */}
+        <section className="card">
+          <h2 className="mb-4">Botones</h2>
+          <div className="flex flex-wrap gap-4">
+            <button className="btn btn-primary">Primary</button>
+            <button className="btn btn-secondary">Secondary</button>
+            <button className="btn btn-primary" disabled>Disabled</button>
+          </div>
+        </section>
+
+        {/* Cards */}
+        <section>
+          <h2 className="mb-4">Cards & Layout</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="card">
+              <h3 className="mb-2">Card Title</h3>
+              <p className="text-slate-600 text-sm mb-4">
+                Una descripción del contenido de la card con información relevante.
+              </p>
+              <button className="btn btn-primary btn-sm">Acción</button>
+            </div>
+            <div className="card">
+              <h3 className="mb-2">Otra Card</h3>
+              <p className="text-slate-600 text-sm mb-4">
+                Ejemplo de cómo se ve el layout con múltiples cards.
+              </p>
+              <button className="btn btn-secondary btn-sm">Ver más</button>
+            </div>
+            <div className="card">
+              <h3 className="mb-2">Tercera Card</h3>
+              <p className="text-slate-600 text-sm mb-4">
+                Grid responsivo que se adapta a diferentes tamaños.
+              </p>
+              <button className="btn btn-primary btn-sm">Explorar</button>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
