@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Optimizaciones de rendimiento
-  swcMinify: true,
   compress: true,
   
   // Configuración de imágenes optimizada para Supabase
@@ -27,7 +26,6 @@ const nextConfig = {
   
   // Configuración experimental
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
   },
   

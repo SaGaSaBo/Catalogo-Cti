@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { ProductQuickAddModal, type QuickAddProduct } from "@/components/product-quickadd-modal";
+import ProductQuickAddModal, { type QuickAddProduct } from "@/components/product-quickadd-modal";
 import SmartImage from "@/components/SmartImage";
 
 export const formatPrice = (n: number, locale = "es-AR") =>
