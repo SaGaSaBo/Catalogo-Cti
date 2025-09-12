@@ -4,11 +4,17 @@ const nextConfig = {
   swcMinify: true,
   compress: true,
   
-  // Configuración de imágenes optimizada
+  // Configuración de imágenes optimizada para Supabase
   images: {
-    formats: ['image/webp', 'image/avif'],
+    // habilita AVIF/WebP y permite dominios de Supabase Storage
+    formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    remotePatterns: [
+      // Supabase public storage CDN (ajusta el dominio de tu proyecto)
+      { protocol: 'https', hostname: '**.supabase.co' },
+      { protocol: 'https', hostname: '**.supabase.in' },
+    ],
   },
   
   // Configuración de compilación
@@ -40,9 +46,10 @@ const nextConfig = {
     return config;
   },
   
-  // Headers de seguridad
+  // Headers de seguridad y caché optimizado
   async headers() {
     return [
+      // Headers de seguridad
       {
         source: '/(.*)',
         headers: [
@@ -62,6 +69,20 @@ const nextConfig = {
             key: 'X-DNS-Prefetch-Control',
             value: 'on',
           },
+        ],
+      },
+      // caché agresiva para assets versionados de Next
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // caché razonable para imágenes optimizadas por next/image
+      {
+        source: '/_next/image',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
     ];

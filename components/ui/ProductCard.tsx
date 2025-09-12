@@ -1,12 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import { ProductQuickAddModal, type QuickAddProduct } from "@/components/product-quickadd-modal";
+import SmartImage from "@/components/SmartImage";
 
 export const formatPrice = (n: number, locale = "es-AR") =>
   new Intl.NumberFormat(locale).format(n);
 
 export type ProductCardProps = {
   imageUrl?: string;
+  storagePath?: string; // Nueva prop para ruta en Supabase Storage
   title: string;
   brand: string;
   sku?: string;
@@ -27,6 +29,7 @@ export type ProductCardProps = {
 
 export function ProductCard({
   imageUrl,
+  storagePath,
   title,
   brand,
   sku,
@@ -52,75 +55,118 @@ export function ProductCard({
       sku,
       price,
       images: images.length > 0 ? images : (imageUrl ? [imageUrl] : []),
-      sizes: sizes.map((s: string) => ({ label: s })),
+      sizes: sizes.map((s) => ({ label: s, stock: 999, initial: 0 })),
     };
     setSelectedProduct(mapped);
     setOpen(true);
   };
 
-  const confirmQuickAdd = (payload: {
-    productId: string;
-    quantities: Record<string, number>;
-    units: number;
-    amount: number;
-  }) => {
-    if (onQuickAdd) {
-      onQuickAdd(payload);
-    }
+  const handleQuickAdd = (items: Array<{ size: string; qty: number }>) => {
+    const quantities: Record<string, number> = {};
+    let units = 0;
+    let amount = 0;
+
+    items.forEach(({ size, qty }) => {
+      quantities[size] = qty;
+      units += qty;
+      amount += qty * price;
+    });
+
+    onQuickAdd?.({
+      productId: productId || title,
+      quantities,
+      units,
+      amount,
+    });
+    setOpen(false);
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_6px_20px_rgba(0,0,0,.06)] border border-gray-100 overflow-hidden flex flex-col">
-      <div className="relative aspect-[4/5] bg-gray-100">
-        {imageUrl ? (
-          // Usa <Image> si querés, pero para preview un <img> simple es suficiente
-          <img src={imageUrl} alt={title} className="absolute inset-0 w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center text-gray-400 text-sm">Sin imagen</div>
-        )}
-      </div>
+    <>
+      <article className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-gray-300">
+        {/* Imagen del producto */}
+        <div className="aspect-square bg-gray-100 overflow-hidden">
+          {storagePath ? (
+            <SmartImage
+              storagePath={storagePath}
+              alt={title}
+              width={400}
+              height={400}
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+              placeholderSrc="/placeholder-image.svg"
+            />
+          ) : imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-400 text-sm">Sin imagen</span>
+            </div>
+          )}
+        </div>
 
-      <div className="p-4 flex-1 flex flex-col gap-2">
-        <div className="text-[11px] uppercase tracking-wide text-gray-500">{brand}</div>
-        <h3 className="text-base font-semibold leading-snug line-clamp-2">{title}</h3>
-        {sku && <div className="text-xs text-gray-500">SKU: {sku}</div>}
-
-        <div className="mt-1 text-2xl font-semibold tabular-nums">${formatPrice(price)}</div>
-
-        {!!sizes.length && (
-          <div className="pt-1 flex flex-wrap gap-1">
-            {shown.map((s) => (
-              <span key={s} className="px-2 h-7 rounded-full text-xs grid place-items-center bg-gray-100 text-gray-700">
-                {s}
-              </span>
-            ))}
-            {rest > 0 && (
-              <span className="px-2 h-7 rounded-full text-xs grid place-items-center border border-gray-200 text-gray-600">+{rest}</span>
+        {/* Contenido */}
+        <div className="p-4">
+          <div className="mb-2">
+            <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 group-hover:text-indigo-600 transition-colors">
+              {title}
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">{brand}</p>
+            {sku && (
+              <p className="text-xs text-gray-400 font-mono mt-1">SKU: {sku}</p>
             )}
           </div>
-        )}
 
-        <div className="pt-2 mt-auto">
+          {/* Precio */}
+          <div className="mb-3">
+            <span className="text-lg font-bold text-gray-900">
+              ${formatPrice(price)}
+            </span>
+          </div>
+
+          {/* Talles */}
+          {sizes.length > 0 && (
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-1">
+                {shown.map((size) => (
+                  <span
+                    key={size}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md"
+                  >
+                    {size}
+                  </span>
+                ))}
+                {rest > 0 && (
+                  <span className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded-md">
+                    +{rest}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Botón de agregar */}
           <button
             onClick={openQuickAdd}
-            className="w-full h-10 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
+            className="w-full py-2 px-4 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
           >
             Agregar
           </button>
         </div>
-      </div>
+      </article>
 
-      {/* Modal de Quick Add */}
-      {selectedProduct && (
-        <ProductQuickAddModal
-          open={open}
-          onClose={() => setOpen(false)}
-          product={selectedProduct}
-          onConfirm={confirmQuickAdd}
-          locale="es-AR"
-          brandAccent="indigo-600"
-        />
-      )}
-    </div>
+      {/* Modal de selección rápida */}
+      <ProductQuickAddModal
+        open={open}
+        onClose={() => setOpen(false)}
+        product={selectedProduct}
+        onConfirm={handleQuickAdd}
+      />
+    </>
   );
 }
