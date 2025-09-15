@@ -81,10 +81,11 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/sharp": "^0.31.1",
     "@types/uuid": "^10.0.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.5.2",
-    "sharp": "^0.33.0",
+    "sharp": "^0.33.5",
     "tsx": "^4.7.0"
   }
 }
