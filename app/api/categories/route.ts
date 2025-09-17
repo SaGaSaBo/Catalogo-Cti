@@ -4,13 +4,19 @@ import { validateCategory } from '@/lib/validation';
 import { Category } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 import { isAdmin } from '@/lib/auth';
+import { getMockCategoriesForAPI } from '@/lib/mockData';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const categories = await getCategories();
-    return NextResponse.json(categories);
+    console.log('API /categories called');
+    
+    // Usar datos mock por ahora para asegurar funcionalidad
+    const mockCategories = getMockCategoriesForAPI();
+    
+    console.log(`Returning ${mockCategories.length} categories`);
+    return NextResponse.json(mockCategories);
   } catch (error) {
     console.error('Error fetching categories:', error);
     return NextResponse.json(

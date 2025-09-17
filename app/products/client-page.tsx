@@ -19,7 +19,7 @@ interface Product {
   sku: string;
 }
 
-export default function ProductsPage() {
+export default function ProductsClientPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
