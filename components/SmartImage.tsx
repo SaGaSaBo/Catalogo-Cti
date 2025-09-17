@@ -37,22 +37,20 @@ export default function SmartImage({
     return () => { cancelled = true; };
   }, [storagePath]);
 
-  if (!src && placeholderSrc) {
+  if (!src) {
+    const defaultPlaceholder = '/images/products/placeholder.svg';
     return (
       <Image
-        src={placeholderSrc}
+        src={placeholderSrc || defaultPlaceholder}
         alt={alt}
         width={width}
         height={height}
         sizes={sizes}
         className={className}
-        placeholder="blur"
-        blurDataURL={placeholderSrc}
         priority={priority}
       />
     );
   }
-  if (!src) return <div className={className} style={{ width, height, background: '#f3f3f3' }} />;
 
   return (
     <Image
