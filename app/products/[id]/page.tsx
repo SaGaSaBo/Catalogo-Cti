@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, ShoppingCart, Package, Star } from 'lucide-react';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/store/cart';
 import { toast } from 'sonner';
 
 export default function ProductDetailPage() {
@@ -63,14 +63,13 @@ export default function ProductDetailPage() {
     }
 
     addToCart({
-      id: `${product.id}-${selectedSize}`,
       productId: product.id,
-      title: product.title,
-      brand: product.brand,
-      price: product.price,
+      name: product.title,
       size: selectedSize,
-      quantity,
-      imageUrl: product.imageUrls[0] || '/images/placeholder-image.svg'
+      price: product.price,
+      qty: quantity,
+      sku: product.sku,
+      image: product.imageUrls[0] || '/images/placeholder-image.svg'
     });
 
     toast.success(`${quantity} ${quantity === 1 ? 'unidad' : 'unidades'} agregada${quantity === 1 ? '' : 's'} al carrito`);

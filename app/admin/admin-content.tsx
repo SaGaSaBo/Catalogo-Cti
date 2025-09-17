@@ -20,20 +20,6 @@ import { ImageUpload } from '@/components/image-upload';
 import { fetchJson } from '@/lib/fetchJson';
 import { toast } from 'sonner';
 import { Save, X, Settings } from 'lucide-react';
-import { createClient } from "@supabase/supabase-js";
-
-// Crear cliente Supabase
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!, 
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// Tipo para productos del admin con rutas de imágenes
-type AdminProduct = {
-  id: string;
-  name: string;
-  image_paths?: string[] | null; // rutas en storage
-};
 
 export function AdminPageContent() {
   const searchParams = useSearchParams();
@@ -60,19 +46,18 @@ export function AdminPageContent() {
 
   const adminKey = searchParams.get('key') || 'admin123';
 
-  // Función para eliminar producto usando Supabase JS
-  async function deleteProduct(p: AdminProduct) {
-    // 1. Intentar borrar imágenes (si existen)
-    if (p.image_paths && p.image_paths.length > 0) {
-      const { error: storageErr } = await supabase.storage.from("products").remove(p.image_paths);
-      if (storageErr) {
-        console.warn("No se pudieron borrar algunas imágenes:", storageErr.message);
-        // Continuar: no bloquear el borrado del row
-      }
-    }
-    // 2. Borrar fila
-    const { error } = await supabase.from("products").delete().eq("id", p.id);
-    if (error) throw error;
+  // Función para eliminar producto usando el endpoint server-side
+  async function deleteProduct(productId: string) {
+    const res = await fetch("/api/admin/delete-product", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "authorization": `Bearer ${process.env.NEXT_PUBLIC_ADMIN_SECRET}`,
+      },
+      body: JSON.stringify({ id: productId }),
+    });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j?.error || "Error al eliminar");
   }
 
   useEffect(() => {
@@ -245,15 +230,8 @@ export function AdminPageContent() {
     }
 
     try {
-      // Preparar datos del producto para eliminación
-      const adminProduct: AdminProduct = {
-        id: product.id,
-        name: product.title || product.brand || 'Producto',
-        image_paths: product.imageUrls || null
-      };
-
-      console.log('Deleting product with Supabase:', adminProduct);
-      await deleteProduct(adminProduct);
+      console.log('Deleting product with server-side endpoint:', productId);
+      await deleteProduct(productId);
       
       toast.success('Producto eliminado correctamente');
       await fetchData(); // Recargar la lista

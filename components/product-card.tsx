@@ -5,15 +5,14 @@ import { ProductGallery } from './product-gallery';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/store/cart';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { updateQuantity, getQuantity, getProductQuantities } = useCart();
-  const quantities = getProductQuantities(product.id);
+  const { items, setQty } = useCart();
   
   // Obtener moneda y mapear símbolos a códigos ISO
   const rawCurrency = process.env.NEXT_PUBLIC_CURRENCY || 'CLP';
@@ -26,13 +25,23 @@ export function ProductCard({ product }: ProductCardProps) {
   };
   const currency = currencyMap[rawCurrency] || rawCurrency;
   
+  // Get quantities for this product
+  const productItems = items.filter(item => item.productId === product.id);
+  const quantities: Record<string, number> = {};
+  productItems.forEach(item => {
+    if (item.size) {
+      quantities[item.size] = item.qty;
+    }
+  });
+  
   const subtotal = Object.entries(quantities).reduce(
     (sum, [_, qty]) => sum + (qty * product.price), 0
   );
 
   const handleQuantityChange = (size: string, value: string) => {
     const quantity = parseInt(value) || 0;
-    updateQuantity(product.id, size, quantity);
+    const key = `${product.id}__${size}`;
+    setQty(key, quantity);
   };
 
   return (
@@ -71,7 +80,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 type="number"
                 min="0"
                 max="999"
-                value={getQuantity(product.id, size)}
+                value={quantities[size] || 0}
                 onChange={(e) => handleQuantityChange(size, e.target.value)}
                 className="text-center"
                 placeholder="0"

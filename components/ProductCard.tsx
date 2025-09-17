@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+import { useState, useMemo } from "react";
+import { useCart } from "@/store/cart";
 
 export type Product = {
   id: string;
@@ -12,27 +14,58 @@ export type Product = {
 
 export default function ProductCard({ product }: { product: Product }) {
   const [open, setOpen] = useState(false);
+  const [qtyBySize, setQtyBySize] = useState<Record<string, number>>({});
+  const { addToCart } = useCart();
+
+  const totalSel = useMemo(
+    () => Object.values(qtyBySize).reduce((a, b) => a + (b || 0), 0),
+    [qtyBySize]
+  );
+
+  const inc = (size: string) =>
+    setQtyBySize((m) => ({ ...m, [size]: (m[size] || 0) + 1 }));
+  const dec = (size: string) =>
+    setQtyBySize((m) => ({ ...m, [size]: Math.max(0, (m[size] || 0) - 1) }));
+
+  const handleAdd = () => {
+    const entries = Object.entries(qtyBySize).filter(([, q]) => q > 0);
+    if (!entries.length) return;
+    for (const [size, qty] of entries) {
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        size,
+        price: product.price,
+        qty,
+        sku: product.sku,
+        image: product.images?.[0],
+      });
+    }
+    setQtyBySize({});
+    setOpen(false);
+  };
 
   return (
     <>
       <div className="rounded-2xl border bg-white shadow-sm overflow-hidden flex flex-col">
         <div className="aspect-square bg-gray-100 flex items-center justify-center">
-          <span className="text-sm text-gray-400">Imagen del producto 400x400</span>
+          {product.images?.[0] ? (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-sm text-gray-400">Imagen del producto 400x400</span>
+          )}
         </div>
-
         <div className="p-4 flex-1 flex flex-col gap-2">
           <div className="text-lg font-semibold leading-tight">{product.name}</div>
           {product.brand && <div className="text-gray-500 text-sm">{product.brand}</div>}
           <div className="mt-auto flex items-center justify-between">
             <div className="font-bold">${product.price.toLocaleString("es-CL")}</div>
-            {product.sku && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
-                {product.sku}
-              </span>
-            )}
+            {product.sku && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md">{product.sku}</span>}
           </div>
-
-          {/* Botón visible para abrir el modal */}
           <button
             onClick={() => setOpen(true)}
             className="mt-3 inline-flex items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium hover:bg-gray-100"
@@ -42,43 +75,46 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* Modal */}
       {open && (
-        <div className="fixed inset-0 z-[100] isolate" role="dialog" aria-modal="true">
-          {/* Backdrop opaco */}
+        <div className="fixed inset-0 z-[100] isolate">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          {/* Card */}
           <div className="relative mx-auto mt-20 w-full max-w-3xl p-4">
             <div className="rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
               <div className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <h2 className="text-xl font-semibold">{product.name}</h2>
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="rounded-lg p-2 hover:bg-gray-100"
-                    aria-label="Cerrar"
-                  >
-                    ✕
-                  </button>
+                  <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-gray-100" aria-label="Cerrar">✕</button>
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                    {/* Si hay imágenes, renderiza la primera. Mantén el placeholder si no hay. */}
-                    <span className="text-sm text-gray-400">Imagen</span>
+                    {product.images?.[0] ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-400">Imagen</span>
+                    )}
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="text-2xl font-bold">
-                      ${product.price.toLocaleString("es-CL")}
-                    </div>
+                  <div className="space-y-5">
+                    <div className="text-2xl font-bold">${product.price.toLocaleString("es-CL")}</div>
 
                     {product.sizes?.length ? (
-                      <div>
-                        <div className="text-sm text-gray-600 mb-2">Talles</div>
-                        <div className="flex flex-wrap gap-2">
-                          {product.sizes.map((t) => (
-                            <span key={t} className="rounded-xl border px-3 py-1 text-sm">{t}</span>
+                      <div className="space-y-3">
+                        <div className="text-sm text-gray-600">Talles (selecciona cantidades)</div>
+                        <div className="space-y-2">
+                          {product.sizes.map((size) => (
+                            <div key={size} className="flex items-center justify-between gap-3 rounded-xl border px-3 py-2">
+                              <span className="text-sm">{size}</span>
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => dec(size)} className="w-8 h-8 rounded-lg border hover:bg-gray-50">−</button>
+                                <span className="w-8 text-center">{qtyBySize[size] || 0}</span>
+                                <button onClick={() => inc(size)} className="w-8 h-8 rounded-lg border hover:bg-gray-50">+</button>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -87,10 +123,11 @@ export default function ProductCard({ product }: { product: Product }) {
                     )}
 
                     <button
-                      className="w-full rounded-xl bg-gray-900 text-white py-2 font-medium hover:bg-black"
-                      onClick={() => setOpen(false)}
+                      disabled={totalSel === 0}
+                      onClick={handleAdd}
+                      className="w-full rounded-xl bg-gray-900 text-white py-2 font-medium hover:bg-black disabled:opacity-50 disabled:hover:bg-gray-900"
                     >
-                      Seleccionar
+                      Agregar al carrito {totalSel > 0 ? `(${totalSel})` : ""}
                     </button>
                   </div>
                 </div>
