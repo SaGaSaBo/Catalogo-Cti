@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { useCart, useCartTotal } from "@/store/cart";
 
 export default function CartPage() {
@@ -24,9 +23,13 @@ export default function CartPage() {
           <div className="grid grid-cols-1 gap-4">
             {items.map((it) => (
               <div key={it.key} className="flex items-center gap-4 rounded-xl border p-4">
-                <div className="size-16 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
                   {it.image ? (
-                    <Image src={it.image} alt={it.name} width={64} height={64} />
+                    <img 
+                      src={it.image} 
+                      alt={it.name} 
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <span className="text-xs text-gray-400">400x400</span>
                   )}
