@@ -120,9 +120,10 @@ export function AdminPageContent() {
   };
 
   const openDialog = (product?: Product) => {
+    console.log('Opening dialog with product:', product);
     if (product) {
       setEditingProduct(product);
-      setFormData({
+      const formDataToSet = {
         brand: product.brand,
         title: product.title,
         description: product.description || '',
@@ -132,7 +133,9 @@ export function AdminPageContent() {
         imageUrls: [...product.imageUrls, '', '', ''].slice(0, 4),
         active: product.active,
         categoryId: product.categoryId
-      });
+      };
+      console.log('Setting form data:', formDataToSet);
+      setFormData(formDataToSet);
       setCurrentSortIndex(product.sortIndex);
     } else {
       setEditingProduct(null);
@@ -163,7 +166,11 @@ export function AdminPageContent() {
         sortIndex: currentSortIndex || (products.length + 1)
       };
 
+      console.log('Saving product data:', productData);
+      console.log('Editing product:', editingProduct);
+
       if (editingProduct) {
+        console.log('Updating product with ID:', editingProduct.id);
         await fetchJson(`/api/products/${editingProduct.id}`, {
           method: 'PUT',
           headers: {
@@ -174,6 +181,7 @@ export function AdminPageContent() {
         });
         toast.success('Producto actualizado correctamente');
       } else {
+        console.log('Creating new product');
         await fetchJson('/api/products', {
           method: 'POST',
           headers: {
@@ -194,11 +202,13 @@ export function AdminPageContent() {
   };
 
   const handleDelete = async (productId: string) => {
+    console.log('Attempting to delete product with ID:', productId);
     if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       return;
     }
 
     try {
+      console.log('Sending DELETE request to:', `/api/products/${productId}`);
       await fetchJson(`/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
