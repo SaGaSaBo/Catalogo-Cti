@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useCartContext } from '@/context/cart-context';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/store/cart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,8 +26,7 @@ interface CustomerData {
 }
 
 export function CartModal({ isOpen, onClose, products }: CartModalProps) {
-  const { cart, updateQuantity, getQuantity, getTotalUnits, clearCart } = useCartContext();
-  const { getCartItems, getTotalAmount } = useCart();
+  const { items, setQty, removeItem, clear } = useCart();
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: '',
     email: '',
@@ -44,41 +42,31 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     }).format(price);
   };
 
-  // Usar las funciones del hook useCart
-  
-  // Helper para convertir OrderItem[] a formato para render
+  // Helper para convertir items del store a formato para render
   const getCartItemsForRender = () => {
-    const items: any[] = [];
-    
-    Object.entries(cart).forEach(([productId, sizes]) => {
-      const product = products.find(p => p.id === productId);
-      if (product) {
-        Object.entries(sizes).forEach(([size, quantity]) => {
-          if (quantity > 0) {
-            items.push({
-              product,
-              size,
-              quantity,
-              total: product.price * quantity
-            });
-          }
-        });
-      }
+    return items.map(item => {
+      const product = products.find(p => p.id === item.productId);
+      return {
+        product: product || { id: item.productId, name: item.name, price: item.price },
+        size: item.size,
+        quantity: item.qty,
+        total: item.price * item.qty
+      };
     });
-    
-    return items;
   };
   
   const getTotalAmountForRender = () => {
-    return getCartItemsForRender().reduce((total, item) => total + item.total, 0);
+    return items.reduce((total, item) => total + (item.price * item.qty), 0);
   };
 
   const handleQuantityChange = (productId: string, size: string, newQuantity: number) => {
-    updateQuantity(productId, size, newQuantity);
+    const key = `${productId}__${size}`;
+    setQty(key, newQuantity);
   };
 
   const handleRemoveItem = (productId: string, size: string) => {
-    updateQuantity(productId, size, 0);
+    const key = `${productId}__${size}`;
+    removeItem(key);
     toast.success('Producto eliminado del carrito');
   };
 
@@ -99,24 +87,20 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     
     try {
       console.log('🚀 Iniciando proceso de pedido...');
-      const cartItems = getCartItems(products);
+      const cartItems = getCartItemsForRender();
       console.log('🛒 Items en carrito:', cartItems.length);
       
-      // Convertir OrderItem[] a formato esperado por createOrder
-      const flattenedItems = cartItems.flatMap(item => 
-        Object.entries(item.quantities)
-          .filter(([_, qty]) => qty > 0)
-          .map(([size, quantity]) => ({
-            id: item.productId,
-            title: item.title,
-            brand: item.brand,
-            sku: item.sku,
-            size: size,
-            quantity: quantity,
-            price: item.price,
-            total: item.price * quantity
-          }))
-      );
+      // Convertir items del carrito a formato esperado por createOrder
+      const flattenedItems = cartItems.map(item => ({
+        id: item.product.id,
+        title: item.product.name,
+        brand: item.product.brand || '',
+        sku: item.product.sku || '',
+        size: item.size || 'Única',
+        quantity: item.quantity,
+        price: item.product.price,
+        total: item.total
+      }));
       
       // 1. Primero guardar el pedido en la base de datos
       const orderPayload = {
@@ -126,7 +110,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
           phone: customerData.phone.trim() || ''
         },
         items: flattenedItems,
-        total: getTotalAmount(products)
+        total: getTotalAmountForRender()
       };
 
       console.log('💾 Payload del pedido:', JSON.stringify(orderPayload, null, 2));
@@ -174,7 +158,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
           sz: item.size?.substring(0, 10) || 'N/A',
           q: item.quantity
         })),
-        t: getTotalAmount(products)
+        t: getTotalAmountForRender()
       };
 
       console.log('📄 Generando PDF...');
@@ -203,7 +187,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
       toast.success(`Pedido ${orderResult.order.order_number} guardado y PDF descargado`);
       
       // Limpiar carrito después de generar el PDF
-      clearCart();
+      clear();
       setCustomerData({ name: '', email: '', phone: '' });
       onClose();
       
@@ -228,7 +212,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span>Carrito de Compras</span>
-            <Badge variant="secondary">{getTotalUnits()} productos</Badge>
+            <Badge variant="secondary">{items.reduce((total, item) => total + item.qty, 0)} productos</Badge>
           </DialogTitle>
           <DialogDescription>
             Revisa tu pedido y completa tus datos para generar la orden
@@ -265,7 +249,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
                             {item.product.title}
                           </h4>
                           <p className="text-sm text-gray-500">
-                            {item.product.brand} • Talla: {item.size}
+                            {item.product.brand} • Talla: {item.size || 'Única'}
                           </p>
                           <p className="text-sm font-medium text-blue-600">
                             {formatPrice(item.product.price)} c/u
@@ -276,7 +260,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleQuantityChange(item.product.id, item.size, item.quantity - 1)}
+                            onClick={() => handleQuantityChange(item.product.id, item.size || 'Única', item.quantity - 1)}
                             className="h-8 w-8 p-0"
                           >
                             <Minus className="h-3 w-3" />
@@ -289,7 +273,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleQuantityChange(item.product.id, item.size, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item.product.id, item.size || 'Única', item.quantity + 1)}
                             className="h-8 w-8 p-0"
                           >
                             <Plus className="h-3 w-3" />
@@ -298,7 +282,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleRemoveItem(item.product.id, item.size)}
+                            onClick={() => handleRemoveItem(item.product.id, item.size || 'Única')}
                             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                           >
                             <Trash2 className="h-3 w-3" />
@@ -373,7 +357,7 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span>Total de productos:</span>
-                  <span className="font-medium">{getTotalUnits()}</span>
+                  <span className="font-medium">{items.reduce((total, item) => total + item.qty, 0)}</span>
                 </div>
                 
                 <Separator />

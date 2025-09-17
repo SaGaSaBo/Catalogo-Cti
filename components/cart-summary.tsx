@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Product } from '@/lib/types';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/store/cart';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { fetchJson } from '@/lib/fetchJson';
@@ -24,7 +24,7 @@ interface CartSummaryProps {
 }
 
 export function CartSummary({ products }: CartSummaryProps) {
-  const { getTotalUnits, getTotalAmount, getCartItems, clearCart, isEmpty } = useCart();
+  const { items, clear } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({
@@ -33,9 +33,17 @@ export function CartSummary({ products }: CartSummaryProps) {
     phone: ''
   });
 
-  const totalUnits = getTotalUnits();
-  const totalAmount = getTotalAmount(products);
-  const cartItems = getCartItems(products);
+  const totalUnits = items.reduce((total, item) => total + item.qty, 0);
+  const totalAmount = items.reduce((total, item) => total + (item.price * item.qty), 0);
+  const cartItems = items.map(item => {
+    const product = products.find(p => p.id === item.productId);
+    return {
+      product: product || { id: item.productId, name: item.name, price: item.price },
+      size: item.size,
+      quantity: item.qty,
+      total: item.price * item.qty
+    };
+  });
   
   // Obtener moneda y mapear a código ISO si es necesario
   const rawCurrency = process.env.NEXT_PUBLIC_CURRENCY || 'CLP';
@@ -80,7 +88,7 @@ export function CartSummary({ products }: CartSummaryProps) {
   };
 
   const handleSubmitOrder = async () => {
-    if (isEmpty()) {
+    if (items.length === 0) {
       toast.error('El carrito está vacío');
       return;
     }
@@ -140,7 +148,7 @@ export function CartSummary({ products }: CartSummaryProps) {
       }
       
       // Limpiar formulario y carrito
-      clearCart();
+      clear();
       setCustomerInfo({ name: '', email: '', phone: '' });
       setIsOpen(false);
     } catch (error) {
@@ -153,7 +161,7 @@ export function CartSummary({ products }: CartSummaryProps) {
   };
 
   const handleSubmitOrderOld = async () => {
-    if (isEmpty()) {
+    if (items.length === 0) {
       toast.error('El carrito está vacío');
       return;
     }
@@ -201,7 +209,7 @@ export function CartSummary({ products }: CartSummaryProps) {
       // Solo mostrar éxito si el servidor confirma que se envió
       if (result.ok) {
         toast.success('Pedido enviado exitosamente');
-        clearCart();
+        clear();
         setCustomerInfo({ name: '', email: '', phone: '' });
         setIsOpen(false);
       }
@@ -214,18 +222,14 @@ export function CartSummary({ products }: CartSummaryProps) {
     }
   };
 
-  // Convertir cartItems al formato requerido por el PDF (aplanar por talle)
-  const pdfItems = cartItems.flatMap(item => 
-    Object.entries(item.quantities)
-      .filter(([_, qty]) => qty > 0)
-      .map(([size, qty]) => ({
-        sku: item.sku,
-        name: `${item.brand} - ${item.title}`,
-        size: size,
-        qty: qty,
-        price: item.price
-      }))
-  );
+  // Convertir cartItems al formato requerido por el PDF
+  const pdfItems = cartItems.map(item => ({
+    sku: (item.product as any).sku || '',
+    name: `${(item.product as any).brand || ''} - ${(item.product as any).name}`,
+    size: item.size || 'Única',
+    qty: item.quantity,
+    price: item.product.price
+  }));
 
   return (
     <>
@@ -260,22 +264,19 @@ export function CartSummary({ products }: CartSummaryProps) {
               {cartItems.length > 0 ? (
                 <div className="space-y-4 max-h-60 overflow-y-auto">
                   {cartItems.map((item) => (
-                    <div key={item.productId} className="border-b pb-4">
+                    <div key={`${item.product.id}-${item.size}`} className="border-b pb-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="secondary" className="text-xs">
-                          {item.brand}
+                          {(item.product as any).brand || ''}
                         </Badge>
-                        <span className="text-sm text-gray-500">{item.sku}</span>
+                        <span className="text-sm text-gray-500">{(item.product as any).sku || ''}</span>
                       </div>
-                      <h4 className="font-medium text-sm">{item.title}</h4>
+                      <h4 className="font-medium text-sm">{(item.product as any).name}</h4>
                       <div className="text-xs text-gray-600 mt-1">
-                        {Object.entries(item.quantities)
-                          .filter(([_, qty]) => qty > 0)
-                          .map(([size, qty]) => `Talle ${size}: ${qty}`)
-                          .join(', ')}
+                        Talle {item.size || 'Única'}: {item.quantity}
                       </div>
                       <p className="text-sm font-medium text-green-600 mt-1">
-                        {currency} {item.subtotal.toFixed(2)}
+                        {currency} {item.total.toFixed(2)}
                       </p>
                     </div>
                   ))}
@@ -395,7 +396,7 @@ export function CartSummary({ products }: CartSummaryProps) {
             <p className="text-sm text-gray-600">{totalUnits} productos</p>
             <p className="font-bold">{currency} {totalAmount.toFixed(2)}</p>
           </div>
-          <Button onClick={() => setIsOpen(true)} disabled={isEmpty()}>
+          <Button onClick={() => setIsOpen(true)} disabled={items.length === 0}>
             <ShoppingCart className="h-4 w-4 mr-2" />
             Ver Carrito
           </Button>

@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export default function ProductDetailPage() {
       return;
     }
 
-    addToCart({
+    addItem({
       productId: product.id,
       name: product.title,
       size: selectedSize,
