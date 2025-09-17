@@ -38,3 +38,12 @@
     @apply border border-slate-200 bg-white hover:bg-slate-50 focus-visible:ring-slate-900;
   }
 }
+
+/* Utilidades de refuerzo para modales */
+.modal-card {
+  background-color: #ffffff;
+}
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+}
