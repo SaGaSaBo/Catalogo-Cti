@@ -1,11 +1,29 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAdmin = createClient(url, serviceKey, { auth: { persistSession: false } });
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!url || !serviceKey) {
+  console.error("Missing required environment variables:", {
+    hasUrl: !!url,
+    hasServiceKey: !!serviceKey
+  });
+}
+
+const supabaseAdmin = url && serviceKey 
+  ? createClient(url, serviceKey, { auth: { persistSession: false } })
+  : null;
 
 export async function POST(req: Request) {
+  // Verificar configuración de Supabase
+  if (!supabaseAdmin) {
+    return NextResponse.json({ 
+      error: "Supabase not configured. Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL" 
+    }, { status: 500 });
+  }
+
+  // Autorización simple desde el cliente (mejoraremos luego con sesión)
   const auth = req.headers.get("authorization") || "";
   const expected = `Bearer ${process.env.NEXT_PUBLIC_ADMIN_SECRET}`;
   if (!process.env.NEXT_PUBLIC_ADMIN_SECRET || auth !== expected) {
@@ -15,19 +33,17 @@ export async function POST(req: Request) {
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  // 1) Intentar obtener rutas de imágenes desde columnas comunes
+  // Obtener rutas de imágenes si están en products.image_paths
   let imagePaths: string[] = [];
-  const { data: prod, error: prodErr } = await supabaseAdmin
+  const { data: prod } = await supabaseAdmin
     .from("products")
     .select("image_paths")
     .eq("id", id)
     .single();
 
-  if (!prodErr && prod?.image_paths) {
-    try { imagePaths = Array.isArray(prod.image_paths) ? prod.image_paths : []; } catch {}
-  }
+  if (prod?.image_paths && Array.isArray(prod.image_paths)) imagePaths = prod.image_paths;
 
-  // 2) Fallback: si existe tabla product_images(path, product_id)
+  // Fallback si existe tabla product_images(path, product_id)
   if (imagePaths.length === 0) {
     const { data: imgs } = await supabaseAdmin
       .from("product_images")
@@ -36,15 +52,11 @@ export async function POST(req: Request) {
     if (imgs?.length) imagePaths = imgs.map((r: any) => r.path).filter(Boolean);
   }
 
-  // 3) Borrar archivos de Storage si hay
   if (imagePaths.length) {
     await supabaseAdmin.storage.from("products").remove(imagePaths);
   }
 
-  // 4) Borrar filas relacionadas (si existe la tabla)
   await supabaseAdmin.from("product_images").delete().eq("product_id", id);
-
-  // 5) Borrar el producto
   const { error: delErr } = await supabaseAdmin.from("products").delete().eq("id", id);
   if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
 

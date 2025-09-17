@@ -15,7 +15,7 @@ export type Product = {
 export default function ProductCard({ product }: { product: Product }) {
   const [open, setOpen] = useState(false);
   const [qtyBySize, setQtyBySize] = useState<Record<string, number>>({});
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
 
   const totalSel = useMemo(
     () => Object.values(qtyBySize).reduce((a, b) => a + (b || 0), 0),
@@ -31,7 +31,7 @@ export default function ProductCard({ product }: { product: Product }) {
     const entries = Object.entries(qtyBySize).filter(([, q]) => q > 0);
     if (!entries.length) return;
     for (const [size, qty] of entries) {
-      addToCart({
+      addItem({
         productId: product.id,
         name: product.name,
         size,
