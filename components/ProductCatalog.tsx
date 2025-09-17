@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import SmartImage from "@/components/SmartImage";
+import ProductCard from "@/components/ProductCard";
 
 interface Product {
   id: string;
@@ -17,6 +18,8 @@ interface Product {
   mainImage?: string;
   sku: string;
   categoryId?: string;
+  sizes?: string[];
+  imageUrls?: string[];
 }
 
 interface Category {
@@ -232,38 +235,23 @@ export default function ProductCatalog() {
             const name = product.name || product.title || product.sku || "Producto";
             const brand = product.brand || "";
             const price = product.price || 0;
-            const imagePath = product.imagePath || product.imagen || product.image || product.mainImage || 
-                             `productos/${product.sku || product.id || 'item'}/main-800.webp`;
+            const sku = product.sku || "";
+            const sizes = product.sizes || [];
+            const images = product.imageUrls || [];
+
+            // Mapear el producto al formato esperado por ProductCard
+            const productCardData = {
+              id: product.id,
+              name: name,
+              brand: brand,
+              price: price,
+              sku: sku,
+              images: images,
+              sizes: sizes
+            };
 
             return (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-square relative">
-                  <SmartImage
-                    storagePath={imagePath}
-                    alt={name}
-                    width={400}
-                    height={400}
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg leading-tight">{name}</CardTitle>
-                    {brand && (
-                      <CardDescription className="text-sm text-gray-600">{brand}</CardDescription>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-gray-900">
-                        {formatPrice(price)}
-                      </span>
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        {product.sku}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <ProductCard key={product.id} product={productCardData} />
             );
           })}
         </div>
