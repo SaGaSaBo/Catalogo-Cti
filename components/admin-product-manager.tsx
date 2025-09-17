@@ -109,14 +109,13 @@ export function AdminProductManager({
                     >
                       {product.active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
+                    <button
                       onClick={() => onDelete(product.id)}
+                      className="text-red-600 hover:text-red-700 px-2 py-1 rounded-md border border-red-200 hover:bg-red-50 text-sm"
                       title="Eliminar producto"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      Eliminar
+                    </button>
                   </div>
                 </div>
                 <CardTitle className="text-lg">{product.title}</CardTitle>

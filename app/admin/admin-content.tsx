@@ -20,6 +20,20 @@ import { ImageUpload } from '@/components/image-upload';
 import { fetchJson } from '@/lib/fetchJson';
 import { toast } from 'sonner';
 import { Save, X, Settings } from 'lucide-react';
+import { createClient } from "@supabase/supabase-js";
+
+// Crear cliente Supabase
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!, 
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// Tipo para productos del admin con rutas de imágenes
+type AdminProduct = {
+  id: string;
+  name: string;
+  image_paths?: string[] | null; // rutas en storage
+};
 
 export function AdminPageContent() {
   const searchParams = useSearchParams();
@@ -45,6 +59,21 @@ export function AdminPageContent() {
   });
 
   const adminKey = searchParams.get('key') || 'admin123';
+
+  // Función para eliminar producto usando Supabase JS
+  async function deleteProduct(p: AdminProduct) {
+    // 1. Intentar borrar imágenes (si existen)
+    if (p.image_paths && p.image_paths.length > 0) {
+      const { error: storageErr } = await supabase.storage.from("products").remove(p.image_paths);
+      if (storageErr) {
+        console.warn("No se pudieron borrar algunas imágenes:", storageErr.message);
+        // Continuar: no bloquear el borrado del row
+      }
+    }
+    // 2. Borrar fila
+    const { error } = await supabase.from("products").delete().eq("id", p.id);
+    if (error) throw error;
+  }
 
   useEffect(() => {
     const initializeAdmin = async () => {
@@ -203,23 +232,34 @@ export function AdminPageContent() {
 
   const handleDelete = async (productId: string) => {
     console.log('Attempting to delete product with ID:', productId);
-    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+    
+    // Encontrar el producto para obtener sus datos
+    const product = products.find(p => p.id === productId);
+    if (!product) {
+      toast.error('Producto no encontrado');
+      return;
+    }
+
+    if (!confirm(`¿Eliminar "${product.title || product.brand || 'este producto'}"? Esta acción no se puede deshacer.`)) {
       return;
     }
 
     try {
-      console.log('Sending DELETE request to:', `/api/products/${productId}`);
-      await fetchJson(`/api/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${adminKey}`
-        }
-      });
+      // Preparar datos del producto para eliminación
+      const adminProduct: AdminProduct = {
+        id: product.id,
+        name: product.title || product.brand || 'Producto',
+        image_paths: product.imageUrls || null
+      };
+
+      console.log('Deleting product with Supabase:', adminProduct);
+      await deleteProduct(adminProduct);
+      
       toast.success('Producto eliminado correctamente');
-      await fetchData();
-    } catch (error) {
+      await fetchData(); // Recargar la lista
+    } catch (error: any) {
       console.error('Error deleting product:', error);
-      toast.error('Error al eliminar el producto');
+      toast.error('No se pudo eliminar: ' + (error?.message ?? 'Error desconocido'));
     }
   };
 
