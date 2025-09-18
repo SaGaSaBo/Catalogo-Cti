@@ -12,11 +12,11 @@ export async function GET() {
   try {
     console.log('API /categories called');
     
-    // Usar datos mock por ahora para asegurar funcionalidad
-    const mockCategories = getMockCategoriesForAPI();
+    // Usar Supabase en lugar de datos mock
+    const categories = await getCategories();
     
-    console.log(`Returning ${mockCategories.length} categories`);
-    return NextResponse.json(mockCategories);
+    console.log(`Returning ${categories.length} categories`);
+    return NextResponse.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
     return NextResponse.json(
