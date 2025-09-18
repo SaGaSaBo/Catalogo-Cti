@@ -88,7 +88,7 @@ export default function ProductCard({ product }: { product: Product }) {
       {open && (
         <div className="fixed inset-0 z-[100] isolate">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div className="relative mx-auto mt-20 w-full max-w-3xl p-4">
+          <div className="relative mx-auto mt-20 w-full max-w-3xl p-4 max-h-[80vh] overflow-y-auto">
             <div className="rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
               <div className="p-6">
                 <div className="flex items-start justify-between gap-4">
@@ -115,7 +115,7 @@ export default function ProductCard({ product }: { product: Product }) {
                     {product.sizes?.length ? (
                       <div className="space-y-3">
                         <div className="text-sm text-gray-600">Talles (selecciona cantidades)</div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
                           {product.sizes.map((size) => (
                             <div key={size} className="flex items-center justify-between gap-3 rounded-xl border px-3 py-2">
                               <span className="text-sm">{size}</span>
