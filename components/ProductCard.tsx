@@ -15,7 +15,7 @@ export type Product = {
 export default function ProductCard({ product }: { product: Product }) {
   const [open, setOpen] = useState(false);
   const [qtyBySize, setQtyBySize] = useState<Record<string, number>>({});
-  const { addItem } = useCart();
+  const cart = useCart();
 
   const totalSel = useMemo(
     () => Object.values(qtyBySize).reduce((a, b) => a + (b || 0), 0),
@@ -30,8 +30,18 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleAdd = () => {
     const entries = Object.entries(qtyBySize).filter(([, q]) => q > 0);
     if (!entries.length) return;
+    
+    // Verificar que el store esté hidratado y addItem esté disponible
+    if (!cart._hasHydrated || !cart.addItem || typeof cart.addItem !== 'function') {
+      console.error('Cart not ready:', { 
+        hasHydrated: cart._hasHydrated, 
+        addItem: cart.addItem 
+      });
+      return;
+    }
+    
     for (const [size, qty] of entries) {
-      addItem({
+      cart.addItem({
         productId: product.id,
         name: product.name,
         size,
@@ -123,11 +133,11 @@ export default function ProductCard({ product }: { product: Product }) {
                     )}
 
                     <button
-                      disabled={totalSel === 0}
+                      disabled={totalSel === 0 || !cart._hasHydrated}
                       onClick={handleAdd}
                       className="w-full rounded-xl bg-gray-900 text-white py-2 font-medium hover:bg-black disabled:opacity-50 disabled:hover:bg-gray-900"
                     >
-                      Agregar al carrito {totalSel > 0 ? `(${totalSel})` : ""}
+                      {!cart._hasHydrated ? "Cargando..." : `Agregar al carrito ${totalSel > 0 ? `(${totalSel})` : ""}`}
                     </button>
                   </div>
                 </div>

@@ -21,12 +21,16 @@ type CartState = {
   setQty: (key: string, qty: number) => void;
   removeItem: (key: string) => void;
   clear: () => void;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 };
 
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
       addItem: (i) => {
         const key = `${i.productId}__${i.size ?? "UNQ"}`;
         const items = get().items.slice();
@@ -50,6 +54,9 @@ export const useCart = create<CartState>()(
       name: "ac-cart",
       storage: createJSONStorage(() => localStorage),
       version: 1,
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
