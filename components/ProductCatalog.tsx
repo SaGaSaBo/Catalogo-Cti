@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 import { Button } from "@/components/ui/button";
 import SmartImage from "@/components/SmartImage";
 import ProductCard from "@/components/ProductCard";
+import { CartModal } from "@/components/cart-modal";
 
 interface Product {
   id: string;
@@ -36,6 +37,7 @@ export default function ProductCatalog() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'brand'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -256,6 +258,23 @@ export default function ProductCatalog() {
           })}
         </div>
       )}
+
+      {/* Botón de carrito flotante */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => setIsCartModalOpen(true)}
+          className="rounded-full shadow-lg bg-black text-white px-6 py-3 text-sm font-medium hover:bg-gray-900"
+        >
+          Ver Carrito
+        </Button>
+      </div>
+
+      {/* Modal del carrito */}
+      <CartModal
+        isOpen={isCartModalOpen}
+        onClose={() => setIsCartModalOpen(false)}
+        products={products}
+      />
     </div>
   );
 }
