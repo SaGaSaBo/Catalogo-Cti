@@ -20,6 +20,7 @@ import { ImageUpload } from '@/components/image-upload';
 import { fetchJson } from '@/lib/fetchJson';
 import { toast } from 'sonner';
 import { Save, X, Settings } from 'lucide-react';
+import { ADMIN_SECRET } from '@/lib/admin-config';
 
 export function AdminPageContent() {
   const searchParams = useSearchParams();
@@ -52,7 +53,7 @@ export function AdminPageContent() {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "authorization": `Bearer ${process.env.NEXT_PUBLIC_ADMIN_SECRET}`,
+        "authorization": `Bearer ${ADMIN_SECRET}`,
       },
       body: JSON.stringify({ id: productId }),
     });

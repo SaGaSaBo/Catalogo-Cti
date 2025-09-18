@@ -4,7 +4,6 @@ import { validateProduct } from '@/lib/validation';
 import { Product } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 import { isAdmin } from '@/lib/auth';
-import { getMockProductsForAPI } from '@/lib/mockData';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,16 +11,16 @@ export async function GET(req: Request) {
   try {
     console.log('API /products called');
     
-    // Usar datos mock por ahora para asegurar funcionalidad
-    const mockProducts = getMockProductsForAPI();
+    // Usar Supabase en lugar de datos mock
+    const products = await getProducts();
     
     // Si hay Authorization header, devolver todos los productos (admin)
     // Si no, solo los activos (público)
     const isAdminRequest = req?.headers?.get('authorization')?.startsWith('Bearer ');
     
     const filteredProducts = isAdminRequest 
-      ? mockProducts.sort((a, b) => a.sortIndex - b.sortIndex)
-      : mockProducts
+      ? products.sort((a, b) => a.sortIndex - b.sortIndex)
+      : products
           .filter(product => product.active)
           .sort((a, b) => a.sortIndex - b.sortIndex);
     
