@@ -1,17 +1,7 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    // evita imports accidentales de server en cliente (Next 15 ayuda con esto)
-    typedRoutes: true
-  },
-  eslint: {
-    // seguimos chequeando en dev; en build ya lo desactivamos arriba con --no-lint
-    ignoreDuringBuilds: true
-  },
-  typescript: {
-    // si el build sigue bloqueado por types, pon temporalmente true y vuelve a false cuando pase
-    ignoreBuildErrors: false
-  },
+export default {
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: false }, // si falla por types y necesitas desplegar YA, cambia a true temporalmente
+  experimental: { typedRoutes: true },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -35,5 +25,3 @@ const nextConfig = {
     return config;
   }
 };
-
-export default nextConfig;
