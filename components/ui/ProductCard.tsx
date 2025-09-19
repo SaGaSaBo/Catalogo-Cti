@@ -1,8 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import Image from "next/image";
+import UiImg from "@/components/UiImg";
 import { ProductQuickAddModal, type QuickAddProduct } from "@/components/product-quickadd-modal";
-import { sbRender } from "@/lib/img";
 
 export const formatPrice = (n: number, locale = "es-AR") =>
   new Intl.NumberFormat(locale).format(n);
@@ -88,14 +87,17 @@ export function ProductCard({
         {/* Imagen del producto */}
         <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border">
           {storagePath ? (
-            <Image
-              src={sbRender(storagePath, { w: 400, q: 70, format: "webp" })}
+            <UiImg
+              src={storagePath}
               alt={title}
               fill
               sizes="(max-width:768px) 100vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-200"
               loading="lazy"
               priority={false}
+              widthHint={400}
+              qualityHint={70}
+              format="webp"
             />
           ) : imageUrl ? (
             <Image

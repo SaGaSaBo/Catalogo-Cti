@@ -1,7 +1,5 @@
 'use client';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { sbRender } from '@/lib/img';
+import UiImg from '@/components/UiImg';
 
 type Props = {
   storagePath: string; // ej: "productos/sku-123/main-800.webp"
@@ -24,16 +22,9 @@ export default function SmartImage({
   className,
   placeholderSrc,
 }: Props) {
-  // Usar URL optimizada directamente sin signed URLs
-  const optimizedSrc = sbRender(storagePath, { 
-    w: width, 
-    q: 75, 
-    format: "webp" 
-  });
-
   return (
-    <Image
-      src={optimizedSrc}
+    <UiImg
+      src={storagePath}
       alt={alt}
       width={width}
       height={height}
@@ -41,6 +32,9 @@ export default function SmartImage({
       className={className}
       priority={priority}
       loading={priority ? "eager" : "lazy"}
+      widthHint={width}
+      qualityHint={75}
+      format="webp"
     />
   );
 }

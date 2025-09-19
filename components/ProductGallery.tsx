@@ -1,7 +1,6 @@
 "use client";
-import Image from "next/image";
+import UiImg from "@/components/UiImg";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { sbRender } from "@/lib/img";
 
 type Props = {
   images: string[];         // URLs públicas (ej: Supabase getPublicUrl)
@@ -59,14 +58,17 @@ export default function ProductGallery({ images, alt = "Producto", className = "
     <div className={`w-full ${className}`}>
       {/* Imagen principal */}
       <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gray-50 border">
-        <Image
-          src={sbRender(current!, { w: 1200, q: 80, format: "webp" })}
+        <UiImg
+          src={current!}
           alt={alt}
           fill
           sizes="(max-width:768px) 100vw, 50vw"
           className="object-contain cursor-zoom-in"
           onClick={() => setOpen(true)}
           loading="eager"
+          widthHint={1200}
+          qualityHint={80}
+          format="webp"
         />
         {/* Flechas en desktop */}
         {valid.length > 1 && (
@@ -95,7 +97,7 @@ export default function ProductGallery({ images, alt = "Producto", className = "
               className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border ${i === safeIndex ? "ring-2 ring-black" : ""}`}
               aria-label={`Imagen ${i + 1}`}
             >
-              <Image src={sbRender(src, { w: 64, q: 60, format: "webp" })} alt={`${alt} miniatura ${i + 1}`} fill sizes="64px" className="object-cover" />
+              <UiImg src={src} alt={`${alt} miniatura ${i + 1}`} fill sizes="64px" className="object-cover" widthHint={64} qualityHint={60} format="webp" />
             </button>
           ))}
         </div>
@@ -107,12 +109,15 @@ export default function ProductGallery({ images, alt = "Producto", className = "
           <div className="absolute inset-0 bg-black/80" onClick={() => setOpen(false)} />
           <div className="relative mx-auto mt-10 w-[min(96vw,1100px)]">
             <div className="relative w-full aspect-[4/3] bg-black rounded-2xl overflow-hidden">
-              <Image
-                src={sbRender(current!, { w: 1200, q: 80, format: "webp" })}
+              <UiImg
+                src={current!}
                 alt={alt}
                 fill
                 sizes="100vw"
                 className="object-contain select-none"
+                widthHint={1200}
+                qualityHint={80}
+                format="webp"
                 loading="eager"
               />
               {valid.length > 1 && (

@@ -1,9 +1,8 @@
 "use client";
 import { useState, useMemo } from "react";
-import Image from "next/image";
+import UiImg from "@/components/UiImg";
 import { useCart } from "@/store/cart";
 import ProductGallery from "@/components/ProductGallery";
-import { sbRender } from "@/lib/img";
 
 export type Product = {
   id: string;
@@ -63,14 +62,17 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="rounded-2xl border bg-white shadow-sm overflow-hidden flex flex-col">
         <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border">
           {product.images?.[0] ? (
-            <Image
-              src={sbRender(product.images[0], { w: 400, q: 70, format: "webp" })}
+            <UiImg
+              src={product.images[0]}
               alt={product.name}
               fill
               sizes="(max-width:768px) 100vw, 33vw"
               className="object-cover"
               loading="lazy"
               priority={false}
+              widthHint={400}
+              qualityHint={70}
+              format="webp"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
