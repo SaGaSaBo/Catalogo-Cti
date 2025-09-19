@@ -41,36 +41,37 @@ export default function ProductCatalog() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(24); // 24 productos por página (6x4 grid)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch products and categories in parallel
-        const [productsRes, categoriesRes] = await Promise.all([
-          fetch('/api/products'),
-          fetch('/api/categories')
-        ]);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch products and categories in parallel
+      const [productsRes, categoriesRes] = await Promise.all([
+        fetch('/api/products'),
+        fetch('/api/categories')
+      ]);
 
-        if (!productsRes.ok || !categoriesRes.ok) {
-          throw new Error('Error al cargar los datos');
-        }
-
-        const [productsData, categoriesData] = await Promise.all([
-          productsRes.json(),
-          categoriesRes.json()
-        ]);
-
-        setProducts(Array.isArray(productsData) ? productsData : []);
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setLoading(false);
+      if (!productsRes.ok || !categoriesRes.ok) {
+        throw new Error('Error al cargar los datos');
       }
-    };
 
+      const [productsData, categoriesData] = await Promise.all([
+        productsRes.json(),
+        categoriesRes.json()
+      ]);
+
+      setProducts(Array.isArray(productsData) ? productsData : []);
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -148,7 +149,12 @@ export default function ProductCatalog() {
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar el catálogo</h3>
         <p className="text-gray-600 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>
+        <Button onClick={() => {
+          // Reset error state and refetch data instead of reloading
+          setError(null);
+          setLoading(true);
+          fetchData();
+        }}>
           Reintentar
         </Button>
       </div>

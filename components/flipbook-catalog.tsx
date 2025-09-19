@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Product } from '@/lib/types';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useBreakpoint } from '@/lib/useBreakpoint';
 
 interface FlipbookCatalogProps {
   products: Product[];
@@ -15,18 +16,9 @@ interface FlipbookCatalogProps {
 
 export function FlipbookCatalog({ products, currentPage, onPageChange }: FlipbookCatalogProps) {
   const [isFlipping, setIsFlipping] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Check if mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  
+  // Use reactive breakpoint hook instead of resize listener
+  const isMobile = useBreakpoint("(max-width: 1023px)");
 
   // Products per page: 2 on desktop, 1 on mobile
   const productsPerPage = isMobile ? 1 : 2;

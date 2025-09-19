@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import CartButton from '@/components/CartButton';
+import DevtoolsListenersDebug from '@/app/debug/devtools-listeners';
 
 export const metadata: Metadata = {
   title: 'Catálogo CTI',
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body className="min-h-dvh bg-slate-50 text-slate-900 antialiased">
         <div id="root">{children}</div>
         <CartButton />
+        {process.env.NODE_ENV !== "production" ? <DevtoolsListenersDebug /> : null}
       </body>
     </html>
   );
