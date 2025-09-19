@@ -5,7 +5,7 @@
   "description": "Catálogo mayorista ALTOCONCEPTO con sistema de autenticación y generación de PDFs",
   "scripts": {
     "dev": "next dev",
-    "build": "bash scripts/build.sh",
+    "build": "node scripts/build.mjs",
     "build:local": "node scripts/print-build-context.cjs && next build --no-lint",
     "start": "next start",
     "lint": "next lint",
