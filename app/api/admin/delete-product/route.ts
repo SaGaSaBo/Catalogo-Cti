@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getErrorMessage } from "@/lib/errors";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -58,7 +59,10 @@ export async function POST(req: Request) {
 
   await supabaseAdmin.from("product_images").delete().eq("product_id", id);
   const { error: delErr } = await supabaseAdmin.from("products").delete().eq("id", id);
-  if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
+  if (delErr) {
+    const msg = getErrorMessage(delErr);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

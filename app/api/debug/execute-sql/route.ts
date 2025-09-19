@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getErrorMessage } from "@/lib/errors";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -13,6 +14,11 @@ const supabaseAdmin = url && serviceKey
   : null;
 
 export async function POST(req: Request) {
+  // Protección en producción
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Disabled in production" }, { status: 403 });
+  }
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       error: "Supabase not configured"
@@ -33,9 +39,10 @@ export async function POST(req: Request) {
     const { data, error } = await supabaseAdmin.rpc('exec_sql', { sql_query: sql });
     
     if (error) {
-      console.error("SQL execution error:", error);
+      const msg = getErrorMessage(error);
+      console.error("SQL execution error:", msg);
       return NextResponse.json({
-        error: error.message,
+        error: msg,
         details: error
       }, { status: 500 });
     }
@@ -46,10 +53,11 @@ export async function POST(req: Request) {
     });
 
   } catch (error) {
-    console.error("Error executing SQL:", error);
+    const msg = getErrorMessage(error);
+    console.error("Error executing SQL:", msg);
     return NextResponse.json({
       error: "Failed to execute SQL",
-      details: error instanceof Error ? error.message : String(error)
+      details: msg
     }, { status: 500 });
   }
 }

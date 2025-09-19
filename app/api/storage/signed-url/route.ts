@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSignedImageUrl } from '@/lib/supabase.server';
+import { getErrorMessage } from '@/lib/errors';
 
 export const runtime = 'edge';
 export const revalidate = 60;
@@ -16,7 +17,8 @@ export async function GET(req: Request) {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
       },
     });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || 'Error' }, { status: 500 });
+  } catch (e: unknown) {
+    const msg = getErrorMessage(e);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

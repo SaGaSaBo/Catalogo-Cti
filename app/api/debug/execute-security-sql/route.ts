@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import fs from 'fs';
 import path from 'path';
+import { getErrorMessage } from "@/lib/errors";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -15,6 +16,11 @@ const supabaseAdmin = url && serviceKey
   : null;
 
 export async function POST() {
+  // Protección en producción
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Disabled in production" }, { status: 403 });
+  }
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       error: "Supabase not configured"
@@ -38,7 +44,7 @@ export async function POST() {
     
     console.log(`📝 Found ${statements.length} SQL statements to execute`);
     
-    const results = [];
+    const results: Array<{ statement: number; success: boolean; error?: string; data?: any }> = [];
     
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i];
@@ -69,11 +75,13 @@ export async function POST() {
             });
           }
         } catch (err) {
-          console.error(`❌ Exception in statement ${i + 1}:`, err.message);
+          const msg = getErrorMessage(err);
+          // Log legible y seguro:
+          console.error(`❌ Exception in statement ${i + 1}:`, msg);
           results.push({
             statement: i + 1,
             success: false,
-            error: err.message
+            error: msg,
           });
         }
       }
@@ -88,10 +96,11 @@ export async function POST() {
     });
 
   } catch (error) {
-    console.error("❌ Failed to execute security SQL:", error);
+    const msg = getErrorMessage(error);
+    console.error("❌ Failed to execute security SQL:", msg);
     return NextResponse.json({
       error: "Failed to execute SQL",
-      details: error instanceof Error ? error.message : String(error)
+      details: msg
     }, { status: 500 });
   }
 }
