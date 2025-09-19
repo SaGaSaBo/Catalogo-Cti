@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, ShoppingCart, Package, Star } from 'lucide-react';
 import { useCart } from '@/store/cart';
 import { toast } from 'sonner';
+import ProductGallery from '@/components/ProductGallery';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -123,42 +124,13 @@ export default function ProductDetailPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Imágenes del producto */}
+          {/* Galería de imágenes del producto */}
           <div className="space-y-4">
-            <div className="aspect-square bg-white rounded-xl shadow-lg overflow-hidden">
-              {product.imageUrls && product.imageUrls.length > 0 ? (
-                <img
-                  src={product.imageUrls[0]}
-                  alt={product.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/placeholder-image.svg';
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <Package className="w-16 h-16 text-gray-400" />
-                </div>
-              )}
-            </div>
-            
-            {/* Galería de imágenes adicionales */}
-            {product.imageUrls && product.imageUrls.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {product.imageUrls.slice(1, 5).map((url, index) => (
-                  <div key={index} className="aspect-square bg-white rounded-lg shadow overflow-hidden">
-                    <img
-                      src={url}
-                      alt={`${product.title} ${index + 2}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/images/placeholder-image.svg';
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <ProductGallery 
+              images={product.imageUrls || []} 
+              alt={product.title}
+              className="w-full"
+            />
           </div>
 
           {/* Información del producto */}

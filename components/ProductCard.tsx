@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { useCart } from "@/store/cart";
+import ProductGallery from "@/components/ProductGallery";
 
 export type Product = {
   id: string;
@@ -97,17 +98,11 @@ export default function ProductCard({ product }: { product: Product }) {
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                    {product.images?.[0] ? (
-                      <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-sm text-gray-400">Imagen</span>
-                    )}
-                  </div>
+                  <ProductGallery 
+                    images={product.images || []} 
+                    alt={product.name}
+                    className="w-full"
+                  />
 
                   <div className="space-y-5">
                     <div className="text-2xl font-bold">${product.price.toLocaleString("es-CL")}</div>
