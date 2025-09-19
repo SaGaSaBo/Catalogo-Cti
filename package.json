@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "node scripts/build.mjs",
-    "build:local": "node scripts/print-build-context.cjs && next build --no-lint",
+    "build:local": "next build --no-lint",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",

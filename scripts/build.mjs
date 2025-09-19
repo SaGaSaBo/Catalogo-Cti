@@ -2,7 +2,11 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import os from "node:os";
 
-const req = ["NEXT_PUBLIC_SUPABASE_URL"]; // agrega aquí otras envs públicas necesarias para compilar
+const req = [
+  "NEXT_PUBLIC_SUPABASE_URL"
+  // Agrega aquí otras ENV públicas que realmente se usen en build,
+  // p.ej.: "NEXT_PUBLIC_ADMIN_SECRET" si el cliente la requiere para compilar.
+];
 
 console.log("🧩 Build context");
 console.log("  node:", process.version);
@@ -28,7 +32,6 @@ const r = spawnSync("npx", ["next@15.5.2", "build", "--no-lint", "--debug"], {
   env: process.env,
   shell: false,
 });
-
 if (r.status !== 0) {
   console.error(`\n❌ next build salió con código ${r.status}. Revisa el stack anterior.`);
   process.exit(r.status ?? 2);
@@ -36,7 +39,7 @@ if (r.status !== 0) {
 
 console.log("\n🔎 Verificando artefactos…");
 if (!existsSync(".next/BUILD_ID")) {
-  console.error("❌ Build OK pero falta .next/BUILD_ID. Revisa errores de tipos o config.");
+  console.error("❌ Build finalizado sin .next/BUILD_ID. Puede haber errores de TypeScript, imports o configuración.");
   process.exit(2);
 }
 console.log("✅ BUILD_ID:", readFileSync(".next/BUILD_ID", "utf8").trim());
