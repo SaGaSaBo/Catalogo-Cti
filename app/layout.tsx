@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import CartButton from '@/components/CartButton';
 
 export const metadata: Metadata = {
   title: 'Catálogo CTI',
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className="min-h-dvh bg-slate-50 text-slate-900 antialiased">
         <div id="root">{children}</div>
+        <CartButton />
       </body>
     </html>
   );

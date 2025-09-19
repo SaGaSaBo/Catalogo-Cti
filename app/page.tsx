@@ -1,5 +1,4 @@
 import ProductCatalog from '@/components/ProductCatalog';
-import CartButton from '@/components/CartButton';
 
 export default function HomePage() {
   return (
@@ -13,7 +12,6 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <ProductCatalog />
       </main>
-      <CartButton />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 import { ProductQuickAddModal, type QuickAddProduct } from "@/components/product-quickadd-modal";
-import SmartImage from "@/components/SmartImage";
+import { sbRender } from "@/lib/img";
 
 export const formatPrice = (n: number, locale = "es-AR") =>
   new Intl.NumberFormat(locale).format(n);
@@ -85,23 +86,26 @@ export function ProductCard({
     <>
       <article className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-gray-300">
         {/* Imagen del producto */}
-        <div className="aspect-square bg-gray-100 overflow-hidden">
+        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border">
           {storagePath ? (
-            <SmartImage
-              storagePath={storagePath}
+            <Image
+              src={sbRender(storagePath, { w: 400, q: 70, format: "webp" })}
               alt={title}
-              width={400}
-              height={400}
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-              placeholderSrc="/placeholder-image.svg"
+              fill
+              sizes="(max-width:768px) 100vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-200"
+              loading="lazy"
+              priority={false}
             />
           ) : imageUrl ? (
-            <img
+            <Image
               src={imageUrl}
               alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+              fill
+              sizes="(max-width:768px) 100vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-200"
               loading="lazy"
+              priority={false}
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">

@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { sbRender } from '@/lib/img';
 
 type Props = {
   storagePath: string; // ej: "productos/sku-123/main-800.webp"
@@ -23,44 +24,23 @@ export default function SmartImage({
   className,
   placeholderSrc,
 }: Props) {
-  const [src, setSrc] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/storage/signed-url?path=${encodeURIComponent(storagePath)}`, { cache: 'force-cache' });
-        const json = await res.json();
-        if (!cancelled) setSrc(json.url);
-      } catch {/* ignore */}
-    })();
-    return () => { cancelled = true; };
-  }, [storagePath]);
-
-  if (!src) {
-    const defaultPlaceholder = '/images/products/placeholder.svg';
-    return (
-      <Image
-        src={placeholderSrc || defaultPlaceholder}
-        alt={alt}
-        width={width}
-        height={height}
-        sizes={sizes}
-        className={className}
-        priority={priority}
-      />
-    );
-  }
+  // Usar URL optimizada directamente sin signed URLs
+  const optimizedSrc = sbRender(storagePath, { 
+    w: width, 
+    q: 75, 
+    format: "webp" 
+  });
 
   return (
     <Image
-      src={src}
+      src={optimizedSrc}
       alt={alt}
       width={width}
       height={height}
       sizes={sizes}
       className={className}
       priority={priority}
+      loading={priority ? "eager" : "lazy"}
     />
   );
 }
