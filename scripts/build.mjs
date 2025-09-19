@@ -4,8 +4,8 @@ import os from "node:os";
 
 const req = [
   "NEXT_PUBLIC_SUPABASE_URL"
-  // Agrega aquí otras ENV públicas que realmente se usen en build,
-  // p.ej.: "NEXT_PUBLIC_ADMIN_SECRET" si el cliente la requiere para compilar.
+  // agrega aquí otras ENV públicas necesarias en build si aplica,
+  // p.ej. "NEXT_PUBLIC_ADMIN_SECRET" SOLO si el cliente la necesita para compilar
 ];
 
 console.log("🧩 Build context");
