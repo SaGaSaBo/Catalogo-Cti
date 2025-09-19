@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import UiImg from "@/components/UiImg";
+import NextImage from "next/image";
 import { ProductQuickAddModal, type QuickAddProduct } from "@/components/product-quickadd-modal";
 
 export const formatPrice = (n: number, locale = "es-AR") =>
@@ -100,7 +101,7 @@ export function ProductCard({
               format="webp"
             />
           ) : imageUrl ? (
-            <Image
+            <UiImg
               src={imageUrl}
               alt={title}
               fill
@@ -108,6 +109,9 @@ export function ProductCard({
               className="object-cover group-hover:scale-105 transition-transform duration-200"
               loading="lazy"
               priority={false}
+              widthHint={400}
+              qualityHint={70}
+              format="webp"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">

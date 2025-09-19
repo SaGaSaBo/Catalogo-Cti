@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import Image from 'next/image';
+import UiImg from '@/components/UiImg';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,12 +37,15 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogTrigger asChild>
           <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden cursor-pointer group">
-            <Image
+            <UiImg
               src={images[selectedImage]}
               alt={title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 768px) 100vw, 50vw"
+              widthHint={400}
+              qualityHint={75}
+              format="webp"
               onError={(e) => {
                 e.currentTarget.src = '/placeholder-image.svg';
               }}
@@ -51,12 +54,15 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
         </DialogTrigger>
         <DialogContent className="max-w-4xl p-0">
           <div className="relative">
-            <Image
+            <UiImg
               src={images[selectedImage]}
               alt={title}
               width={800}
               height={600}
               className="w-full h-auto"
+              widthHint={800}
+              qualityHint={85}
+              format="webp"
             />
             {images.length > 1 && (
               <>
@@ -103,12 +109,15 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <Image
+              <UiImg
                 src={image}
                 alt={`${title} ${index + 1}`}
                 width={64}
                 height={64}
                 className="w-full h-full object-cover"
+                widthHint={64}
+                qualityHint={60}
+                format="webp"
               />
             </button>
           ))}
