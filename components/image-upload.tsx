@@ -23,11 +23,17 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Filtrar imágenes válidas para mostrar
+  const validImages = images.filter(img => img && img.trim());
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    if (images.length + files.length > maxImages) {
+    // Filtrar imágenes válidas (no vacías)
+    const validImages = images.filter(img => img && img.trim());
+    
+    if (validImages.length + files.length > maxImages) {
       toast.error(`Máximo ${maxImages} imágenes permitidas`);
       return;
     }
@@ -60,7 +66,9 @@ export function ImageUpload({
       }
 
       if (newImages.length > 0) {
-        onImagesChange([...images, ...newImages]);
+        // Combinar imágenes válidas existentes con las nuevas
+        const updatedImages = [...validImages, ...newImages];
+        onImagesChange(updatedImages);
         toast.success(`${newImages.length} imagen(es) agregada(s) exitosamente`);
       }
     } catch (error) {
@@ -75,7 +83,8 @@ export function ImageUpload({
   };
 
   const handleRemoveImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
+    const validImages = images.filter(img => img && img.trim());
+    const newImages = validImages.filter((_, i) => i !== index);
     onImagesChange(newImages);
     toast.success('Imagen eliminada');
   };
@@ -91,7 +100,7 @@ export function ImageUpload({
               type="button"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploading || images.filter(img => img && img.trim()).length >= maxImages}
+              disabled={uploading || validImages.length >= maxImages}
               className="flex items-center gap-2"
             >
               {uploading ? (
@@ -107,7 +116,7 @@ export function ImageUpload({
               )}
             </Button>
             <span className="text-sm text-gray-500">
-              {images.filter(img => img && img.trim()).length} / {maxImages} imágenes
+              {validImages.length} / {maxImages} imágenes
             </span>
           </div>
 
@@ -121,17 +130,14 @@ export function ImageUpload({
           />
 
           {/* Image Preview Grid */}
-          {images.filter(img => img && img.trim()).length > 0 && (
+          {validImages.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {images
-                .map((imageUrl, index) => ({ imageUrl, originalIndex: index }))
-                .filter(({ imageUrl }) => imageUrl && imageUrl.trim())
-                .map(({ imageUrl, originalIndex }, displayIndex) => (
-                <div key={originalIndex} className="relative group">
+              {validImages.map((imageUrl, index) => (
+                <div key={index} className="relative group">
                   <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
                     <img
                       src={imageUrl}
-                      alt={`Imagen ${displayIndex + 1}`}
+                      alt={`Imagen ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.src = '/images/placeholder-image.svg';
@@ -143,12 +149,12 @@ export function ImageUpload({
                     variant="secondary"
                     size="sm"
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleRemoveImage(originalIndex)}
+                    onClick={() => handleRemoveImage(index)}
                   >
                     <X className="h-3 w-3" />
                   </Button>
                   <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                    {displayIndex + 1}
+                    {index + 1}
                   </div>
                 </div>
               ))}
@@ -156,7 +162,7 @@ export function ImageUpload({
           )}
 
           {/* Empty State */}
-          {images.filter(img => img && img.trim()).length === 0 && (
+          {validImages.length === 0 && (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 mb-2">No hay imágenes agregadas</p>
