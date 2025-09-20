@@ -108,6 +108,7 @@ export function AdminPageContent() {
       ]);
       console.log('📦 Productos recibidos:', productsData?.length || 0);
       console.log('📂 Categorías recibidas:', categoriesData?.length || 0);
+      console.log('📂 Categorías data:', categoriesData);
       setProducts(productsData);
       setCategories(categoriesData);
       console.log('✅ fetchData completado exitosamente');
@@ -417,6 +418,7 @@ export function AdminPageContent() {
               </div>
               <div>
                 <Label htmlFor="category">Categoría</Label>
+                {console.log('🔍 Renderizando selector de categorías. Categorías disponibles:', categories)}
                 <Select
                   value={formData.categoryId || ''}
                   onValueChange={(value) => setFormData({ ...formData, categoryId: value === '__none__' ? undefined : value })}
@@ -426,11 +428,17 @@ export function AdminPageContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Sin categoría</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={String(category.id)}>
-                        {category.name}
+                    {categories.length > 0 ? (
+                      categories.map((category) => (
+                        <SelectItem key={category.id} value={String(category.id)}>
+                          {category.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="__loading__" disabled>
+                        Cargando categorías...
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
