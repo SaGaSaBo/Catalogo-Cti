@@ -3,23 +3,15 @@ import React, { useState } from "react";
 import UiImg from "@/components/UiImg";
 import NextImage from "next/image";
 import { ProductQuickAddModal, type QuickAddProduct } from "@/components/product-quickadd-modal";
+import { Product } from "@/lib/types";
 
 export const formatPrice = (n: number, locale = "es-AR") =>
   new Intl.NumberFormat(locale).format(n);
 
 export type ProductCardProps = {
-  imageUrl?: string;
-  storagePath?: string; // Nueva prop para ruta en Supabase Storage
-  title: string;
-  brand: string;
-  sku?: string;
-  price: number;
-  sizes?: string[];
+  product: Product;
   onDetails?: () => void;
   onAddToCart?: () => void;
-  // Nuevas props para el modal
-  productId?: string;
-  images?: string[];
   onQuickAdd?: (payload: {
     productId: string;
     quantities: Record<string, number>;
@@ -29,19 +21,28 @@ export type ProductCardProps = {
 };
 
 export function ProductCard({
-  imageUrl,
-  storagePath,
-  title,
-  brand,
-  sku,
-  price,
-  sizes = [],
+  product,
   onDetails,
   onAddToCart,
-  productId,
-  images = [],
   onQuickAdd,
 }: ProductCardProps) {
+  const {
+    id: productId,
+    title,
+    brand,
+    description,
+    sku,
+    price,
+    sizes = [],
+    imageUrls = [],
+    image_urls = [],
+    image_paths = [],
+    category
+  } = product;
+
+  // Usar imageUrls como fallback, luego image_urls, luego image_paths
+  const images = imageUrls.length > 0 ? imageUrls : image_urls.length > 0 ? image_urls : image_paths;
+  const primaryImage = images[0];
   const [open, setOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<QuickAddProduct | null>(null);
 
@@ -53,9 +54,10 @@ export function ProductCard({
       id: productId || title, // fallback al título si no hay ID
       title,
       brand,
+      description,
       sku,
       price,
-      images: images.length > 0 ? images : (imageUrl ? [imageUrl] : []),
+      images: images.length > 0 ? images : [],
       sizes: sizes.map((s) => ({ label: s, stock: 999, initial: 0 })),
     };
     setSelectedProduct(mapped);
@@ -87,22 +89,9 @@ export function ProductCard({
       <article className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-gray-300">
         {/* Imagen del producto */}
         <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 border">
-          {storagePath ? (
+          {primaryImage ? (
             <UiImg
-              src={storagePath}
-              alt={title}
-              fill
-              sizes="(max-width:768px) 100vw, 33vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-200"
-              loading="lazy"
-              priority={false}
-              widthHint={400}
-              qualityHint={70}
-              format="webp"
-            />
-          ) : imageUrl ? (
-            <UiImg
-              src={imageUrl}
+              src={primaryImage}
               alt={title}
               fill
               sizes="(max-width:768px) 100vw, 33vw"
@@ -129,6 +118,15 @@ export function ProductCard({
             <p className="text-xs text-gray-500 mt-1">{brand}</p>
             {sku && (
               <p className="text-xs text-gray-400 font-mono mt-1">SKU: {sku}</p>
+            )}
+            {category && (
+              <p className="text-xs text-blue-600 mt-1">{category.name}</p>
+            )}
+            {/* Snippet de descripción (2 líneas) */}
+            {description && (
+              <p className="text-sm text-gray-600 whitespace-pre-line overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] min-h-10 mt-2">
+                {description}
+              </p>
             )}
           </div>
 

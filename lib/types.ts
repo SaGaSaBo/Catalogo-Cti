@@ -2,14 +2,21 @@ export type Product = {
   id: string;
   brand: string;
   title: string;
-  description?: string;
+  description?: string | null;
   sku: string;
   price: number;
   sizes: string[];
   imageUrls: string[];
+  image_urls?: string[];   // compat con Supabase
+  image_paths?: string[];  // compat con Supabase
   active: boolean;
   sortIndex: number;
+  sort_index?: number | null;  // compat con Supabase
   categoryId?: string;
+  category_id?: string | null;  // compat con Supabase
+  category?: Category | null;  // relación con categoría
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type Category = {

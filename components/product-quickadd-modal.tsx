@@ -12,6 +12,7 @@ export type QuickAddProduct = {
   id: string;
   title: string;
   brand: string;
+  description?: string;
   sku?: string;
   price: number;    // precio unitario
   images?: string[]; // urls
@@ -220,6 +221,15 @@ export function ProductQuickAddModal({
               <p className="text-sm text-gray-500 mt-1">
                 {product.brand} {product.sku && `• ${product.sku}`}
               </p>
+              {/* Descripción completa */}
+              {product.description && (
+                <div className="mt-3">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Descripción</h3>
+                  <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+                    {product.description}
+                  </p>
+                </div>
+              )}
             </div>
             <button
               onClick={onClose}
