@@ -54,7 +54,7 @@ export function ProductCard({
       id: productId || title, // fallback al título si no hay ID
       title,
       brand,
-      description,
+      description: description || undefined,
       sku,
       price,
       images: images.length > 0 ? images : [],
