@@ -24,7 +24,7 @@ export interface SupabaseProduct {
   id: string;
   brand: string;
   title: string;
-  description: string;
+  description: string | null;
   sku: string;
   price: number;
   sizes: string[];

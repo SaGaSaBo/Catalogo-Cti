@@ -23,7 +23,7 @@ function convertToSupabase(product: Partial<Product>): Partial<SupabaseProduct> 
   return {
     brand: product.brand,
     title: product.title,
-    description: product.description,
+    description: product.description || undefined,
     sku: product.sku,
     price: product.price,
     sizes: product.sizes,
