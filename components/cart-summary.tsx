@@ -251,7 +251,7 @@ export function CartSummary({ products }: CartSummaryProps) {
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-full sm:max-w-md">
+          <SheetContent className="w-full sm:max-w-md"> */}
             <SheetHeader>
               <SheetTitle>Resumen del Pedido</SheetTitle>
               <SheetDescription>
