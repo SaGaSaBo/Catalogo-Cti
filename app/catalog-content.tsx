@@ -33,11 +33,16 @@ export function CatalogPageContent() {
   const fetchData = async () => {
     try {
       const [productsData, categoriesData] = await Promise.all([
-        fetchJson('/api/products'),
-        fetchJson('/api/categories')
+        fetchJson('/api/products', { cache: "no-store" }),
+        fetchJson('/api/categories', { cache: "no-store" })
       ]);
-      setProducts(productsData);
-      setCategories(categoriesData);
+      
+      // Handle new API response format
+      const products = productsData?.items || productsData || [];
+      const categories = categoriesData || [];
+      
+      setProducts(products);
+      setCategories(categories);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Error al cargar los datos');

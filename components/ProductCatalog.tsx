@@ -48,12 +48,18 @@ export default function ProductCatalog() {
       
       // Fetch products and categories in parallel
       const [productsRes, categoriesRes] = await Promise.all([
-        fetch('/api/products'),
-        fetch('/api/categories')
+        fetch('/api/products', { cache: "no-store" }),
+        fetch('/api/categories', { cache: "no-store" })
       ]);
 
-      if (!productsRes.ok || !categoriesRes.ok) {
-        throw new Error('Error al cargar los datos');
+      if (!productsRes.ok) {
+        const productsText = await productsRes.text().catch(() => "");
+        throw new Error(`API /api/products ${productsRes.status} ${productsRes.statusText} :: ${productsText}`);
+      }
+
+      if (!categoriesRes.ok) {
+        const categoriesText = await categoriesRes.text().catch(() => "");
+        throw new Error(`API /api/categories ${categoriesRes.status} ${categoriesRes.statusText} :: ${categoriesText}`);
       }
 
       const [productsData, categoriesData] = await Promise.all([
@@ -61,8 +67,12 @@ export default function ProductCatalog() {
         categoriesRes.json()
       ]);
 
-      setProducts(Array.isArray(productsData) ? productsData : []);
-      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      // Handle new API response format
+      const products = productsData?.items || productsData || [];
+      const categories = categoriesData || [];
+
+      setProducts(Array.isArray(products) ? products : []);
+      setCategories(Array.isArray(categories) ? categories : []);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');

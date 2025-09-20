@@ -1,89 +1,74 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getProducts, createProduct } from '@/lib/data-provider';
-import { validateProduct } from '@/lib/validation';
-import { Product } from '@/lib/types';
-import { v4 as uuidv4 } from 'uuid';
-import { isAdmin } from '@/lib/auth';
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";           // no cache SSR
+export const revalidate = 0;
 
-export async function GET(req: Request) {
-  try {
-    console.log('API /products called');
-    
-    // Usar Supabase en lugar de datos mock
-    console.log('Calling getProducts()...');
-    const products = await getProducts();
-    console.log(`getProducts() returned ${products.length} products`);
-    
-    // Si hay Authorization header, devolver todos los productos (admin)
-    // Si no, solo los activos (público)
-    const isAdminRequest = req?.headers?.get('authorization')?.startsWith('Bearer ');
-    console.log('isAdminRequest:', isAdminRequest);
-    
-    const filteredProducts = isAdminRequest 
-      ? products.sort((a, b) => (a.sortIndex || 0) - (b.sortIndex || 0))
-      : products
-          .filter(product => product.active)
-          .sort((a, b) => (a.sortIndex || 0) - (b.sortIndex || 0));
-    
-    console.log(`Returning ${filteredProducts.length} products`);
-    return NextResponse.json(filteredProducts);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
-    return NextResponse.json(
-      { error: 'Error interno', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
+const SELECT =
+`id, brand, title, description, sku, price, sizes, image_urls, image_paths, active, category_id, sort_index, created_at, updated_at,
+ category:categories(id, name)`;
+
+function num(v: string | null, def: number) {
+  const n = v ? parseInt(v, 10) : NaN;
+  return Number.isFinite(n) ? n : def;
 }
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anon) {
+    console.error("[/api/products] Missing envs", { hasUrl: !!url, hasAnon: !!anon });
+    return NextResponse.json({ error: "Faltan variables de entorno Supabase (URL o ANON KEY)." }, { status: 500 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const q        = (searchParams.get("q") || "").trim();
+  const cat      = searchParams.get("category_id");
+  const limit    = num(searchParams.get("limit"), 30);
+  const offset   = num(searchParams.get("offset"), 0);
+  const sortBy   = searchParams.get("sortBy") || "sort_index";
+  const sortDir  = (searchParams.get("sortDir") || "asc").toLowerCase() === "desc" ? false : true;
+
+  const supabase = createClient(url, anon, { auth: { persistSession: false } });
+
   try {
-    if (!isAdmin(req)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    let query = supabase
+      .from("products")
+      .select(SELECT, { count: "exact" })
+      .eq("active", true);
+
+    if (cat) query = query.eq("category_id", cat);
+
+    if (q) {
+      // buscar por título, marca o sku (ilike = case-insensitive)
+      query = query.or(`title.ilike.%${q}%,brand.ilike.%${q}%,sku.ilike.%${q}%`);
     }
 
-    let body: any;
-    try {
-      body = await req.json();
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'JSON inválido en el cuerpo de la petición' },
-        { status: 400 }
-      );
+    // orden + paginación
+    query = query.order(sortBy, { ascending: sortDir }).order("title", { ascending: true });
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error("[/api/products] Supabase error:", {
+        message: error.message, details: (error as any).details, hint: (error as any).hint, code: (error as any).code
+      });
+      return NextResponse.json({ error: "DB_ERROR", message: error.message }, { status: 500 });
     }
 
-    // Validate product
-    const validation = validateProduct(body);
-    if (!validation.ok) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400 }
-      );
-    }
-
-    // Create new product
-    const newProduct = await createProduct({
-      brand: body.brand.trim(),
-      title: body.title.trim(),
-      description: body.description?.trim() || undefined,
-      sku: body.sku.trim(),
-      price: body.price,
-      sizes: body.sizes.map((s: string) => s.trim()),
-      imageUrls: body.imageUrls || [],
-      active: body.active,
-      sortIndex: body.sortIndex || 1,
-      categoryId: body.categoryId?.trim() || undefined
-    });
-
-    return NextResponse.json(newProduct, { status: 201 });
-  } catch (error) {
-    console.error('Error creating product:', error);
     return NextResponse.json(
-      { error: 'Error interno' },
-      { status: 500 }
+      { items: data ?? [], count: count ?? 0, offset, limit },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "s-maxage=60, stale-while-revalidate=600"
+        }
+      }
     );
+  } catch (e: any) {
+    console.error("[/api/products] Uncaught:", e?.message || e, e?.stack);
+    return NextResponse.json({ error: "INTERNAL_ERROR", message: e?.message || String(e) }, { status: 500 });
   }
 }

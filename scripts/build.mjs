@@ -3,7 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 import os from "node:os";
 
 const req = [
-  "NEXT_PUBLIC_SUPABASE_URL"
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY"
   // agrega aquí otras ENV públicas necesarias en build si aplica,
   // p.ej. "NEXT_PUBLIC_ADMIN_SECRET" SOLO si el cliente la necesita para compilar
 ];
