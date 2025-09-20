@@ -145,7 +145,7 @@ export function AdminPageContent() {
         sku: product.sku,
         price: product.price.toString(),
         sizes: product.sizes.join(', '),
-        imageUrls: [...product.imageUrls, '', '', ''].slice(0, 4),
+        imageUrls: product.imageUrls.filter(url => url && url.trim()),
         active: product.active,
         categoryId: product.categoryId
       };
