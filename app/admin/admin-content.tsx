@@ -40,7 +40,7 @@ export function AdminPageContent() {
     sku: '',
     price: '',
     sizes: '',
-    imageUrls: [],
+    imageUrls: [] as string[],
     active: true,
     categoryId: undefined as string | undefined
   });
@@ -128,7 +128,7 @@ export function AdminPageContent() {
       sku: '',
       price: '',
       sizes: '',
-      imageUrls: [],
+      imageUrls: [] as string[],
       active: true,
       categoryId: undefined
     });
