@@ -12,24 +12,28 @@ export async function GET(req: Request) {
     console.log('API /products called');
     
     // Usar Supabase en lugar de datos mock
+    console.log('Calling getProducts()...');
     const products = await getProducts();
+    console.log(`getProducts() returned ${products.length} products`);
     
     // Si hay Authorization header, devolver todos los productos (admin)
     // Si no, solo los activos (público)
     const isAdminRequest = req?.headers?.get('authorization')?.startsWith('Bearer ');
+    console.log('isAdminRequest:', isAdminRequest);
     
     const filteredProducts = isAdminRequest 
-      ? products.sort((a, b) => a.sortIndex - b.sortIndex)
+      ? products.sort((a, b) => (a.sortIndex || 0) - (b.sortIndex || 0))
       : products
           .filter(product => product.active)
-          .sort((a, b) => a.sortIndex - b.sortIndex);
+          .sort((a, b) => (a.sortIndex || 0) - (b.sortIndex || 0));
     
     console.log(`Returning ${filteredProducts.length} products`);
     return NextResponse.json(filteredProducts);
   } catch (error) {
     console.error('Error fetching products:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
     return NextResponse.json(
-      { error: 'Error interno' },
+      { error: 'Error interno', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

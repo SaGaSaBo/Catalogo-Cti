@@ -3,19 +3,27 @@ import { Product } from './types';
 
 // Convertir de Supabase a formato interno
 function convertFromSupabase(supabaseProduct: SupabaseProduct): Product {
-  return {
-    id: supabaseProduct.id,
-    brand: supabaseProduct.brand,
-    title: supabaseProduct.title,
-    description: supabaseProduct.description,
-    sku: supabaseProduct.sku,
-    price: supabaseProduct.price,
-    sizes: supabaseProduct.sizes,
-    imageUrls: supabaseProduct.image_urls,
-    active: supabaseProduct.active,
-    categoryId: supabaseProduct.category_id,
-    sortIndex: supabaseProduct.sort_index
-  };
+  try {
+    console.log('Converting product:', supabaseProduct.id, supabaseProduct.title);
+    const converted = {
+      id: supabaseProduct.id,
+      brand: supabaseProduct.brand,
+      title: supabaseProduct.title,
+      description: supabaseProduct.description,
+      sku: supabaseProduct.sku,
+      price: supabaseProduct.price,
+      sizes: supabaseProduct.sizes,
+      imageUrls: supabaseProduct.image_urls,
+      active: supabaseProduct.active,
+      categoryId: supabaseProduct.category_id,
+      sortIndex: supabaseProduct.sort_index
+    };
+    console.log('Converted successfully:', converted.id);
+    return converted;
+  } catch (error) {
+    console.error('Error converting product:', supabaseProduct.id, error);
+    throw error;
+  }
 }
 
 // Convertir de formato interno a Supabase
