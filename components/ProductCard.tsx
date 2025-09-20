@@ -8,6 +8,7 @@ export type Product = {
   id: string;
   name: string;
   brand?: string;
+  description?: string;
   price: number;
   sku?: string;
   images?: string[];
@@ -83,6 +84,12 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="p-4 flex-1 flex flex-col gap-2">
           <div className="text-lg font-semibold leading-tight">{product.name}</div>
           {product.brand && <div className="text-gray-500 text-sm">{product.brand}</div>}
+          {/* Snippet de descripción (2 líneas) */}
+          {product.description && (
+            <p className="text-sm text-gray-600 whitespace-pre-line overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] min-h-10">
+              {product.description}
+            </p>
+          )}
           <div className="mt-auto flex items-center justify-between">
             <div className="font-bold">${product.price.toLocaleString("es-CL")}</div>
             {product.sku && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md">{product.sku}</span>}
@@ -116,6 +123,16 @@ export default function ProductCard({ product }: { product: Product }) {
 
                   <div className="space-y-5">
                     <div className="text-2xl font-bold">${product.price.toLocaleString("es-CL")}</div>
+                    
+                    {/* Descripción completa en el modal */}
+                    {product.description && (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-gray-900">Descripción</h3>
+                        <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+                          {product.description}
+                        </p>
+                      </div>
+                    )}
 
                     {product.sizes?.length ? (
                       <div className="space-y-3">

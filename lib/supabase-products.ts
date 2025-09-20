@@ -37,7 +37,10 @@ function convertToSupabase(product: Partial<Product>): Partial<SupabaseProduct> 
 export async function getProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select(`
+      id, brand, title, description, sku, price, sizes, image_urls, image_paths, active, category_id, sort_index, created_at, updated_at,
+      category:categories(id, name)
+    `)
     .order('sort_index', { ascending: true });
 
   if (error) {
@@ -51,7 +54,10 @@ export async function getProducts(): Promise<Product[]> {
 export async function getProduct(id: string): Promise<Product | null> {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select(`
+      id, brand, title, description, sku, price, sizes, image_urls, image_paths, active, category_id, sort_index, created_at, updated_at,
+      category:categories(id, name)
+    `)
     .eq('id', id)
     .single();
 
