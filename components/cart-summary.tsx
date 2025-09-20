@@ -233,8 +233,8 @@ export function CartSummary({ products }: CartSummaryProps) {
 
   return (
     <>
-      {/* Fixed Cart Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Fixed Cart Button - ELIMINADO: se usa CartButton del layout */}
+      {/* <div className="fixed bottom-6 right-6 z-50">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button size="lg" className="h-14 px-6 shadow-lg relative">
@@ -251,7 +251,7 @@ export function CartSummary({ products }: CartSummaryProps) {
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-full sm:max-w-md">
+          <SheetContent className="w-full sm:max-w-md"> */}
             <SheetHeader>
               <SheetTitle>Resumen del Pedido</SheetTitle>
               <SheetDescription>
@@ -387,7 +387,7 @@ export function CartSummary({ products }: CartSummaryProps) {
             </div>
           </SheetContent>
         </Sheet>
-      </div>
+      </div> */}
 
       {/* Mobile Summary Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 sm:hidden z-40">

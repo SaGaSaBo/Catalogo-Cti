@@ -319,15 +319,7 @@ export default function ProductCatalog() {
         </>
       )}
 
-      {/* Botón de carrito flotante */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button
-          onClick={() => setIsCartModalOpen(true)}
-          className="rounded-full shadow-lg bg-black text-white px-6 py-3 text-sm font-medium hover:bg-gray-900"
-        >
-          Ver Carrito
-        </Button>
-      </div>
+      {/* Botón de carrito flotante eliminado - se usa CartButton del layout */}
 
       {/* Modal del carrito */}
       <CartModal
