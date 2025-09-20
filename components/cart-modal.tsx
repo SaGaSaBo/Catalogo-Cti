@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import UiImg from '@/components/UiImg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, Download, User, Mail, Phone } from 'lucide-react';
@@ -237,10 +238,16 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                          <img
+                          <UiImg
                             src={item.product.imageUrls?.[0] || '/images/placeholder-image.svg'}
                             alt={item.product.title}
+                            width={64}
+                            height={64}
+                            sizes="64px"
                             className="w-full h-full object-cover"
+                            widthHint={64}
+                            qualityHint={60}
+                            format="webp"
                           />
                         </div>
                         

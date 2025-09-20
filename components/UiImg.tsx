@@ -1,15 +1,14 @@
 "use client";
 import Image, { ImageProps } from "next/image";
-import { sbRenderPath, toStoragePath } from "@/lib/img";
+import { classifySrc, sbRenderPath, sbPublicPath } from "@/lib/img";
+import { useState, useMemo } from "react";
 
 type UiImgProps = Omit<ImageProps, "src"> & {
-  // Acepta path o URL completa
   src: string;
-  // Opciones de transformación (se mapearán a Supabase)
-  widthHint?: number; // ancho objetivo para el render server-side
-  qualityHint?: number; // 60-85 recomendado
+  widthHint?: number;
+  qualityHint?: number;
   format?: "webp" | "avif";
-  useOriginal?: boolean; // si true, usa object/public en vez de render/image
+  fallbackSrc?: string; // opcional: una imagen de reserva
 };
 
 export default function UiImg({
@@ -17,26 +16,48 @@ export default function UiImg({
   widthHint = 400,
   qualityHint = 75,
   format = "webp",
-  useOriginal = false,
+  fallbackSrc,
   sizes = "(max-width:768px) 100vw, 50vw",
   loading = "lazy",
   priority = false,
   ...rest
 }: UiImgProps) {
-  const path = toStoragePath(src);
-  const finalSrc = useOriginal
-    ? src // si vino URL completa que NO quieras transformar
-    : sbRenderPath(path, { w: widthHint, q: qualityHint, format });
+  const [errored, setErrored] = useState(false);
+
+  const finalSrc = useMemo(() => {
+    const cls = classifySrc(src);
+    if (!cls) return "";
+
+    if (cls.kind === "storage") {
+      // Transformable en Supabase
+      return sbRenderPath(cls.path, { w: widthHint, q: qualityHint, format });
+    }
+
+    // data:/blob:/https externo → usar tal cual, sin _next/image
+    return cls.url;
+  }, [src, widthHint, qualityHint, format]);
+
+  const handleError = () => {
+    if (!errored) {
+      console.warn("[UiImg] load error:", { src, finalSrc });
+      setErrored(true);
+    }
+  };
+
+  const srcToUse =
+    errored && fallbackSrc
+      ? fallbackSrc
+      : finalSrc;
 
   return (
     <Image
       {...rest}
-      // ⛔️ Clave: evitamos _next/image → no hay ?url=...
       unoptimized
-      src={finalSrc}
+      src={srcToUse}
       sizes={sizes}
       loading={loading}
       priority={priority}
+      onError={handleError}
     />
   );
 }
