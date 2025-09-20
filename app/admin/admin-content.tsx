@@ -294,6 +294,9 @@ export function AdminPageContent() {
     );
   }
 
+  // Log para depuración de categorías
+  console.log('🔍 Renderizando selector de categorías. Categorías disponibles:', categories);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
@@ -418,7 +421,6 @@ export function AdminPageContent() {
               </div>
               <div>
                 <Label htmlFor="category">Categoría</Label>
-                {console.log('🔍 Renderizando selector de categorías. Categorías disponibles:', categories)}
                 <Select
                   value={formData.categoryId || ''}
                   onValueChange={(value) => setFormData({ ...formData, categoryId: value === '__none__' ? undefined : value })}
