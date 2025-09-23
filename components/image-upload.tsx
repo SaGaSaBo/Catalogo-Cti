@@ -23,8 +23,15 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 🖼️ DEBUG TEMPORAL - LOGGING DE IMÁGENES
+  console.log('🖼️ ImageUpload received images:', images);
+  console.log('🖼️ Images type:', typeof images, Array.isArray(images));
+  console.log('🖼️ Images length:', images?.length);
+  
   // Filtrar imágenes válidas para mostrar
   const validImages = images.filter(img => img && img.trim());
+  console.log('🖼️ Valid images after filter:', validImages);
+  console.log('🖼️ Valid images length:', validImages.length);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
