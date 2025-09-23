@@ -144,6 +144,7 @@ export function AdminPageContent() {
     console.log('Opening dialog with product:', product);
     if (product) {
       setEditingProduct(product);
+      console.log('Product imageUrls from DB:', product.imageUrls);
       const formDataToSet = {
         brand: product.brand,
         title: product.title,
@@ -156,6 +157,7 @@ export function AdminPageContent() {
         categoryId: product.categoryId
       };
       console.log('Setting form data:', formDataToSet);
+      console.log('FormData imageUrls after filter:', formDataToSet.imageUrls);
       setFormData(formDataToSet);
       setCurrentSortIndex(product.sortIndex);
     } else {
@@ -188,6 +190,8 @@ export function AdminPageContent() {
       };
 
       console.log('Saving product data:', productData);
+      console.log('FormData imageUrls before filter:', formData.imageUrls);
+      console.log('FormData imageUrls after filter:', formData.imageUrls?.filter(url => url.trim()) || []);
       console.log('Editing product:', editingProduct);
 
       if (editingProduct) {
@@ -465,7 +469,10 @@ export function AdminPageContent() {
               <Label>Imágenes</Label>
               <ImageUpload
                 images={formData.imageUrls}
-                onImagesChange={(urls) => setFormData({ ...formData, imageUrls: urls })}
+                onImagesChange={(urls) => {
+                  console.log('Images changed:', urls);
+                  setFormData({ ...formData, imageUrls: urls });
+                }}
               />
             </div>
 
