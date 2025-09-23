@@ -5,6 +5,7 @@ import { Product } from './types';
 function convertFromSupabase(supabaseProduct: SupabaseProduct): Product {
   try {
     console.log('Converting product:', supabaseProduct.id, supabaseProduct.title);
+    console.log('Image URLs from DB:', supabaseProduct.image_urls);
     const converted = {
       id: supabaseProduct.id,
       brand: supabaseProduct.brand,
@@ -12,8 +13,8 @@ function convertFromSupabase(supabaseProduct: SupabaseProduct): Product {
       description: supabaseProduct.description,
       sku: supabaseProduct.sku,
       price: supabaseProduct.price,
-      sizes: supabaseProduct.sizes,
-      imageUrls: supabaseProduct.image_urls,
+      sizes: supabaseProduct.sizes || [],
+      imageUrls: supabaseProduct.image_urls || [],
       active: supabaseProduct.active,
       categoryId: supabaseProduct.category_id,
       sortIndex: supabaseProduct.sort_index
@@ -121,6 +122,8 @@ export async function getProduct(id: string): Promise<Product | null> {
 
 export async function createProduct(product: Omit<Product, 'id'>): Promise<Product> {
   const supabaseProduct = convertToSupabase(product);
+  console.log('Creating product with imageUrls:', product.imageUrls);
+  console.log('Supabase product image_urls:', supabaseProduct.image_urls);
   
   const { data, error } = await supabase
     .from('products')
@@ -138,6 +141,8 @@ export async function createProduct(product: Omit<Product, 'id'>): Promise<Produ
 
 export async function updateProduct(id: string, product: Partial<Product>): Promise<Product> {
   const supabaseProduct = convertToSupabase(product);
+  console.log('Updating product with imageUrls:', product.imageUrls);
+  console.log('Supabase product image_urls:', supabaseProduct.image_urls);
   
   const { data, error } = await supabase
     .from('products')
