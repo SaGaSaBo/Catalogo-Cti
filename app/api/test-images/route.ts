@@ -14,7 +14,11 @@ export async function GET() {
         hasSupabaseAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         baseUrl
       },
-      tests: []
+      tests: [] as Array<{
+        name: string;
+        status: string;
+        details: any;
+      }>
     };
 
     // Test 1: Verificar que GET /api/products funciona
