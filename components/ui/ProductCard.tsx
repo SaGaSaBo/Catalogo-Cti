@@ -36,12 +36,11 @@ export function ProductCard({
     sizes = [],
     imageUrls = [],
     image_urls = [],
-    image_paths = [],
     category
   } = product;
 
-  // Usar imageUrls como fallback, luego image_urls, luego image_paths
-  const images = imageUrls.length > 0 ? imageUrls : image_urls.length > 0 ? image_urls : image_paths;
+  // Usar imageUrls como fallback, luego image_urls
+  const images = imageUrls.length > 0 ? imageUrls : image_urls;
   const primaryImage = images[0];
   const [open, setOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<QuickAddProduct | null>(null);

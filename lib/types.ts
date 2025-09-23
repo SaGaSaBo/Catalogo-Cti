@@ -8,7 +8,7 @@ export type Product = {
   sizes: string[];
   imageUrls: string[];
   image_urls?: string[];   // compat con Supabase
-  image_paths?: string[];  // compat con Supabase
+  // image_paths?: string[];  // NO EXISTE en la tabla products
   active: boolean;
   sortIndex: number;
   sort_index?: number | null;  // compat con Supabase

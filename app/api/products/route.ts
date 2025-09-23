@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";           // no cache SSR
 export const revalidate = 0;
 
 const SELECT =
-`id, brand, title, description, sku, price, sizes, image_urls, image_paths, active, category_id, sort_index, created_at, updated_at,
+`id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at,
  category:categories(id, name)`;
 
 function num(v: string | null, def: number) {

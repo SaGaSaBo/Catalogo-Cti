@@ -48,7 +48,7 @@ export async function getProducts(): Promise<Product[]> {
     const { data, error } = await supabase
       .from('products')
       .select(`
-        id, brand, title, description, sku, price, sizes, image_urls, image_paths, active, category_id, sort_index, created_at, updated_at,
+        id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at,
         category:categories(id, name)
       `)
       .order('sort_index', { ascending: true });
@@ -58,7 +58,7 @@ export async function getProducts(): Promise<Product[]> {
       // Si falla el JOIN, intentar sin categories
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('products')
-        .select('id, brand, title, description, sku, price, sizes, image_urls, image_paths, active, category_id, sort_index, created_at, updated_at')
+        .select('id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at')
         .order('sort_index', { ascending: true });
 
       if (fallbackError) {
@@ -82,7 +82,7 @@ export async function getProduct(id: string): Promise<Product | null> {
     const { data, error } = await supabase
       .from('products')
       .select(`
-        id, brand, title, description, sku, price, sizes, image_urls, image_paths, active, category_id, sort_index, created_at, updated_at,
+        id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at,
         category:categories(id, name)
       `)
       .eq('id', id)
@@ -97,7 +97,7 @@ export async function getProduct(id: string): Promise<Product | null> {
       // Si falla el JOIN, intentar sin categories
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('products')
-        .select('id, brand, title, description, sku, price, sizes, image_urls, image_paths, active, category_id, sort_index, created_at, updated_at')
+        .select('id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at')
         .eq('id', id)
         .single();
 

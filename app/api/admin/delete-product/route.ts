@@ -34,15 +34,15 @@ export async function POST(req: Request) {
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  // Obtener rutas de imágenes si están en products.image_paths
+  // Obtener rutas de imágenes si están en products.image_urls
   let imagePaths: string[] = [];
   const { data: prod } = await supabaseAdmin
     .from("products")
-    .select("image_paths")
+    .select("image_urls")
     .eq("id", id)
     .single();
 
-  if (prod?.image_paths && Array.isArray(prod.image_paths)) imagePaths = prod.image_paths;
+  if (prod?.image_urls && Array.isArray(prod.image_urls)) imagePaths = prod.image_urls;
 
   // Fallback si existe tabla product_images(path, product_id)
   if (imagePaths.length === 0) {
