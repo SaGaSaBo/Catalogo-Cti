@@ -25,6 +25,10 @@ export function AdminProductManager({
   onToggleActive,
   isLoading
 }: AdminProductManagerProps) {
+  
+  // Ensure arrays are always arrays
+  const safeProducts = Array.isArray(products) ? products : [];
+  const safeCategories = Array.isArray(categories) ? categories : [];
   // Obtener moneda
   const rawCurrency = process.env.NEXT_PUBLIC_CURRENCY || 'CLP';
   const currencyMap: Record<string, string> = {
@@ -56,7 +60,7 @@ export function AdminProductManager({
         </div>
       </div>
 
-      {products.length === 0 ? (
+      {safeProducts.length === 0 ? (
         <div className="text-center py-16">
           <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-medium text-gray-900 mb-2">
@@ -68,7 +72,7 @@ export function AdminProductManager({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
+          {safeProducts.map((product) => (
             <Card key={product.id} className="relative">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -88,7 +92,7 @@ export function AdminProductManager({
                     </Badge>
                     {product.categoryId && (
                       <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                        {categories.find(c => c.id === product.categoryId)?.name || 'Sin categoría'}
+                        {safeCategories.find(c => c.id === product.categoryId)?.name || 'Sin categoría'}
                       </Badge>
                     )}
                   </div>

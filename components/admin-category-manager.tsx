@@ -22,6 +22,9 @@ export function AdminCategoryManager({ categories, onCategoriesChange, adminKey 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryName, setCategoryName] = useState('');
+  
+  // Ensure categories is always an array
+  const safeCategories = Array.isArray(categories) ? categories : [];
 
   const openDialog = (category?: Category) => {
     if (category) {
@@ -106,7 +109,7 @@ export function AdminCategoryManager({ categories, onCategoriesChange, adminKey 
         </Button>
       </div>
 
-      {categories.length === 0 ? (
+      {safeCategories.length === 0 ? (
         <div className="text-center py-12">
           <Tag className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-medium text-gray-900 mb-2">
@@ -122,7 +125,7 @@ export function AdminCategoryManager({ categories, onCategoriesChange, adminKey 
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map((category) => (
+          {safeCategories.map((category) => (
             <Card key={category.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">

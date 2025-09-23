@@ -109,8 +109,13 @@ export function AdminPageContent() {
       console.log('📦 Productos recibidos:', productsData?.length || 0);
       console.log('📂 Categorías recibidas:', categoriesData?.length || 0);
       console.log('📂 Categorías data:', categoriesData);
-      setProducts(productsData);
-      setCategories(categoriesData);
+      
+      // Handle new API response format
+      const products = productsData?.items || productsData || [];
+      const categories = categoriesData || [];
+      
+      setProducts(products);
+      setCategories(categories);
       console.log('✅ fetchData completado exitosamente');
     } catch (error) {
       console.error('❌ Error fetching data:', error);
@@ -317,8 +322,8 @@ export function AdminPageContent() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <Tabs defaultValue="products" className="space-y-8">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="products">Productos ({products.length})</TabsTrigger>
-            <TabsTrigger value="categories">Categorías ({categories.length})</TabsTrigger>
+            <TabsTrigger value="products">Productos ({Array.isArray(products) ? products.length : 0})</TabsTrigger>
+            <TabsTrigger value="categories">Categorías ({Array.isArray(categories) ? categories.length : 0})</TabsTrigger>
             <TabsTrigger value="orders" className="relative">
               Pedidos
               {pendingOrdersCount > 0 && (
