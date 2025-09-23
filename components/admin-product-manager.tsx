@@ -138,9 +138,9 @@ export function AdminProductManager({
                     Talles: {product.sizes.join(', ')}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Imágenes: {product.imageUrls.length}
+                    Imágenes: {product.imageUrls?.length || 0}
                   </p>
-                  {product.imageUrls.length > 0 && (
+                  {product.imageUrls && product.imageUrls.length > 0 && (
                     <div className="mt-2">
                       <img 
                         src={product.imageUrls[0]} 

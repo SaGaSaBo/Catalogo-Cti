@@ -150,8 +150,8 @@ export function AdminPageContent() {
         description: product.description || '',
         sku: product.sku,
         price: product.price.toString(),
-        sizes: product.sizes.join(', '),
-        imageUrls: product.imageUrls.filter(url => url && url.trim()),
+        sizes: product.sizes?.join(', ') || '',
+        imageUrls: product.imageUrls?.filter(url => url && url.trim()) || [],
         active: product.active,
         categoryId: product.categoryId
       };
@@ -183,8 +183,8 @@ export function AdminPageContent() {
         ...formData,
         price: parseFloat(formData.price),
         sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s),
-        imageUrls: formData.imageUrls.filter(url => url.trim()),
-        sortIndex: currentSortIndex || (products.length + 1)
+        imageUrls: formData.imageUrls?.filter(url => url.trim()) || [],
+        sortIndex: currentSortIndex || ((Array.isArray(products) ? products.length : 0) + 1)
       };
 
       console.log('Saving product data:', productData);
@@ -435,7 +435,7 @@ export function AdminPageContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Sin categoría</SelectItem>
-                    {categories.length > 0 ? (
+                    {Array.isArray(categories) && categories.length > 0 ? (
                       categories.map((category) => (
                         <SelectItem key={category.id} value={String(category.id)}>
                           {category.name}
