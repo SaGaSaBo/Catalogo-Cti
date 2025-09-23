@@ -29,14 +29,21 @@ export async function GET(req: Request) {
   const offset   = num(searchParams.get("offset"), 0);
   const sortBy   = searchParams.get("sortBy") || "sort_index";
   const sortDir  = (searchParams.get("sortDir") || "asc").toLowerCase() === "desc" ? false : true;
+  
+  // Verificar si es una petición de admin (con Authorization header)
+  const isAdminRequest = req.headers.get('authorization')?.startsWith('Bearer ');
 
   const supabase = createClient(url, anon, { auth: { persistSession: false } });
 
   try {
     let query = supabase
       .from("products")
-      .select(SELECT, { count: "exact" })
-      .eq("active", true);
+      .select(SELECT, { count: "exact" });
+
+    // Solo filtrar por active si NO es una petición de admin
+    if (!isAdminRequest) {
+      query = query.eq("active", true);
+    }
 
     if (cat) query = query.eq("category_id", cat);
 

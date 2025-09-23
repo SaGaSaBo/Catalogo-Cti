@@ -145,6 +145,12 @@ export function AdminPageContent() {
     if (product) {
       setEditingProduct(product);
       console.log('Product imageUrls from DB:', product.imageUrls);
+      
+      // Normalizar imageUrls - asegurar que sea un array y filtrar valores vacíos
+      const normalizedImageUrls = Array.isArray(product.imageUrls) 
+        ? product.imageUrls.filter(url => url && typeof url === 'string' && url.trim())
+        : [];
+      
       const formDataToSet = {
         brand: product.brand,
         title: product.title,
@@ -152,7 +158,7 @@ export function AdminPageContent() {
         sku: product.sku,
         price: product.price.toString(),
         sizes: product.sizes?.join(', ') || '',
-        imageUrls: product.imageUrls?.filter(url => url && url.trim()) || [],
+        imageUrls: normalizedImageUrls,
         active: product.active,
         categoryId: product.categoryId
       };

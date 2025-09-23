@@ -70,6 +70,10 @@ export async function PUT(
     }
 
     // Update product
+    console.log('PUT /api/products/[id] - Updating product:', productId);
+    console.log('PUT /api/products/[id] - Body imageUrls:', body.imageUrls);
+    console.log('PUT /api/products/[id] - Body active:', body.active);
+    
     const updatedProduct = await updateProduct(productId, {
       brand: body.brand.trim(),
       title: body.title.trim(),
@@ -82,6 +86,8 @@ export async function PUT(
       sortIndex: body.sortIndex || existingProduct.sortIndex,
       categoryId: body.categoryId?.trim() || undefined
     });
+    
+    console.log('PUT /api/products/[id] - Updated product imageUrls:', updatedProduct.imageUrls);
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
