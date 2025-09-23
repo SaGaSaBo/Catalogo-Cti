@@ -31,7 +31,14 @@ export async function GET(req: Request) {
   const sortDir  = (searchParams.get("sortDir") || "asc").toLowerCase() === "desc" ? false : true;
   
   // Verificar si es una petición de admin (con Authorization header)
-  const isAdminRequest = req.headers.get('authorization')?.startsWith('Bearer ');
+  const authHeader = req.headers.get('authorization');
+  const isAdminRequest = authHeader?.startsWith('Bearer ');
+  
+  console.log("[/api/products] Request details:", {
+    isAdminRequest,
+    authHeader: authHeader ? `${authHeader.substring(0, 10)}...` : 'none',
+    searchParams: Object.fromEntries(searchParams.entries())
+  });
 
   const supabase = createClient(url, anon, { auth: { persistSession: false } });
 
@@ -64,6 +71,18 @@ export async function GET(req: Request) {
       });
       return NextResponse.json({ error: "DB_ERROR", message: error.message }, { status: 500 });
     }
+
+    console.log("[/api/products] Query result:", {
+      dataLength: data?.length || 0,
+      count,
+      isAdminRequest,
+      firstProduct: data?.[0] ? {
+        id: data[0].id,
+        title: data[0].title,
+        active: data[0].active,
+        imageUrls: data[0].image_urls
+      } : null
+    });
 
     return NextResponse.json(
       { items: data ?? [], count: count ?? 0, offset, limit },
