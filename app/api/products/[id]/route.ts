@@ -35,14 +35,19 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('PUT /api/products/[id] - Starting update process');
+    
     if (!isAdmin(req)) {
+      console.log('PUT /api/products/[id] - Unauthorized request');
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
     let body: any;
     try {
       body = await req.json();
+      console.log('PUT /api/products/[id] - Request body parsed successfully');
     } catch (error) {
+      console.error('PUT /api/products/[id] - JSON parse error:', error);
       return NextResponse.json(
         { error: 'JSON inválido en el cuerpo de la petición' },
         { status: 400 }
@@ -52,6 +57,7 @@ export async function PUT(
     // Validate product
     const validation = validateProduct(body);
     if (!validation.ok) {
+      console.error('PUT /api/products/[id] - Validation failed:', validation.error);
       return NextResponse.json(
         { error: validation.error },
         { status: 400 }
@@ -59,20 +65,31 @@ export async function PUT(
     }
 
     const { id: productId } = await params;
+    console.log('PUT /api/products/[id] - Product ID:', productId);
     
-    // Check if product exists
+    // Check if product exists - CRITICAL FIX
+    console.log('PUT /api/products/[id] - Fetching existing product...');
     const existingProduct = await getProduct(productId);
     if (!existingProduct) {
+      console.log('PUT /api/products/[id] - Product not found:', productId);
       return NextResponse.json(
         { error: 'Producto no encontrado' },
         { status: 404 }
       );
     }
+    
+    console.log('PUT /api/products/[id] - Existing product found:', {
+      id: existingProduct.id,
+      title: existingProduct.title,
+      sortIndex: existingProduct.sortIndex,
+      imageUrls: existingProduct.imageUrls
+    });
 
     // Update product
     console.log('PUT /api/products/[id] - Updating product:', productId);
     console.log('PUT /api/products/[id] - Body imageUrls:', body.imageUrls);
     console.log('PUT /api/products/[id] - Body active:', body.active);
+    console.log('PUT /api/products/[id] - Body sortIndex:', body.sortIndex);
     
     const updatedProduct = await updateProduct(productId, {
       brand: body.brand.trim(),
@@ -83,15 +100,17 @@ export async function PUT(
       sizes: body.sizes.map((s: string) => s.trim()),
       imageUrls: body.imageUrls || [],
       active: body.active,
-      sortIndex: body.sortIndex || existingProduct.sortIndex,
+      sortIndex: body.sortIndex || existingProduct.sortIndex, // ← FIXED: now existingProduct is defined
       categoryId: body.categoryId?.trim() || undefined
     });
     
     console.log('PUT /api/products/[id] - Updated product imageUrls:', updatedProduct.imageUrls);
+    console.log('PUT /api/products/[id] - Update completed successfully');
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error('PUT /api/products/[id] - Uncaught error:', error);
+    console.error('PUT /api/products/[id] - Error stack:', error instanceof Error ? error.stack : 'No stack available');
     return NextResponse.json(
       { error: 'Error interno' },
       { status: 500 }
