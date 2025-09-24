@@ -30,13 +30,22 @@ export async function GET(req: Request) {
   const sortBy   = searchParams.get("sortBy") || "sort_index";
   const sortDir  = (searchParams.get("sortDir") || "asc").toLowerCase() === "desc" ? false : true;
   
+  // 🔍 LOGGING SEGURO - DIAGNÓSTICO DE HEADERS
+  console.log("[/api/products] 🔍 Headers completos:", Object.fromEntries(req.headers.entries()));
+  console.log("[/api/products] 🔍 Authorization header (lowercase):", req.headers.get('authorization'));
+  console.log("[/api/products] 🔍 Authorization header (uppercase):", req.headers.get('Authorization'));
+  console.log("[/api/products] 🔍 Content-Type:", req.headers.get('content-type'));
+  console.log("[/api/products] 🔍 User-Agent:", req.headers.get('user-agent'));
+
   // Verificar si es una petición de admin (con Authorization header)
   const authHeader = req.headers.get('authorization');
-  const isAdminRequest = authHeader?.startsWith('Bearer ');
-  
-  console.log("[/api/products] Request details:", {
+  const authHeaderAlt = req.headers.get('Authorization'); // case sensitive check
+  const isAdminRequest = authHeader?.startsWith('Bearer ') || authHeaderAlt?.startsWith('Bearer ');
+
+  console.log("[/api/products] 🔍 AUTH DEBUG:", {
     isAdminRequest,
     authHeader: authHeader ? `${authHeader.substring(0, 10)}...` : 'none',
+    authHeaderAlt: authHeaderAlt ? `${authHeaderAlt.substring(0, 10)}...` : 'none',
     searchParams: Object.fromEntries(searchParams.entries())
   });
 
@@ -49,7 +58,10 @@ export async function GET(req: Request) {
 
     // Solo filtrar por active si NO es una petición de admin
     if (!isAdminRequest) {
+      console.log("[/api/products] 🚫 Filtering by active=true (not admin request)");
       query = query.eq("active", true);
+    } else {
+      console.log("[/api/products] ✅ Admin request - showing all products (including inactive)");
     }
 
     if (cat) query = query.eq("category_id", cat);
