@@ -3,10 +3,5 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "ignoreCommand": "",
-  "git": { "deploymentEnabled": { "main": true } },
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "nodejs20.x"
-    }
-  }
+  "git": { "deploymentEnabled": { "main": true } }
 }
