@@ -222,4 +222,4 @@ Proyecto privado - ALTOCONCEPTO Mayorista
 
 ---
 
-**Desarrollado con ❤️ para ALTOCONCEPTO Mayorista**
+**Desarrollado con ❤️ para ALTOCONCEPTO Mayorista**# Deploy trigger Wed Sep 24 13:24:18 -03 2025
