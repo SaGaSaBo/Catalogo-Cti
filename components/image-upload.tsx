@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { uploadMultipleImagesToSupabase, deleteImageFromSupabase } from '@/lib/image-upload';
 
 interface ImageUploadProps {
-  images: string[];
+  images: string[]; // URLs públicas de Supabase Storage
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
   label?: string;
@@ -23,63 +24,50 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 🖼️ DEBUG TEMPORAL - LOGGING DE IMÁGENES
-  console.log('🖼️ ImageUpload received images:', images);
-  console.log('🖼️ Images type:', typeof images, Array.isArray(images));
-  console.log('🖼️ Images length:', images?.length);
-  
-  // Filtrar imágenes válidas para mostrar
+  // Filtrar imágenes válidas para mostrar (URLs de Supabase Storage)
   const validImages = images.filter(img => img && img.trim());
-  console.log('🖼️ Valid images after filter:', validImages);
-  console.log('🖼️ Valid images length:', validImages.length);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    // Filtrar imágenes válidas (no vacías)
-    const validImages = images.filter(img => img && img.trim());
-    
     if (validImages.length + files.length > maxImages) {
       toast.error(`Máximo ${maxImages} imágenes permitidas`);
       return;
     }
 
     setUploading(true);
-    const newImages: string[] = [];
 
     try {
-      for (const file of Array.from(files)) {
-        // Validar tipo de archivo
-        if (!file.type.startsWith('image/')) {
-          toast.error(`${file.name} no es una imagen válida`);
-          continue;
+      // 1. SUBIR IMÁGENES A SUPABASE STORAGE
+      const fileArray = Array.from(files);
+      const uploadResults = await uploadMultipleImagesToSupabase(fileArray);
+
+      // 2. PROCESAR RESULTADOS
+      const successfulUploads: string[] = [];
+      const errors: string[] = [];
+
+      uploadResults.forEach((result, index) => {
+        if (result.success && result.url) {
+          successfulUploads.push(result.url);
+        } else {
+          errors.push(result.error || `Error desconocido con ${fileArray[index].name}`);
         }
+      });
 
-        // Validar tamaño (máximo 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error(`${file.name} es demasiado grande (máximo 5MB)`);
-          continue;
-        }
-
-        // Convertir imagen a base64 para almacenamiento permanente
-        const base64Url = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        newImages.push(base64Url);
-      }
-
-      if (newImages.length > 0) {
-        // Combinar imágenes válidas existentes con las nuevas
-        const updatedImages = [...validImages, ...newImages];
+      // 3. MOSTRAR RESULTADOS
+      if (successfulUploads.length > 0) {
+        const updatedImages = [...validImages, ...successfulUploads];
         onImagesChange(updatedImages);
-        toast.success(`${newImages.length} imagen(es) agregada(s) exitosamente`);
+        toast.success(`${successfulUploads.length} imagen(es) subida(s) exitosamente`);
       }
+
+      if (errors.length > 0) {
+        errors.forEach(error => toast.error(error));
+      }
+
     } catch (error) {
-      console.error('Error processing images:', error);
+      console.error('❌ Error procesando imágenes:', error);
       toast.error('Error al procesar las imágenes');
     } finally {
       setUploading(false);
@@ -89,11 +77,37 @@ export function ImageUpload({
     }
   };
 
-  const handleRemoveImage = (index: number) => {
+  const handleRemoveImage = async (index: number) => {
     const validImages = images.filter(img => img && img.trim());
-    const newImages = validImages.filter((_, i) => i !== index);
-    onImagesChange(newImages);
-    toast.success('Imagen eliminada');
+    const imageToRemove = validImages[index];
+    
+    if (!imageToRemove) return;
+
+    try {
+      // Intentar eliminar de Supabase Storage si es una URL de Storage
+      const isSupabaseUrl = imageToRemove.includes('supabase') && imageToRemove.includes('/storage/v1/object/public/');
+      
+      if (isSupabaseUrl) {
+        const deleted = await deleteImageFromSupabase(imageToRemove);
+        if (deleted) {
+          console.log('✅ Imagen eliminada de Supabase Storage');
+        } else {
+          console.log('⚠️ No se pudo eliminar de Supabase Storage, pero se removerá de la lista');
+        }
+      }
+
+      // Remover de la lista local
+      const newImages = validImages.filter((_, i) => i !== index);
+      onImagesChange(newImages);
+      toast.success('Imagen eliminada');
+
+    } catch (error) {
+      console.error('❌ Error al eliminar imagen:', error);
+      // Aún así remover de la lista local
+      const newImages = validImages.filter((_, i) => i !== index);
+      onImagesChange(newImages);
+      toast.success('Imagen eliminada de la lista');
+    }
   };
 
   return (
@@ -113,12 +127,12 @@ export function ImageUpload({
               {uploading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Procesando...
+                  Subiendo a Supabase...
                 </>
               ) : (
                 <>
                   <Upload className="h-4 w-4" />
-                  Agregar Imágenes
+                  Subir Imágenes
                 </>
               )}
             </Button>
@@ -174,7 +188,7 @@ export function ImageUpload({
               <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 mb-2">No hay imágenes agregadas</p>
               <p className="text-sm text-gray-400">
-                Haz clic en "Agregar Imágenes" para incluir fotos del producto
+                Haz clic en "Subir Imágenes" para subir fotos a Supabase Storage
               </p>
             </div>
           )}
