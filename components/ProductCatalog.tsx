@@ -275,6 +275,7 @@ export default function ProductCatalog() {
               id: product.id,
               name: name,
               brand: brand,
+              description: product.description,
               price: price,
               sku: sku,
               images: images,
