@@ -4,20 +4,32 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Debug de configuración
-console.log('🔧 Supabase Config:', {
+// 🔧 NOMBRE DEL BUCKET CONFIGURABLE - Soluciona "Bucket not found"
+export const SUPABASE_BUCKET_NAME = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || 'images';
+
+// Debug de configuración mejorado
+console.log('🔧 Supabase Client Config:', {
   url: supabaseUrl,
   hasAnonKey: !!supabaseAnonKey,
   hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
   usingServiceKey: supabaseServiceKey === process.env.SUPABASE_SERVICE_ROLE_KEY,
-  serviceKeyLength: supabaseServiceKey?.length || 0
+  serviceKeyLength: supabaseServiceKey?.length || 0,
+  bucketName: SUPABASE_BUCKET_NAME // ← NUEVO: Muestra el nombre del bucket configurado
 });
 
 // Cliente para operaciones de lectura (público)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// 🔧 CLIENTE ÚNICO CENTRALIZADO - Soluciona "Multiple GoTrueClient instances"
 // Cliente para operaciones de escritura (servicio)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey || '');
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey || '', {
+  auth: { persistSession: false }
+});
+
+// Función helper para obtener el cliente correcto según el contexto
+export function getSupabaseClient(isAdmin: boolean = false) {
+  return isAdmin ? supabaseAdmin : supabase;
+}
 
 // Tipos para las tablas de Supabase
 export interface SupabaseProduct {

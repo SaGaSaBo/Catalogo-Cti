@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";           // no cache SSR
 export const revalidate = 0;
@@ -56,10 +56,10 @@ export async function GET(req: Request) {
     searchParams: Object.fromEntries(searchParams.entries())
   });
 
-  const supabase = createClient(url, anon, { auth: { persistSession: false } });
+  // Usar cliente centralizado en lugar de crear nueva instancia
 
   try {
-    let query = supabase
+    let query = supabaseAdmin
       .from("products")
       .select(SELECT, { count: "exact" });
 
@@ -91,7 +91,7 @@ export async function GET(req: Request) {
       
       // 🔄 FALLBACK: Try without JOIN
       console.log("[/api/products] 🔄 Falling back to query WITHOUT categories JOIN...");
-      let fallbackQuery = supabase
+      let fallbackQuery = supabaseAdmin
         .from("products")
         .select(SELECT_FALLBACK, { count: "exact" });
 
@@ -224,7 +224,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabase = createClient(url, anon, { auth: { persistSession: false } });
+    // Usar cliente centralizado en lugar de crear nueva instancia
 
     // Crear el producto
     const productData = {
@@ -245,7 +245,7 @@ export async function POST(req: Request) {
       image_urls: `[${productData.image_urls.length} images]`
     });
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('products')
       .insert([productData])
       .select()
