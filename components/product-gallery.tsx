@@ -40,12 +40,8 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
             <UiImg
               src={images[selectedImage]}
               alt={title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              widthHint={400}
-              qualityHint={75}
-              format="webp"
+              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+              transform={{ width: 400, quality: 75, format: "webp" }}
               onError={(e) => {
                 e.currentTarget.src = '/placeholder-image.svg';
               }}
@@ -60,9 +56,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
               width={800}
               height={600}
               className="w-full h-auto"
-              widthHint={800}
-              qualityHint={85}
-              format="webp"
+              transform={{ width: 800, quality: 85, format: "webp" }}
             />
             {images.length > 1 && (
               <>
@@ -115,9 +109,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
                 width={64}
                 height={64}
                 className="w-full h-full object-cover"
-                widthHint={64}
-                qualityHint={60}
-                format="webp"
+                transform={{ width: 64, quality: 60, format: "webp" }}
               />
             </button>
           ))}

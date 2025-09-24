@@ -92,14 +92,8 @@ export function ProductCard({
             <UiImg
               src={primaryImage}
               alt={title}
-              fill
-              sizes="(max-width:768px) 100vw, 33vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-200"
-              loading="lazy"
-              priority={false}
-              widthHint={400}
-              qualityHint={70}
-              format="webp"
+              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
+              transform={{ width: 400, quality: 70, format: "webp" }}
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">

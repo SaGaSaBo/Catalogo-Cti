@@ -28,13 +28,8 @@ export default function SmartImage({
       alt={alt}
       width={width}
       height={height}
-      sizes={sizes}
       className={className}
-      priority={priority}
-      loading={priority ? "eager" : "lazy"}
-      widthHint={width}
-      qualityHint={75}
-      format="webp"
+      transform={{ width, quality: 75, format: "webp" }}
     />
   );
 }

@@ -243,11 +243,8 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
                             alt={item.product.title}
                             width={64}
                             height={64}
-                            sizes="64px"
                             className="w-full h-full object-cover"
-                            widthHint={64}
-                            qualityHint={60}
-                            format="webp"
+                            transform={{ width: 64, quality: 60, format: "webp" }}
                           />
                         </div>
                         
