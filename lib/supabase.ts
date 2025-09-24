@@ -25,7 +25,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Cliente para operaciones de escritura (servicio)
 export const supabaseAdmin = createClient(
   supabaseUrl,
-  supabaseServiceKey,
+  supabaseServiceKey || supabaseAnonKey, // Fallback a anon key si no hay service key
   { auth: { persistSession: false, autoRefreshToken: false } }
 );
 
