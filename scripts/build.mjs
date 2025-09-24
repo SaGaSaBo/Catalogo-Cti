@@ -15,6 +15,7 @@ console.log("  platform:", os.platform(), os.arch());
 console.log("  VERCEL:", !!process.env.VERCEL);
 console.log("  CI:", !!process.env.CI);
 console.log("  BUILD_TIME:", new Date().toISOString());
+console.log("  FIX: Product active status default to true");
 
 console.log("\n🧪 Env check (no imprime valores):");
 let missing = [];

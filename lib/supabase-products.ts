@@ -37,7 +37,7 @@ function convertToSupabase(product: Partial<Product>): Partial<SupabaseProduct> 
     price: product.price,
     sizes: product.sizes,
     image_urls: product.imageUrls,
-    active: product.active,
+    active: product.active !== undefined ? product.active : true, // ← FIX: Default to true if undefined
     category_id: product.categoryId,
     sort_index: product.sortIndex
   };
