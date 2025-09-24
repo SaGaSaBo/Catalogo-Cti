@@ -25,7 +25,7 @@ export async function GET() {
     
     // 2. Get details for each bucket
     for (const bucket of buckets) {
-      const bucketInfo = {
+      const bucketInfo: any = {
         name: bucket.name,
         id: bucket.id,
         public: bucket.public,
