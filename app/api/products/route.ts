@@ -172,3 +172,104 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "INTERNAL_ERROR", message: e?.message || String(e) }, { status: 500 });
   }
 }
+
+export async function POST(req: Request) {
+  console.log("[/api/products] POST - Creating new product");
+  
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anon) {
+    console.error("[/api/products] Missing envs", { hasUrl: !!url, hasAnon: !!anon });
+    return NextResponse.json({ error: "Faltan variables de entorno Supabase (URL o ANON KEY)." }, { status: 500 });
+  }
+
+  // 🔐 VERIFICAR AUTORIZACIÓN ADMIN
+  const auth = req.headers.get('authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const envKey = process.env.ADMIN_KEY || 'admin123';
+  const isAdminRequest = token && token === envKey;
+
+  console.log("[/api/products] POST - Auth check:", {
+    hasAuth: !!auth,
+    authHeader: auth.substring(0, 20) + '...',
+    extractedToken: token,
+    envKey: envKey,
+    tokenMatches: token === envKey,
+    isAdminRequest
+  });
+
+  if (!isAdminRequest) {
+    console.log("[/api/products] POST - Unauthorized request");
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
+
+  try {
+    const body = await req.json();
+    console.log("[/api/products] POST - Request body:", {
+      brand: body.brand,
+      title: body.title,
+      sku: body.sku,
+      price: body.price,
+      active: body.active,
+      imageUrlsLength: body.imageUrls?.length || 0,
+      categoryId: body.categoryId
+    });
+
+    // Validaciones básicas
+    if (!body.brand || !body.title || !body.sku || !body.price) {
+      return NextResponse.json(
+        { error: 'Faltan campos requeridos: brand, title, sku, price' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = createClient(url, anon, { auth: { persistSession: false } });
+
+    // Crear el producto
+    const productData = {
+      brand: body.brand.trim(),
+      title: body.title.trim(),
+      description: body.description?.trim() || null,
+      sku: body.sku.trim(),
+      price: parseFloat(body.price),
+      sizes: Array.isArray(body.sizes) ? body.sizes.map((s: string) => s.trim()) : [],
+      image_urls: Array.isArray(body.imageUrls) ? body.imageUrls.filter((url: string) => url && url.trim()) : [],
+      active: body.active !== undefined ? body.active : true,
+      category_id: body.categoryId?.trim() || null,
+      sort_index: body.sortIndex || 1
+    };
+
+    console.log("[/api/products] POST - Creating product with data:", {
+      ...productData,
+      image_urls: `[${productData.image_urls.length} images]`
+    });
+
+    const { data, error } = await supabase
+      .from('products')
+      .insert([productData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[/api/products] POST - Supabase error:", {
+        message: error.message,
+        details: (error as any).details,
+        hint: (error as any).hint,
+        code: (error as any).code
+      });
+      return NextResponse.json({ error: "DB_ERROR", message: error.message }, { status: 500 });
+    }
+
+    console.log("[/api/products] POST - Product created successfully:", {
+      id: data.id,
+      title: data.title,
+      imageUrls: data.image_urls?.length || 0
+    });
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (e: any) {
+    console.error("[/api/products] POST - Uncaught error:", e?.message || e, e?.stack);
+    return NextResponse.json({ error: "INTERNAL_ERROR", message: e?.message || String(e) }, { status: 500 });
+  }
+}
