@@ -19,9 +19,9 @@ const mapRow = (r: any) => ({
   updatedAt: r.updated_at,
 });
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const json = await req.json();
 
     const payload = {
