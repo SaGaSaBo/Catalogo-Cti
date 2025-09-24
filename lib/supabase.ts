@@ -5,8 +5,8 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholde
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // 🔧 NOMBRE DEL BUCKET CONFIGURABLE - Soluciona "Bucket not found"
-// TEMPORAL: Usar 'product-images' directamente hasta que se configure en Vercel
-export const SUPABASE_BUCKET_NAME = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || 'product-images';
+// ACTUALIZADO: Usar 'product' como nuevo bucket
+export const SUPABASE_BUCKET_NAME = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || 'product';
 
 // Debug de configuración mejorado
 console.log('🔧 Supabase Client Config:', {
