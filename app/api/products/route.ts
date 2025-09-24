@@ -37,15 +37,19 @@ export async function GET(req: Request) {
   console.log("[/api/products] 🔍 Content-Type:", req.headers.get('content-type'));
   console.log("[/api/products] 🔍 User-Agent:", req.headers.get('user-agent'));
 
-  // Verificar si es una petición de admin (con Authorization header)
-  const authHeader = req.headers.get('authorization');
-  const authHeaderAlt = req.headers.get('Authorization'); // case sensitive check
-  const isAdminRequest = authHeader?.startsWith('Bearer ') || authHeaderAlt?.startsWith('Bearer ');
+  // 🔐 VERIFICAR SI ES UNA PETICIÓN DE ADMIN (consistente con /api/categories)
+  const auth = req.headers.get('authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const envKey = process.env.ADMIN_KEY || 'admin123';
+  const isAdminRequest = token && token === envKey;
 
-  console.log("[/api/products] 🔍 AUTH DEBUG:", {
+  console.log("[/api/products] 🔐 AUTH DEBUG:", {
+    hasAuth: !!auth,
+    authHeader: auth.substring(0, 20) + '...',
+    extractedToken: token,
+    envKey: envKey,
+    tokenMatches: token === envKey,
     isAdminRequest,
-    authHeader: authHeader ? `${authHeader.substring(0, 10)}...` : 'none',
-    authHeaderAlt: authHeaderAlt ? `${authHeaderAlt.substring(0, 10)}...` : 'none',
     searchParams: Object.fromEntries(searchParams.entries())
   });
 
@@ -87,7 +91,7 @@ export async function GET(req: Request) {
     console.log("[/api/products] Query result:", {
       dataLength: data?.length || 0,
       count,
-      isAdminRequest,
+      isAdmin: isAdminRequest,
       firstProduct: data?.[0] ? {
         id: data[0].id,
         title: data[0].title,
