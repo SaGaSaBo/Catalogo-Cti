@@ -16,7 +16,7 @@ console.log("  VERCEL:", !!process.env.VERCEL);
 console.log("  CI:", !!process.env.CI);
 console.log("  BUILD_TIME:", new Date().toISOString());
 console.log("  FIX: Product active status default to true");
-console.log("  UPDATE: Using new bucket 'product' instead of 'product-images'");
+console.log("  TEMPORAL: Reverted to 'product-images' bucket until 'product' is created");
 
 console.log("\n🧪 Env check (no imprime valores):");
 let missing = [];

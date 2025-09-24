@@ -15,7 +15,7 @@ export interface UploadResult {
  */
 export async function uploadImageToSupabase(
   file: File,
-  bucketName: string = 'product', // ← ACTUALIZADO: Nuevo bucket 'product'
+  bucketName: string = 'product-images', // ← TEMPORAL: Volver a 'product-images'
   folder: string = 'products'
 ): Promise<UploadResult> {
   try {
@@ -102,7 +102,7 @@ export async function uploadImageToSupabase(
  */
 export async function uploadMultipleImagesToSupabase(
   files: File[],
-  bucketName: string = 'product', // ← ACTUALIZADO: Nuevo bucket 'product'
+  bucketName: string = 'product-images', // ← TEMPORAL: Volver a 'product-images'
   folder: string = 'products'
 ): Promise<UploadResult[]> {
   console.log(`📤 Subiendo ${files.length} imágenes a Supabase Storage...`);
@@ -129,7 +129,7 @@ export async function uploadMultipleImagesToSupabase(
  */
 export async function deleteImageFromSupabase(
   imageUrl: string,
-  bucketName: string = 'product' // ← ACTUALIZADO: Nuevo bucket 'product'
+  bucketName: string = 'product-images' // ← TEMPORAL: Volver a 'product-images'
 ): Promise<boolean> {
   try {
     // Extraer el path del archivo de la URL
