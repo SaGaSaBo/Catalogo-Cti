@@ -95,11 +95,7 @@ export function AdminPageContent() {
     try {
       console.log('🔄 Haciendo requests a APIs...');
       const [productsData, categoriesData] = await Promise.all([
-        fetchJson('/api/products', {
-          headers: {
-            'Authorization': `Bearer ${adminKey}`
-          }
-        }),
+        fetchJson('/api/products', { cache: "no-store" }),
         fetchJson('/api/categories', {
           headers: {
             'Authorization': `Bearer ${adminKey}`
@@ -111,8 +107,8 @@ export function AdminPageContent() {
       console.log('📂 Categorías data:', categoriesData);
       
       // Handle new API response format
-      const products = productsData?.items || productsData || [];
-      const categories = categoriesData || [];
+      const products = Array.isArray(productsData) ? productsData : [];
+      const categories = Array.isArray(categoriesData) ? categoriesData : [];
       
       setProducts(products);
       setCategories(categories);

@@ -1,152 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getProduct, updateProduct, deleteProduct } from '@/lib/data-provider';
-import { validateProduct } from '@/lib/validation';
-import { isAdmin } from '@/lib/auth';
+export const runtime = "nodejs";
 
-export const dynamic = 'force-dynamic';
+import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
-    const { id: productId } = await params;
-    
-    const product = await getProduct(productId);
-    if (!product) {
-      return NextResponse.json(
-        { error: 'Producto no encontrado' },
-        { status: 404 }
-      );
-    }
+    const json = await req.json();
+    if (json.categoryId === "" || json.categoryId === undefined) json.categoryId = null;
 
-    return NextResponse.json(product);
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return NextResponse.json(
-      { error: 'Error interno' },
-      { status: 500 }
-    );
-  }
-}
+    const updated = await supabaseAdmin
+      .from('products')
+      .update({
+        brand: json.brand,
+        title: json.title,
+        description: json.description,
+        sku: json.sku,
+        price: json.price,
+        category_id: json.categoryId,
+        image_urls: json.imageUrls || [],
+        active: json.active !== undefined ? json.active : true,
+        sort_index: json.sortIndex
+      })
+      .eq('id', params.id)
+      .select()
+      .single();
 
-export async function PUT(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    console.log('PUT /api/products/[id] - Starting update process');
-    
-    if (!isAdmin(req)) {
-      console.log('PUT /api/products/[id] - Unauthorized request');
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    if (updated.error) throw updated.error;
 
-    let body: any;
-    try {
-      body = await req.json();
-      console.log('PUT /api/products/[id] - Request body parsed successfully');
-    } catch (error) {
-      console.error('PUT /api/products/[id] - JSON parse error:', error);
-      return NextResponse.json(
-        { error: 'JSON inválido en el cuerpo de la petición' },
-        { status: 400 }
-      );
-    }
-
-    // Validate product
-    const validation = validateProduct(body);
-    if (!validation.ok) {
-      console.error('PUT /api/products/[id] - Validation failed:', validation.error);
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400 }
-      );
-    }
-
-    const { id: productId } = await params;
-    console.log('PUT /api/products/[id] - Product ID:', productId);
-    
-    // Check if product exists - CRITICAL FIX
-    console.log('PUT /api/products/[id] - Fetching existing product...');
-    const existingProduct = await getProduct(productId);
-    if (!existingProduct) {
-      console.log('PUT /api/products/[id] - Product not found:', productId);
-      return NextResponse.json(
-        { error: 'Producto no encontrado' },
-        { status: 404 }
-      );
-    }
-    
-    console.log('PUT /api/products/[id] - Existing product found:', {
-      id: existingProduct.id,
-      title: existingProduct.title,
-      sortIndex: existingProduct.sortIndex,
-      imageUrls: existingProduct.imageUrls
-    });
-
-    // Update product
-    console.log('PUT /api/products/[id] - Updating product:', productId);
-    console.log('PUT /api/products/[id] - Body imageUrls:', body.imageUrls);
-    console.log('PUT /api/products/[id] - Body active:', body.active);
-    console.log('PUT /api/products/[id] - Body sortIndex:', body.sortIndex);
-    
-    const updatedProduct = await updateProduct(productId, {
-      brand: body.brand.trim(),
-      title: body.title.trim(),
-      description: body.description?.trim() || undefined,
-      sku: body.sku.trim(),
-      price: body.price,
-      sizes: body.sizes.map((s: string) => s.trim()),
-      imageUrls: body.imageUrls || [],
-      active: body.active,
-      sortIndex: body.sortIndex || existingProduct.sortIndex, // ← FIXED: now existingProduct is defined
-      categoryId: body.categoryId?.trim() || undefined
-    });
-    
-    console.log('PUT /api/products/[id] - Updated product imageUrls:', updatedProduct.imageUrls);
-    console.log('PUT /api/products/[id] - Update completed successfully');
-
-    return NextResponse.json(updatedProduct);
-  } catch (error) {
-    console.error('PUT /api/products/[id] - Uncaught error:', error);
-    console.error('PUT /api/products/[id] - Error stack:', error instanceof Error ? error.stack : 'No stack available');
-    return NextResponse.json(
-      { error: 'Error interno' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    if (!isAdmin(req)) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
-    const { id: productId } = await params;
-    
-    // Check if product exists
-    const existingProduct = await getProduct(productId);
-    if (!existingProduct) {
-      return NextResponse.json(
-        { error: 'Producto no encontrado' },
-        { status: 404 }
-      );
-    }
-
-    // Delete product
-    await deleteProduct(productId);
-
-    return NextResponse.json({ message: 'Producto eliminado' });
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    return NextResponse.json(
-      { error: 'Error interno' },
-      { status: 500 }
-    );
+    console.log("[API] PUT /products/:id imageUrls len ->", updated.data.image_urls?.length ?? 0);
+    return NextResponse.json(updated.data);
+  } catch (e: any) {
+    console.error("[API] PUT /products/:id ERROR:", e?.message || e);
+    return NextResponse.json({ error: e?.message || String(e) }, { status: 500 });
   }
 }
