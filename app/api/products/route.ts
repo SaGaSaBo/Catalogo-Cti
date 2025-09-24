@@ -8,7 +8,7 @@ const mapRow = (r: any) => ({
   id: r.id,
   brand: r.brand,
   title: r.title,
-  description: r.description,
+  description: r.description ?? r.desc ?? r.details ?? "",
   sku: r.sku,
   price: r.price,
   sizes: r.sizes ?? [],

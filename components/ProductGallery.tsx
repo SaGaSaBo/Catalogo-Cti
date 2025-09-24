@@ -61,14 +61,9 @@ export default function ProductGallery({ images, alt = "Producto", className = "
         <UiImg
           src={current!}
           alt={alt}
-          fill
-          sizes="(max-width:768px) 100vw, 50vw"
-          className="object-contain cursor-zoom-in"
+          className="h-full w-full object-contain cursor-zoom-in"
           onClick={() => setOpen(true)}
-          loading="eager"
-          widthHint={1200}
-          qualityHint={80}
-          format="webp"
+          transform={{ width: 1200, quality: 80, format: "webp" }}
         />
         {/* Flechas en desktop */}
         {valid.length > 1 && (
@@ -97,7 +92,7 @@ export default function ProductGallery({ images, alt = "Producto", className = "
               className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border ${i === safeIndex ? "ring-2 ring-black" : ""}`}
               aria-label={`Imagen ${i + 1}`}
             >
-              <UiImg src={src} alt={`${alt} miniatura ${i + 1}`} fill sizes="64px" className="object-cover" widthHint={64} qualityHint={60} format="webp" />
+              <UiImg src={src} alt={`${alt} miniatura ${i + 1}`} className="h-full w-full object-cover" transform={{ width: 64, quality: 60, format: "webp" }} />
             </button>
           ))}
         </div>
@@ -112,13 +107,8 @@ export default function ProductGallery({ images, alt = "Producto", className = "
               <UiImg
                 src={current!}
                 alt={alt}
-                fill
-                sizes="100vw"
-                className="object-contain select-none"
-                widthHint={1200}
-                qualityHint={80}
-                format="webp"
-                loading="eager"
+                className="h-full w-full object-contain select-none"
+                transform={{ width: 1200, quality: 80, format: "webp" }}
               />
               {valid.length > 1 && (
                 <>

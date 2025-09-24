@@ -6,6 +6,7 @@ export default {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "images.unsplash.com" }
-    ]
+    ],
+    formats: ["image/webp", "image/avif"],
   }
 };

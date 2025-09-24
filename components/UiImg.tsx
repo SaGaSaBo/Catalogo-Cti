@@ -1,63 +1,26 @@
 "use client";
-import Image, { ImageProps } from "next/image";
-import { classifySrc, sbRenderPath, sbPublicPath } from "@/lib/img";
-import { useState, useMemo } from "react";
+import * as React from "react";
+import { buildSupabaseImageUrl } from "@/lib/supa-image";
 
-type UiImgProps = Omit<ImageProps, "src"> & {
+type Props = React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
-  widthHint?: number;
-  qualityHint?: number;
-  format?: "webp" | "avif";
-  fallbackSrc?: string; // opcional: una imagen de reserva
+  alt: string;
+  transform?: { width?: number; quality?: number; format?: "webp" | "jpeg" | "png" | "avif" };
 };
 
-export default function UiImg({
-  src,
-  widthHint = 400,
-  qualityHint = 75,
-  format = "webp",
-  fallbackSrc,
-  sizes = "(max-width:768px) 100vw, 50vw",
-  loading = "lazy",
-  priority = false,
-  ...rest
-}: UiImgProps) {
-  const [errored, setErrored] = useState(false);
-
-  const finalSrc = useMemo(() => {
-    const cls = classifySrc(src);
-    if (!cls) return "";
-
-    if (cls.kind === "storage") {
-      // Transformable en Supabase
-      return sbRenderPath(cls.path, { w: widthHint, q: qualityHint, format });
-    }
-
-    // data:/blob:/https externo → usar tal cual, sin _next/image
-    return cls.url;
-  }, [src, widthHint, qualityHint, format]);
-
-  const handleError = () => {
-    if (!errored) {
-      console.warn("[UiImg] load error:", { src, finalSrc });
-      setErrored(true);
-    }
-  };
-
-  const srcToUse =
-    errored && fallbackSrc
-      ? fallbackSrc
-      : finalSrc;
+export default function UiImg({ src, alt, transform = { width: 1200, quality: 80, format: "webp" }, ...rest }: Props) {
+  const finalSrc = buildSupabaseImageUrl(src, transform);
+  const [currentSrc, setCurrentSrc] = React.useState(finalSrc);
 
   return (
-    <Image
+    <img
       {...rest}
-      unoptimized
-      src={srcToUse}
-      sizes={sizes}
-      loading={loading}
-      priority={priority}
-      onError={handleError}
+      alt={alt}
+      src={currentSrc}
+      onError={() => {
+        // Fallback al original si la transformada falla
+        if (currentSrc !== src) setCurrentSrc(src);
+      }}
     />
   );
 }

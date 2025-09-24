@@ -66,14 +66,8 @@ export default function ProductCard({ product }: { product: Product }) {
             <UiImg
               src={product.images[0]}
               alt={product.name}
-              fill
-              sizes="(max-width:768px) 100vw, 33vw"
-              className="object-cover"
-              loading="lazy"
-              priority={false}
-              widthHint={400}
-              qualityHint={70}
-              format="webp"
+              className="h-full w-full object-cover"
+              transform={{ width: 400, quality: 70, format: "webp" }}
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
