@@ -4,17 +4,34 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+const mapRow = (r: any) => ({
+  id: r.id,
+  brand: r.brand,
+  title: r.title,
+  description: r.description,
+  sku: r.sku,
+  price: r.price,
+  sizes: r.sizes ?? [],
+  imageUrls: r.image_urls ?? [],
+  active: r.active ?? true,
+  categoryId: r.category_id ?? null,
+  sortIndex: r.sort_index ?? 0,
+  createdAt: r.created_at,
+  updatedAt: r.updated_at,
+});
+
 export async function GET() {
   try {
-    const products = await supabaseAdmin
-      .from('products')
-      .select('id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at')
-      .order('title', { ascending: true });
-    
-    if (products.error) throw products.error;
-    
-    console.log("[API] GET /products ->", products.data?.length || 0);
-    return NextResponse.json(products.data || []);
+    const { data, error, count } = await supabaseAdmin
+      .from("products")
+      .select("id,brand,title,description,sku,price,sizes,image_urls,active,category_id,sort_index,created_at,updated_at", { count: "exact" })
+      .order("title", { ascending: true });
+
+    if (error) throw error;
+
+    const mapped = (data ?? []).map(mapRow);
+    console.log("[API] GET /products ->", count ?? mapped.length);
+    return NextResponse.json(mapped);
   } catch (e: any) {
     console.error("[API] GET /products ERROR:", e?.message || e);
     return NextResponse.json({ error: e?.message || String(e) }, { status: 500 });
@@ -72,9 +89,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Usar cliente centralizado en lugar de crear nueva instancia
-
-    // Crear el producto
+    // Crear el producto (mapear camelCase → snake_case)
     const productData = {
       brand: body.brand.trim(),
       title: body.title.trim(),
@@ -96,7 +111,7 @@ export async function POST(req: Request) {
     const { data, error } = await supabaseAdmin
       .from('products')
       .insert([productData])
-      .select()
+      .select("id,brand,title,description,sku,price,sizes,image_urls,active,category_id,sort_index,created_at,updated_at")
       .single();
 
     if (error) {
@@ -115,7 +130,7 @@ export async function POST(req: Request) {
       imageUrls: data.image_urls?.length || 0
     });
 
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(mapRow(data), { status: 201 });
   } catch (e: any) {
     console.error("[/api/products] POST - Uncaught error:", e?.message || e, e?.stack);
     return NextResponse.json({ error: "INTERNAL_ERROR", message: e?.message || String(e) }, { status: 500 });

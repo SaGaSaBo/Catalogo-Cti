@@ -28,9 +28,11 @@ export const supabase = typeof window !== 'undefined'
 
 // 🔧 CLIENTE ÚNICO CENTRALIZADO - Soluciona "Multiple GoTrueClient instances"
 // Cliente para operaciones de escritura (servicio)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey || '', {
-  auth: { persistSession: false }
-});
+export const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!, // <-- clave de servicio
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
 
 // Función helper para obtener el cliente correcto según el contexto
 export function getSupabaseClient(isAdmin: boolean = false) {
