@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function GET(req: Request) {
   console.log("[DEBUG] Auth test endpoint called");
@@ -32,10 +32,10 @@ export async function GET(req: Request) {
     if (!url || !anon) {
       dbError = "Missing Supabase env vars";
     } else {
-      const supabase = createClient(url, anon, { auth: { persistSession: false } });
+      // Usar cliente centralizado en lugar de crear nueva instancia
       
       // Test public products (active only)
-      const { count: publicCount, error: publicError } = await supabase
+      const { count: publicCount, error: publicError } = await supabaseAdmin
         .from("products")
         .select("id", { count: "exact" })
         .eq("active", true);
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
       publicProductsCount = publicCount || 0;
       
       // Test all products (admin view)
-      const { count: allCount, data: allData, error: allError } = await supabase
+      const { count: allCount, data: allData, error: allError } = await supabaseAdmin
         .from("products")
         .select("id, title, active, image_urls", { count: "exact" });
       

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function GET(req: Request) {
   console.log("[PRODUCTS-TEST] Starting debug test");
@@ -30,10 +30,10 @@ export async function GET(req: Request) {
     searchParams: Object.fromEntries(searchParams.entries())
   });
 
-  const supabase = createClient(url, anon, { auth: { persistSession: false } });
+  // Usar cliente centralizado en lugar de crear nueva instancia
 
   try {
-    let query = supabase
+    let query = supabaseAdmin
       .from("products")
       .select("id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at", { count: "exact" });
 
