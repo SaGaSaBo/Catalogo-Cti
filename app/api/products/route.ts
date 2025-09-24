@@ -8,6 +8,9 @@ const SELECT =
 `id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at,
  category:categories(id, name)`;
 
+const SELECT_FALLBACK =
+`id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at`;
+
 function num(v: string | null, def: number) {
   const n = v ? parseInt(v, 10) : NaN;
   return Number.isFinite(n) ? n : def;
@@ -82,10 +85,65 @@ export async function GET(req: Request) {
     const { data, error, count } = await query;
 
     if (error) {
-      console.error("[/api/products] Supabase error:", {
+      console.error("[/api/products] ⚠️ JOIN query failed:", {
         message: error.message, details: (error as any).details, hint: (error as any).hint, code: (error as any).code
       });
-      return NextResponse.json({ error: "DB_ERROR", message: error.message }, { status: 500 });
+      
+      // 🔄 FALLBACK: Try without JOIN
+      console.log("[/api/products] 🔄 Falling back to query WITHOUT categories JOIN...");
+      let fallbackQuery = supabase
+        .from("products")
+        .select(SELECT_FALLBACK, { count: "exact" });
+
+      if (!isAdminRequest) {
+        fallbackQuery = fallbackQuery.eq("active", true);
+      }
+
+      if (cat) fallbackQuery = fallbackQuery.eq("category_id", cat);
+
+      if (q) {
+        fallbackQuery = fallbackQuery.or(`title.ilike.%${q}%,brand.ilike.%${q}%,sku.ilike.%${q}%`);
+      }
+
+      fallbackQuery = fallbackQuery.order(sortBy, { ascending: sortDir }).order("title", { ascending: true });
+      fallbackQuery = fallbackQuery.range(offset, offset + limit - 1);
+
+      const { data: fallbackData, error: fallbackError, count: fallbackCount } = await fallbackQuery;
+
+      if (fallbackError) {
+        console.error("[/api/products] ❌ Fallback query also failed:", {
+          message: fallbackError.message, details: (fallbackError as any).details, hint: (fallbackError as any).hint, code: (fallbackError as any).code
+        });
+        return NextResponse.json({ error: "DB_ERROR", message: fallbackError.message }, { status: 500 });
+      }
+
+      console.log("[/api/products] ✅ Fallback query succeeded:", {
+        dataLength: fallbackData?.length || 0,
+        count: fallbackCount,
+        isAdmin: isAdminRequest,
+        firstProduct: fallbackData?.[0] ? {
+          id: fallbackData[0].id,
+          title: fallbackData[0].title,
+          active: fallbackData[0].active,
+          imageUrls: fallbackData[0].image_urls
+        } : null
+      });
+
+      // Add null category to products from fallback
+      const dataWithNullCategory = (fallbackData || []).map(product => ({
+        ...product,
+        category: null
+      }));
+
+      return NextResponse.json(
+        { items: dataWithNullCategory, count: fallbackCount ?? 0, offset, limit },
+        {
+          status: 200,
+          headers: {
+            "Cache-Control": "s-maxage=60, stale-while-revalidate=600"
+          }
+        }
+      );
     }
 
     console.log("[/api/products] Query result:", {
