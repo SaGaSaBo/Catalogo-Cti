@@ -18,19 +18,14 @@ console.log('🔧 Supabase Client Config:', {
   bucketName: SUPABASE_BUCKET_NAME // ← NUEVO: Muestra el nombre del bucket configurado
 });
 
-// Cliente para operaciones de lectura (público) - usar singleton en browser
-export const supabase = typeof window !== 'undefined' 
-  ? (() => {
-      const { getSupabaseBrowser } = require('./supabase-browser');
-      return getSupabaseBrowser();
-    })()
-  : createClient(supabaseUrl, supabaseAnonKey);
+// Cliente para operaciones de lectura (público)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // 🔧 CLIENTE ÚNICO CENTRALIZADO - Soluciona "Multiple GoTrueClient instances"
 // Cliente para operaciones de escritura (servicio)
 export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // <-- clave de servicio
+  supabaseUrl,
+  supabaseServiceKey,
   { auth: { persistSession: false, autoRefreshToken: false } }
 );
 
