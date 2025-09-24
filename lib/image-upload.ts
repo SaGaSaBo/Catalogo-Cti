@@ -40,7 +40,7 @@ export async function uploadImageToSupabase(
     const fileExtension = file.name.split('.').pop() || 'jpg';
     const fileName = `${folder}/${timestamp}_${Math.random().toString(36).substring(2)}.${fileExtension}`;
 
-    console.log('📤 Subiendo imagen a Supabase Storage:', {
+    console.log(`📤 Subiendo imagen a Supabase Storage (BUCKET: ${bucketName}):`, {
       fileName,
       bucketName,
       fileSize: file.size,

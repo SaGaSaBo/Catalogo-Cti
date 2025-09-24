@@ -17,6 +17,7 @@ console.log("  CI:", !!process.env.CI);
 console.log("  BUILD_TIME:", new Date().toISOString());
 console.log("  FIX: Product active status default to true");
 console.log("  TEMPORAL: Reverted to 'product-images' bucket until 'product' is created");
+console.log("  🚨 CRITICAL: Using 'product-images' bucket to fix RLS policy errors");
 
 console.log("\n🧪 Env check (no imprime valores):");
 let missing = [];
