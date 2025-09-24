@@ -19,7 +19,7 @@ export async function POST() {
       }, { status: 500 });
     }
 
-    const availableBuckets = buckets?.map(b => b.name) || [];
+    const availableBuckets = buckets?.map((b: any) => b.name) || [];
     console.log("📦 Buckets disponibles:", availableBuckets);
 
     // 2. Si existe 'product-images', usarlo; si no, crear 'images'

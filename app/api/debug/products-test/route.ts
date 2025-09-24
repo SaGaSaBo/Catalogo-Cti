@@ -77,7 +77,7 @@ export async function GET(req: Request) {
           imageUrls: data[0].image_urls,
           hasImages: Array.isArray(data[0].image_urls) && data[0].image_urls.length > 0
         } : null,
-        allProducts: data?.map(p => ({
+        allProducts: data?.map((p: any) => ({
           id: p.id,
           title: p.title,
           active: p.active,

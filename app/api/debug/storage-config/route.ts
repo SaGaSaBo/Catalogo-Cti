@@ -51,14 +51,14 @@ export async function GET() {
     console.log("📦 Buckets disponibles:", buckets);
 
     // Verificar si existe el bucket 'images'
-    const imagesBucket = buckets?.find(bucket => bucket.name === 'images');
+    const imagesBucket = buckets?.find((bucket: any) => bucket.name === 'images');
     
     if (!imagesBucket) {
       console.log("⚠️ Bucket 'images' no encontrado");
       return NextResponse.json({
         success: false,
         error: "Bucket 'images' no encontrado",
-        availableBuckets: buckets?.map(b => b.name) || [],
+        availableBuckets: buckets?.map((b: any) => b.name) || [],
         envCheck,
         healthCheck: "OK"
       }, { status: 404 });

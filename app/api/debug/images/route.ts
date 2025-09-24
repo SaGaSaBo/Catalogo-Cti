@@ -12,7 +12,7 @@ export async function GET() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     
     // Generar URLs de ejemplo
-    const imageTests = sampleProducts.map(product => {
+    const imageTests = sampleProducts.map((product: any) => {
       const imageUrls = product.imageUrls || [];
       const firstImage = imageUrls[0];
       

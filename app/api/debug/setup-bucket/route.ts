@@ -19,7 +19,7 @@ export async function POST() {
       }, { status: 500 });
     }
 
-    const availableBuckets = buckets?.map(b => b.name) || [];
+    const availableBuckets = buckets?.map((b: any) => b.name) || [];
     const bucketExists = availableBuckets.includes(SUPABASE_BUCKET_NAME);
 
     console.log("📦 Buckets disponibles:", availableBuckets);

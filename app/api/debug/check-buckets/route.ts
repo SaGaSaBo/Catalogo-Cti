@@ -21,7 +21,7 @@ export async function GET() {
     const { data: buckets, error: listError } = await supabaseAdmin.storage.listBuckets();
     if (listError) throw listError;
 
-    results.availableBuckets = buckets.map(b => b.name);
+    results.availableBuckets = buckets.map((b: any) => b.name);
     
     // 2. Get details for each bucket
     for (const bucket of buckets) {
