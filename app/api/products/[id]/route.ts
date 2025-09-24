@@ -3,8 +3,9 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const json = await req.json();
     if (json.categoryId === "" || json.categoryId === undefined) json.categoryId = null;
 
@@ -21,7 +22,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         active: json.active !== undefined ? json.active : true,
         sort_index: json.sortIndex
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
