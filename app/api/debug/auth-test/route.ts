@@ -22,8 +22,8 @@ export async function GET(req: Request) {
   // Test Supabase connection
   let publicProductsCount = 0;
   let allProductsCount = 0;
-  let dbError = null;
-  let products = [];
+  let dbError: string | null = null;
+  let products: any[] = [];
   
   try {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -79,7 +79,7 @@ export async function GET(req: Request) {
       publicProductsCount,
       allProductsCount,
       dbError,
-      sampleProducts: products.slice(0, 3).map(p => ({
+      sampleProducts: products.slice(0, 3).map((p: any) => ({
         id: p.id,
         title: p.title,
         active: p.active,
