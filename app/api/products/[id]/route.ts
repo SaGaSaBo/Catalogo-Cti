@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { revalidatePath } from 'next/cache';
 
 const mapRow = (r: any) => ({
   id: r.id,
@@ -48,6 +49,16 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (error) throw error;
 
     console.log("[API] PUT /products/:id imageUrls len ->", data.image_urls?.length ?? 0);
+    
+    // Invalidar caché del catálogo público para que se actualice
+    try {
+      revalidatePath('/');
+      revalidatePath('/api/products');
+      console.log("[API] PUT /products/:id - Cache invalidated for catalog");
+    } catch (revalidateError) {
+      console.warn("[API] PUT /products/:id - Cache invalidation failed:", revalidateError);
+    }
+    
     return NextResponse.json(mapRow(data));
   } catch (e: any) {
     console.error("[API] PUT /products/:id ERROR:", e?.message || e);

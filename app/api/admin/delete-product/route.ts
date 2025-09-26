@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getErrorMessage } from "@/lib/errors";
+import { revalidatePath } from 'next/cache';
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -62,6 +63,15 @@ export async function POST(req: Request) {
   if (delErr) {
     const msg = getErrorMessage(delErr);
     return NextResponse.json({ error: msg }, { status: 500 });
+  }
+
+  // Invalidar caché del catálogo público para que se actualice
+  try {
+    revalidatePath('/');
+    revalidatePath('/api/products');
+    console.log("[API] DELETE /admin/delete-product - Cache invalidated for catalog");
+  } catch (revalidateError) {
+    console.warn("[API] DELETE /admin/delete-product - Cache invalidation failed:", revalidateError);
   }
 
   return NextResponse.json({ ok: true });
