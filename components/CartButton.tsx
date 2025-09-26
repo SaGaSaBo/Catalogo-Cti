@@ -2,12 +2,14 @@
 import { useEffect, useState } from "react";
 import { useCart, useCartCount } from "@/store/cart";
 import { CartModal } from "@/components/cart-modal";
+import { usePathname } from 'next/navigation';
 
 export default function CartButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const cart = useCart();
   const count = useCartCount();
+  const pathname = usePathname();
 
   // Manejar hidratación
   useEffect(() => {
@@ -16,6 +18,11 @@ export default function CartButton() {
 
   // No renderizar hasta que esté montado y hidratado
   if (!mounted || !cart._hasHydrated) {
+    return null;
+  }
+
+  // No mostrar el botón de carrito en rutas de admin
+  if (pathname?.startsWith('/admin')) {
     return null;
   }
 
