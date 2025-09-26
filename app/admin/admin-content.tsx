@@ -95,7 +95,7 @@ export function AdminPageContent() {
     try {
       console.log('🔄 Haciendo requests a APIs...');
       const [productsData, categoriesData] = await Promise.all([
-        fetchJson('/api/products', { cache: "no-store" }),
+        fetchJson('/api/admin/products', { cache: "no-store" }),
         fetchJson('/api/categories', {
           headers: {
             'Authorization': `Bearer ${adminKey}`
@@ -209,7 +209,7 @@ export function AdminPageContent() {
         toast.success('Producto actualizado correctamente');
       } else {
         console.log('Creating new product');
-        await fetchJson('/api/products', {
+        await fetchJson('/api/admin/products', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
