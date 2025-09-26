@@ -52,8 +52,8 @@ export async function GET(req: Request) {
     });
 
     // Headers de caché optimizados
-    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    response.headers.set('CDN-Cache-Control', 'public, s-maxage=300');
+    response.headers.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=30');
     
     return response;
   } catch (e: any) {

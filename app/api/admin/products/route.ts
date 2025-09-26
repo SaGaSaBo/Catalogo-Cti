@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { isAdmin } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,6 +119,15 @@ export async function POST(req: Request) {
       title: data.title,
       imageUrls: data.image_urls?.length || 0
     });
+
+    // Invalidar caché del catálogo público para que se actualice
+    try {
+      revalidatePath('/');
+      revalidatePath('/api/products');
+      console.log("[API] POST /admin/products - Cache invalidated for catalog");
+    } catch (revalidateError) {
+      console.warn("[API] POST /admin/products - Cache invalidation failed:", revalidateError);
+    }
 
     return NextResponse.json(mapRow(data), { status: 201 });
   } catch (e: any) {

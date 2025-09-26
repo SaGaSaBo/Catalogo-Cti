@@ -78,7 +78,7 @@ export default function ProductCatalog() {
       // Fetch products con caché optimizado
       const productsRes = await fetch(`/api/products?page=${currentPage}&limit=${itemsPerPage}`, { 
         cache: "force-cache",
-        next: { revalidate: 300 } // 5 minutos de caché
+        next: { revalidate: 30 } // 5 minutos de caché
       });
 
       if (!productsRes.ok) {
