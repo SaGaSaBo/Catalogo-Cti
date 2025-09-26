@@ -83,10 +83,9 @@ export default function ProductCatalog() {
         localStorage.setItem('catalog-categories-timestamp', now.toString());
       }
       
-      // Fetch products con caché optimizado
-      const productsRes = await fetch(`/api/products?page=${currentPage}&limit=${itemsPerPage}`, { 
-        cache: "force-cache",
-        next: { revalidate: 30 } // 5 minutos de caché
+      // Fetch products sin cache para reflejar cambios inmediatos
+      const productsRes = await fetch(`/api/products?page=${currentPage}&limit=${itemsPerPage}`, {
+        cache: "no-store"
       });
 
       if (!productsRes.ok) {
