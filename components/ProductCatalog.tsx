@@ -84,7 +84,29 @@ export default function ProductCatalog() {
       }
       
       // Fetch products sin cache para reflejar cambios inmediatos
-      const productsRes = await fetch(`/api/products?page=${currentPage}&limit=${itemsPerPage}`, {
+      // Construir URL con parámetros de filtrado del servidor
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString()
+      });
+      
+      if (searchTerm.trim()) {
+        params.append('search', searchTerm.trim());
+      }
+      
+      if (selectedCategory.trim()) {
+        params.append('category', selectedCategory.trim());
+      }
+      
+      if (sortBy !== 'name') {
+        params.append('sortBy', sortBy);
+      }
+      
+      if (sortOrder !== 'asc') {
+        params.append('sortOrder', sortOrder);
+      }
+      
+      const productsRes = await fetch(`/api/products?${params.toString()}`, {
         cache: "no-store"
       });
 
@@ -120,52 +142,14 @@ export default function ProductCatalog() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]); // Refetch cuando cambie la página
+  }, [currentPage, searchTerm, selectedCategory, sortBy, sortOrder]); // Refetch cuando cambien filtros o página
 
-  // Filter and sort products
-  const filteredProducts = products
-    .filter(product => {
-      const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = !selectedCategory || product.categoryId === selectedCategory;
-      
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      let aValue: string | number;
-      let bValue: string | number;
-
-      switch (sortBy) {
-        case 'price':
-          aValue = a.price || 0;
-          bValue = b.price || 0;
-          break;
-        case 'brand':
-          aValue = a.brand || '';
-          bValue = b.brand || '';
-          break;
-        default:
-          aValue = a.name || a.title || '';
-          bValue = b.name || b.title || '';
-      }
-
-      if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
-    });
-
-  // Para simplificar, usamos los productos filtrados directamente
-  // La paginación real se maneja en el servidor
-  const paginatedProducts = filteredProducts;
+  // Los productos ya vienen filtrados del servidor
+  const filteredProducts = products;
   
   // Use pagination metadata when available, fallback to local calculation
-  const totalPages = pagination?.totalPages || Math.ceil(filteredProducts.length / itemsPerPage);
-  const totalProducts = pagination?.total || filteredProducts.length;
+  const totalPages = pagination?.totalPages || Math.ceil(products.length / itemsPerPage);
+  const totalProducts = pagination?.total || products.length;
   const currentPageFromPagination = pagination?.page || currentPage;
 
   // Reset to first page when filters change
@@ -280,7 +264,7 @@ export default function ProductCatalog() {
 
         {/* Results count */}
         <div className="mt-4 text-sm text-gray-600">
-          Mostrando {paginatedProducts.length} de {totalProducts} productos (página {currentPageFromPagination} de {totalPages})
+          Mostrando {filteredProducts.length} de {totalProducts} productos (página {currentPageFromPagination} de {totalPages})
         </div>
       </div>
 
@@ -303,7 +287,7 @@ export default function ProductCatalog() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {paginatedProducts.map((product) => {
+            {filteredProducts.map((product) => {
             const name = product.name || product.title || product.sku || "Producto";
             const brand = product.brand || "";
             const price = product.price || 0;
