@@ -20,18 +20,42 @@ const mapRow = (r: any) => ({
   updatedAt: r.updated_at,
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const url = new URL(req.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '50'); // Límite por defecto más alto
+    const offset = (page - 1) * limit;
+
+    // Solo campos esenciales para reducir transferencia de datos
     const { data, error, count } = await supabaseAdmin
       .from("products")
-      .select("id,brand,title,description,sku,price,sizes,image_urls,active,category_id,sort_index,created_at,updated_at", { count: "exact" })
-      .order("title", { ascending: true });
+      .select("id,brand,title,description,sku,price,sizes,image_urls,active,category_id,sort_index", { count: "exact" })
+      .eq("active", true) // Solo productos activos
+      .order("sort_index", { ascending: true })
+      .order("title", { ascending: true })
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
     const mapped = (data ?? []).map(mapRow);
-    console.log("[API] GET /products ->", count ?? mapped.length);
-    return NextResponse.json(mapped);
+    console.log("[API] GET /products ->", count ?? mapped.length, `(page ${page}, limit ${limit})`);
+    
+    const response = NextResponse.json({
+      items: mapped,
+      pagination: {
+        page,
+        limit,
+        total: count ?? 0,
+        totalPages: Math.ceil((count ?? 0) / limit)
+      }
+    });
+
+    // Headers de caché optimizados
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=300');
+    
+    return response;
   } catch (e: any) {
     console.error("[API] GET /products ERROR:", e?.message || e);
     return NextResponse.json({ error: e?.message || String(e) }, { status: 500 });

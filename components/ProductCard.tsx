@@ -67,7 +67,7 @@ export default function ProductCard({ product }: { product: Product }) {
               src={product.images[0]}
               alt={product.name}
               className="h-full w-full object-cover"
-              transform={{ width: 400, quality: 70, format: "webp" }}
+              transform={{ width: 300, quality: 75, format: "webp" }}
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">

@@ -47,28 +47,48 @@ export default function ProductCatalog() {
       setLoading(true);
       setError(null);
       
-      // Fetch products and categories in parallel
-      const [productsRes, categoriesRes] = await Promise.all([
-        fetch('/api/products', { cache: "no-store" }),
-        fetch('/api/categories', { cache: "no-store" })
-      ]);
+      // Verificar caché local primero (solo para categorías que cambian menos)
+      const cachedCategories = localStorage.getItem('catalog-categories');
+      const categoriesTimestamp = localStorage.getItem('catalog-categories-timestamp');
+      const now = Date.now();
+      
+      let categoriesData;
+      if (cachedCategories && categoriesTimestamp && (now - parseInt(categoriesTimestamp)) < 600000) { // 10 minutos
+        categoriesData = JSON.parse(cachedCategories);
+        console.log('Using cached categories');
+      } else {
+        // Fetch categories con caché optimizado
+        const categoriesRes = await fetch('/api/categories', { 
+          cache: "force-cache",
+          next: { revalidate: 600 } // 10 minutos de caché
+        });
+        
+        if (!categoriesRes.ok) {
+          const categoriesText = await categoriesRes.text().catch(() => "");
+          throw new Error(`API /api/categories ${categoriesRes.status} ${categoriesRes.statusText} :: ${categoriesText}`);
+        }
+        
+        categoriesData = await categoriesRes.json();
+        
+        // Guardar en caché local
+        localStorage.setItem('catalog-categories', JSON.stringify(categoriesData));
+        localStorage.setItem('catalog-categories-timestamp', now.toString());
+      }
+      
+      // Fetch products con caché optimizado
+      const productsRes = await fetch(`/api/products?page=${currentPage}&limit=${itemsPerPage}`, { 
+        cache: "force-cache",
+        next: { revalidate: 300 } // 5 minutos de caché
+      });
 
       if (!productsRes.ok) {
         const productsText = await productsRes.text().catch(() => "");
         throw new Error(`API /api/products ${productsRes.status} ${productsRes.statusText} :: ${productsText}`);
       }
 
-      if (!categoriesRes.ok) {
-        const categoriesText = await categoriesRes.text().catch(() => "");
-        throw new Error(`API /api/categories ${categoriesRes.status} ${categoriesRes.statusText} :: ${categoriesText}`);
-      }
+      const productsData = await productsRes.json();
 
-      const [productsData, categoriesData] = await Promise.all([
-        productsRes.json(),
-        categoriesRes.json()
-      ]);
-
-      // Handle new API response format
+      // Handle new API response format with pagination
       const products = productsData?.items || productsData || [];
       const categories = categoriesData || [];
 
@@ -84,7 +104,7 @@ export default function ProductCatalog() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage]); // Refetch cuando cambie la página
 
   // Filter and sort products
   const filteredProducts = products
@@ -123,10 +143,10 @@ export default function ProductCatalog() {
       }
     });
 
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+  // Para simplificar, usamos los productos filtrados directamente
+  // La paginación real se maneja en el servidor
+  const paginatedProducts = filteredProducts;
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage); // Mantener para compatibilidad
 
   // Reset to first page when filters change
   useEffect(() => {

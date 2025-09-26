@@ -8,7 +8,7 @@ type Props = React.ImgHTMLAttributes<HTMLImageElement> & {
   transform?: { width?: number; quality?: number; format?: "webp" | "jpeg" | "png" | "avif" };
 };
 
-export default function UiImg({ src, alt, transform = { width: 1200, quality: 80, format: "webp" }, ...rest }: Props) {
+export default function UiImg({ src, alt, transform = { width: 400, quality: 75, format: "webp" }, ...rest }: Props) {
   const finalSrc = buildSupabaseImageUrl(src, transform);
   const [currentSrc, setCurrentSrc] = React.useState(finalSrc);
 
@@ -17,6 +17,7 @@ export default function UiImg({ src, alt, transform = { width: 1200, quality: 80
       {...rest}
       alt={alt}
       src={currentSrc}
+      loading="lazy" // Lazy loading para reducir carga inicial
       onError={() => {
         // Fallback al original si la transformada falla
         if (currentSrc !== src) setCurrentSrc(src);

@@ -45,29 +45,18 @@ function convertToSupabase(product: Partial<Product>): Partial<SupabaseProduct> 
 
 export async function getProducts(): Promise<Product[]> {
   try {
-    // Primero intentar con JOIN a categories
+    // Solo campos esenciales para reducir transferencia de datos
     const { data, error } = await supabase
       .from('products')
       .select(`
-        id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at,
-        category:categories(id, name)
+        id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index
       `)
+      .eq('active', true) // Solo productos activos
       .order('sort_index', { ascending: true });
 
     if (error) {
-      console.warn('Error with categories JOIN, trying without:', error.message);
-      // Si falla el JOIN, intentar sin categories
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from('products')
-        .select('id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at')
-        .order('sort_index', { ascending: true });
-
-      if (fallbackError) {
-        console.error('Error fetching products:', fallbackError);
-        throw new Error('Failed to fetch products');
-      }
-
-      return fallbackData.map(convertFromSupabase);
+      console.error('Error fetching products:', error);
+      throw new Error('Failed to fetch products');
     }
 
     return data.map(convertFromSupabase);
@@ -79,38 +68,22 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function getProduct(id: string): Promise<Product | null> {
   try {
-    // Primero intentar con JOIN a categories
+    // Solo campos esenciales para reducir transferencia de datos
     const { data, error } = await supabase
       .from('products')
       .select(`
-        id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at,
-        category:categories(id, name)
+        id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index
       `)
       .eq('id', id)
+      .eq('active', true) // Solo productos activos
       .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
         return null; // Product not found
       }
-      
-      console.warn('Error with categories JOIN, trying without:', error.message);
-      // Si falla el JOIN, intentar sin categories
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from('products')
-        .select('id, brand, title, description, sku, price, sizes, image_urls, active, category_id, sort_index, created_at, updated_at')
-        .eq('id', id)
-        .single();
-
-      if (fallbackError) {
-        if (fallbackError.code === 'PGRST116') {
-          return null; // Product not found
-        }
-        console.error('Error fetching product:', fallbackError);
-        throw new Error('Failed to fetch product');
-      }
-
-      return convertFromSupabase(fallbackData);
+      console.error('Error fetching product:', error);
+      throw new Error('Failed to fetch product');
     }
 
     return convertFromSupabase(data);

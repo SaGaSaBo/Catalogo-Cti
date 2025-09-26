@@ -16,7 +16,14 @@ export async function GET() {
     const categories = await getCategories();
     
     console.log(`Returning ${categories.length} categories`);
-    return NextResponse.json(categories);
+    
+    const response = NextResponse.json(categories);
+    
+    // Headers de caché optimizados para categorías (cambian menos frecuentemente)
+    response.headers.set('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1200');
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=600');
+    
+    return response;
   } catch (error) {
     console.error('Error fetching categories:', error);
     return NextResponse.json(
