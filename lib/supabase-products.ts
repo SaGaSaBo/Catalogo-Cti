@@ -1,8 +1,8 @@
 import { supabase, SupabaseProduct } from './supabase';
 import { Product } from './types';
 
-// Convertir de Supabase a formato interno
-function convertFromSupabase(supabaseProduct: SupabaseProduct): Product {
+// Convertir de Supabase a formato interno (versión flexible)
+function convertFromSupabase(supabaseProduct: any): Product {
   try {
     console.log('Converting product:', supabaseProduct.id, supabaseProduct.title);
     console.log('Image URLs from DB:', supabaseProduct.image_urls);
