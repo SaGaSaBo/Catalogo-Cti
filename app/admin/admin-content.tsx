@@ -95,7 +95,12 @@ export function AdminPageContent() {
     try {
       console.log('🔄 Haciendo requests a APIs...');
       const [productsData, categoriesData] = await Promise.all([
-        fetchJson('/api/admin/products', { cache: "no-store" }),
+        fetchJson('/api/admin/products', {
+          headers: {
+            'Authorization': `Bearer ${adminKey}`
+          },
+          cache: "no-store"
+        }),
         fetchJson('/api/categories', {
           headers: {
             'Authorization': `Bearer ${adminKey}`
