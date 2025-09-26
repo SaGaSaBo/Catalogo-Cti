@@ -29,9 +29,17 @@ interface Category {
   name: string;
 }
 
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export default function ProductCatalog() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,9 +99,18 @@ export default function ProductCatalog() {
       // Handle new API response format with pagination
       const products = productsData?.items || productsData || [];
       const categories = categoriesData || [];
+      
+      // Extract pagination metadata with fallback values
+      const paginationData = productsData?.pagination ? {
+        page: productsData.pagination.page || currentPage,
+        limit: productsData.pagination.limit || itemsPerPage,
+        total: productsData.pagination.total || (Array.isArray(products) ? products.length : 0),
+        totalPages: productsData.pagination.totalPages || Math.ceil((productsData.pagination.total || (Array.isArray(products) ? products.length : 0)) / (productsData.pagination.limit || itemsPerPage))
+      } : null;
 
       setProducts(Array.isArray(products) ? products : []);
       setCategories(Array.isArray(categories) ? categories : []);
+      setPagination(paginationData);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -146,7 +163,11 @@ export default function ProductCatalog() {
   // Para simplificar, usamos los productos filtrados directamente
   // La paginación real se maneja en el servidor
   const paginatedProducts = filteredProducts;
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage); // Mantener para compatibilidad
+  
+  // Use pagination metadata when available, fallback to local calculation
+  const totalPages = pagination?.totalPages || Math.ceil(filteredProducts.length / itemsPerPage);
+  const totalProducts = pagination?.total || filteredProducts.length;
+  const currentPageFromPagination = pagination?.page || currentPage;
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -260,7 +281,7 @@ export default function ProductCatalog() {
 
         {/* Results count */}
         <div className="mt-4 text-sm text-gray-600">
-          Mostrando {paginatedProducts.length} de {filteredProducts.length} productos (página {currentPage} de {totalPages})
+          Mostrando {paginatedProducts.length} de {totalProducts} productos (página {currentPageFromPagination} de {totalPages})
         </div>
       </div>
 
@@ -314,7 +335,7 @@ export default function ProductCatalog() {
             <div className="flex justify-center items-center space-x-2 mt-8">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
+                disabled={pagination?.page ? pagination.page <= 1 : currentPage === 1}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Anterior
@@ -322,13 +343,19 @@ export default function ProductCatalog() {
               
               <div className="flex space-x-1">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const page = i + 1;
+                  // Calculate page numbers based on current page and total pages
+                  const currentPageNum = pagination?.page || currentPage;
+                  const startPage = Math.max(1, Math.min(currentPageNum - 2, totalPages - 4));
+                  const page = startPage + i;
+                  
+                  if (page > totalPages) return null;
+                  
                   return (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`px-3 py-2 text-sm font-medium rounded-md ${
-                        currentPage === page
+                        currentPageNum === page
                           ? 'bg-blue-600 text-white'
                           : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
                       }`}
@@ -341,7 +368,7 @@ export default function ProductCatalog() {
               
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
+                disabled={pagination?.page ? pagination.page >= pagination.totalPages : currentPage === totalPages}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente
