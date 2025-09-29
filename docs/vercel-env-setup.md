@@ -46,7 +46,7 @@ NODE_ENV = production
 
 ### 1. Acceder a Vercel Dashboard
 1. Ve a [vercel.com/dashboard](https://vercel.com/dashboard)
-2. Selecciona tu proyecto "Catalogo CTI"
+2. Selecciona tu proyecto "CATALOGO-MTX"
 
 ### 2. Ir a Environment Variables
 1. Haz clic en **Settings**
@@ -84,7 +84,7 @@ node scripts/verify-env.js
 ```
 
 ### Opción 2: API de Verificación
-Visita: `https://catalogo-cti.vercel.app/api/_env-check`
+Visita: `https://catalogo-mtx.vercel.app/api/_env-check`
 
 ### Opción 3: Logs de Vercel
 1. Ve a **Functions** en tu dashboard de Vercel
