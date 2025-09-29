@@ -1,8 +1,8 @@
 {
-  "name": "altoconcepto-mayorista",
+  "name": "catalogo-marsantex",
   "version": "1.0.0",
   "private": true,
-  "description": "Catálogo mayorista ALTOCONCEPTO con sistema de autenticación y generación de PDFs",
+  "description": "Catálogo mayorista MARSANTEX con sistema de autenticación y generación de PDFs",
   "scripts": {
     "dev": "next dev",
     "build": "node scripts/build.mjs",

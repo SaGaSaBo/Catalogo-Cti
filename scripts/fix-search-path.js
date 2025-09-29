@@ -129,3 +129,4 @@ WHERE n.nspname='public'
 }
 
 fixSearchPath();
+

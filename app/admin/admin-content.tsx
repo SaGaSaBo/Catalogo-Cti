@@ -319,7 +319,7 @@ export function AdminPageContent() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Panel de Administración - Marsantex</h1>
               <p className="text-gray-600 mt-2">Gestiona productos y categorías</p>
             </div>
             <Button onClick={() => openDialog()}>

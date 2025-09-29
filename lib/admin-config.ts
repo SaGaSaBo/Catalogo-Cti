@@ -1,1 +1,1 @@
-export const ADMIN_SECRET = process.env.NEXT_PUBLIC_ADMIN_SECRET || 'admin123';
+export const ADMIN_SECRET = process.env.ADMIN_KEY || 'marsantex_admin_2024';
