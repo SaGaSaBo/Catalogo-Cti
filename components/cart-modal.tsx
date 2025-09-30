@@ -48,7 +48,13 @@ export function CartModal({ isOpen, onClose, products }: CartModalProps) {
     return items.map(item => {
       const product = products.find(p => p.id === item.productId);
       return {
-        product: product || { id: item.productId, name: item.name, price: item.price },
+        product: product || { 
+          id: item.productId, 
+          name: item.name, 
+          price: item.price,
+          brand: item.brand || '',
+          sku: item.sku || ''
+        },
         size: item.size,
         quantity: item.qty,
         total: item.price * item.qty

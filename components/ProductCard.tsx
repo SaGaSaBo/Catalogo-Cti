@@ -51,6 +51,7 @@ export default function ProductCard({ product }: { product: Product }) {
         price: product.price,
         qty,
         sku: product.sku,
+        brand: product.brand,
         image: product.images?.[0],
       });
     }

@@ -70,6 +70,7 @@ export default function ProductDetailPage() {
       price: product.price,
       qty: quantity,
       sku: product.sku,
+      brand: product.brand,
       image: product.imageUrls[0] || '/images/placeholder-image.svg'
     });
 
