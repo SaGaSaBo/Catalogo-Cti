@@ -1,4 +1,4 @@
-# 🔧 Configuración de Supabase para Marsantex
+# 🔧 Configuración de Supabase para ALTOCONCEPTO
 
 ## 📋 Información del Proyecto
 
@@ -52,7 +52,7 @@ Ejecuta el schema SQL en tu proyecto de Supabase:
 Crea `.env.local` con:
 
 ```bash
-# Supabase Configuration - Marsantex
+# Supabase Configuration - ALTOCONCEPTO
 NEXT_PUBLIC_SUPABASE_URL=https://ywadtpwkmmtgvvwawdwp.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3YWR0cHdrbW10Z3Z2d2F3d2RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MzU3NjEsImV4cCI6MjA3MzExMTc2MX0.OTZJkkqk4gb6Q9LyXuO96MEHmt1sCQB1_eBJPBc-GFM
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_real
@@ -60,9 +60,9 @@ SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_real
 # Supabase Storage
 NEXT_PUBLIC_SUPABASE_BUCKET_NAME=product-images
 
-# Marsantex Configuration
-ADMIN_KEY=marsantex_admin_2024
-SITE_PASS=marsantex2024
+# ALTOCONCEPTO Configuration
+ADMIN_KEY=altoconcepto_admin_2024
+SITE_PASS=altoconcepto2024
 
 # Optional
 SUPABASE_SIGNED_URL_EXPIRES=3600
@@ -76,8 +76,8 @@ En Vercel Dashboard, configura estas variables:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3YWR0cHdrbW10Z3Z2d2F3d2RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MzU3NjEsImV4cCI6MjA3MzExMTc2MX0.OTZJkkqk4gb6Q9LyXuO96MEHmt1sCQB1_eBJPBc-GFM`
 - `SUPABASE_SERVICE_ROLE_KEY`: Tu clave de servicio real
 - `NEXT_PUBLIC_SUPABASE_BUCKET_NAME`: `product-images`
-- `ADMIN_KEY`: `marsantex_admin_2024`
-- `SITE_PASS`: `marsantex2024`
+- `ADMIN_KEY`: `altoconcepto_admin_2024`
+- `SITE_PASS`: `altoconcepto2024`
 
 ## 🧪 Testing
 
@@ -99,9 +99,9 @@ En Vercel Dashboard, configura estas variables:
 
 ## 🔐 URLs de Acceso
 
-- **Catálogo**: `http://localhost:3000` (contraseña: `marsantex2024`)
-- **Admin**: `http://localhost:3000/admin?key=marsantex_admin_2024`
-- **Producción**: `https://catalogo-mtx.vercel.app`
+- **Catálogo**: `http://localhost:3000` (contraseña: `altoconcepto2024`)
+- **Admin**: `http://localhost:3000/admin?key=altoconcepto_admin_2024`
+- **Producción**: `https://catalogo-altoconcepto.vercel.app`
 
 ## ⚠️ Importante
 
@@ -112,4 +112,4 @@ En Vercel Dashboard, configura estas variables:
 
 ---
 
-**¡Configuración lista para Marsantex!** 🚀
+**¡Configuración lista para ALTOCONCEPTO!** 🚀

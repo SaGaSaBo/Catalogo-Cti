@@ -1,4 +1,4 @@
-# 🏢 MARSANTEX Mayorista
+# 🏢 ALTOCONCEPTO Mayorista
 
 **Catálogo mayorista moderno con sistema de autenticación, generación de PDFs y panel de administración completo.**
 
@@ -39,7 +39,7 @@
 ### **1. Clonar el repositorio**
 ```bash
 git clone <tu-repositorio>
-cd catalogo-marsantex
+cd catalogo-altoconcepto-mayorista
 ```
 
 ### **2. Instalar dependencias**
@@ -55,7 +55,7 @@ cp .env.example .env.local
 Editar `.env.local` con tus valores:
 ```bash
 # Autenticación
-SITE_PASS=marsantex2024
+SITE_PASS=altoconcepto2024
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=tu_url_supabase
@@ -63,7 +63,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
 
 # Admin Key
-ADMIN_KEY=marsantex_admin_2024
+ADMIN_KEY=altoconcepto_admin_2024
 
 # Email (opcional)
 EMAIL_HOST=smtp.gmail.com
@@ -129,11 +129,11 @@ npm run analyze      # Análisis de bundle
 
 ### **Variables de Entorno Requeridas**
 ```bash
-SITE_PASS=marsantex2024                                    # Contraseña de acceso
+SITE_PASS=altoconcepto2024                                    # Contraseña de acceso
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co    # URL de Supabase
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...                 # Clave anónima
 SUPABASE_SERVICE_ROLE_KEY=eyJ...                     # Clave de servicio
-ADMIN_KEY=marsantex_admin_2024                        # Clave de administrador
+ADMIN_KEY=altoconcepto_admin_2024                        # Clave de administrador
 ```
 
 ## 🧪 Testing
@@ -222,8 +222,8 @@ Para soporte técnico o consultas:
 
 ## 📄 Licencia
 
-Proyecto privado - MARSANTEX Mayorista
+Proyecto privado - ALTOCONCEPTO Mayorista
 
 ---
 
-**Desarrollado con ❤️ para MARSANTEX Mayorista**# Deploy trigger Wed Sep 24 13:24:18 -03 2025
+**Desarrollado con ❤️ para ALTOCONCEPTO Mayorista**# Deploy trigger Wed Sep 24 13:24:18 -03 2025

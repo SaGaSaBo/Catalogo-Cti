@@ -1,10 +1,10 @@
-# 🏢 Configuración para "Catalogo Marsantex"
+# 🏢 Configuración para "Catalogo ALTOCONCEPTO Mayorista"
 
 ## 📋 Pasos Completados
 
-✅ **Rama creada**: `marsantex-catalog`  
-✅ **package.json actualizado**: Nombre y descripción cambiados a Marsantex  
-✅ **README.md actualizado**: Información de Marsantex  
+✅ **Rama creada**: `altoconcepto-catalog`  
+✅ **package.json actualizado**: Nombre y descripción cambiados a ALTOCONCEPTO  
+✅ **README.md actualizado**: Información de ALTOCONCEPTO  
 ✅ **Archivos de configuración**: Admin keys y contraseñas actualizadas  
 ✅ **Metadatos actualizados**: Títulos y branding cambiados  
 ✅ **Página de login**: Branding actualizado  
@@ -13,16 +13,16 @@
 
 ### **1. Crear Nuevo Repositorio**
 ```bash
-# Crear nuevo repositorio en GitHub llamado "catalogo-marsantex"
+# Crear nuevo repositorio en GitHub llamado "catalogo-altoconcepto-mayorista"
 # Cambiar el remote
 git remote remove origin
-git remote add origin https://github.com/TU_USUARIO/catalogo-marsantex.git
+git remote add origin https://github.com/TU_USUARIO/catalogo-altoconcepto-mayorista.git
 ```
 
 ### **2. Configurar Nueva Base de Datos Supabase**
 
 1. **Crear nuevo proyecto en Supabase**:
-   - Nombre: "Marsantex Catalog"
+   - Nombre: "ALTOCONCEPTO Catalog"
    - Región: La más cercana a tu ubicación
 
 2. **Ejecutar el schema SQL**:
@@ -39,7 +39,7 @@ git remote add origin https://github.com/TU_USUARIO/catalogo-marsantex.git
 Crear `.env.local` con:
 ```bash
 # Autenticación
-SITE_PASS=marsantex2024
+SITE_PASS=altoconcepto2024
 
 # Supabase (nuevas credenciales)
 NEXT_PUBLIC_SUPABASE_URL=tu_nueva_url_supabase
@@ -47,7 +47,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_nueva_anon_key
 SUPABASE_SERVICE_ROLE_KEY=tu_nueva_service_role_key
 
 # Admin Key
-ADMIN_KEY=marsantex_admin_2024
+ADMIN_KEY=altoconcepto_admin_2024
 
 # Supabase Storage
 NEXT_PUBLIC_SUPABASE_BUCKET_NAME=product-images
@@ -63,30 +63,30 @@ EMAIL_PASS=tu_password_de_aplicacion
 
 1. Conectar el nuevo repositorio
 2. Configurar variables de entorno:
-   - `SITE_PASS=marsantex2024`
+   - `SITE_PASS=altoconcepto2024`
    - `NEXT_PUBLIC_SUPABASE_URL` (nueva)
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (nueva)
    - `SUPABASE_SERVICE_ROLE_KEY` (nueva)
-   - `ADMIN_KEY=marsantex_admin_2024`
+   - `ADMIN_KEY=altoconcepto_admin_2024`
    - `NEXT_PUBLIC_SUPABASE_BUCKET_NAME=product-images`
 
 ### **5. Deploy**
 ```bash
 git add .
-git commit -m "🏢 Initial setup for Marsantex catalog"
+git commit -m "🏢 Initial setup for ALTOCONCEPTO catalog"
 git push origin main
 ```
 
 ## 🎯 URLs Finales
 
 - **Desarrollo**: `http://localhost:3000`
-- **Producción**: `https://catalogo-marsantex.vercel.app`
-- **Admin**: `https://catalogo-marsantex.vercel.app/admin?key=marsantex_admin_2024`
+- **Producción**: `https://catalogo-altoconcepto-mayorista.vercel.app`
+- **Admin**: `https://catalogo-altoconcepto-mayorista.vercel.app/admin?key=altoconcepto_admin_2024`
 
 ## 🔐 Credenciales de Acceso
 
-- **Contraseña del sitio**: `marsantex2024`
-- **Clave de administrador**: `marsantex_admin_2024`
+- **Contraseña del sitio**: `altoconcepto2024`
+- **Clave de administrador**: `altoconcepto_admin_2024`
 
 ## 📊 Migración de Datos (Opcional)
 
@@ -104,7 +104,7 @@ Si quieres migrar productos existentes:
 
 ## ✅ Checklist de Configuración
 
-- [x] Crear nueva rama marsantex-catalog
+- [x] Crear nueva rama altoconcepto-catalog
 - [x] Modificar package.json
 - [x] Actualizar README.md
 - [x] Modificar archivos de configuración
@@ -128,7 +128,7 @@ theme: {
   extend: {
     colors: {
       primary: {
-        // Colores de Marsantex
+        // Colores de ALTOCONCEPTO
       }
     }
   }
@@ -142,4 +142,4 @@ theme: {
 
 ---
 
-**¡El proyecto está listo para ser clonado y configurado para Marsantex!** 🚀
+**¡El proyecto está listo para ser clonado y configurado para ALTOCONCEPTO!** 🚀

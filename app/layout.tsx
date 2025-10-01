@@ -5,8 +5,8 @@ import DevtoolsListenersDebug from '@/app/debug/devtools-listeners';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Catálogo Marsantex',
-  description: 'Catálogo mayorista MARSANTEX - Sistema de gestión de productos',
+  title: 'Catálogo ALTOCONCEPTO',
+  description: 'Catálogo mayorista ALTOCONCEPTO - Sistema de gestión de productos',
   viewport: 'width=device-width, initial-scale=1',
 };
 

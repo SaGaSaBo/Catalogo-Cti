@@ -41,7 +41,7 @@ export default function EnterPage() {
       >
         <div className="text-center mb-6">
           <div className="text-xs uppercase tracking-widest text-gray-500">
-            MARSANTEX Mayorista
+            ALTOCONCEPTO Mayorista
           </div>
           <h1 className="text-xl font-semibold mt-1">Acceso protegido</h1>
           <p className="text-sm text-gray-500 mt-1">
