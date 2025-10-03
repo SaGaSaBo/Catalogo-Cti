@@ -72,3 +72,36 @@ export type OrderWithBuyer = {
     phone?: string;
   };
 };
+
+// Dashboard Types
+export interface DashboardStats {
+  totalSalesLastMonth: number;        // Ventas mes anterior
+  totalSalesCurrentMonth: number;     // Ventas mes actual
+  totalOrdersLastMonth: number;       // Pedidos mes anterior
+  totalOrdersCurrentMonth: number;    // Pedidos mes actual
+  topProducts: Array<{                // Top 5 productos
+    id: string;
+    title: string;
+    brand: string;
+    totalQuantity: number;
+    totalRevenue: number;
+  }>;
+  topCustomers: Array<{               // Top 5 clientes
+    name: string;
+    email: string;
+    totalOrders: number;
+    totalSpent: number;
+  }>;
+  monthlySales: Array<{               // Datos mensuales
+    month: string;
+    sales: number;
+    orders: number;
+  }>;
+}
+
+// Stored Order Type (with ID and timestamp)
+export interface StoredOrder extends OrderPayload {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+}

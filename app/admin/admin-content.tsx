@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { AdminCategoryManager } from '@/components/admin-category-manager';
 import { AdminProductManager } from '@/components/admin-product-manager';
 import { AdminOrdersManager } from '@/components/admin-orders-manager';
+import { AdminDashboard } from '@/components/admin-dashboard';
 import { ImageUpload } from '@/components/image-upload';
 import { fetchJson } from '@/lib/fetchJson';
 import { toast } from 'sonner';
@@ -331,8 +332,9 @@ export function AdminPageContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <Tabs defaultValue="products" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="dashboard" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="products">Productos ({Array.isArray(products) ? products.length : 0})</TabsTrigger>
             <TabsTrigger value="categories">Categorías ({Array.isArray(categories) ? categories.length : 0})</TabsTrigger>
             <TabsTrigger value="orders" className="relative">
@@ -344,6 +346,10 @@ export function AdminPageContent() {
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <AdminDashboard />
+          </TabsContent>
 
           <TabsContent value="products">
             <AdminProductManager
